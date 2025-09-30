@@ -1,6 +1,8 @@
 using ai.lab.service;
 
 var builder = WebApplication.CreateBuilder(args);
+// Add Kestrel as the web server
+builder.WebHost.UseKestrel();
 
 // Add services to the container.
 builder.Services.AddControllers();
