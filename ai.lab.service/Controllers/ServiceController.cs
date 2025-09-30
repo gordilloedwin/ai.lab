@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace ai.lab.service.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 [Produces("application/json")]
 public class ServiceController(ILogger<ServiceController> _logger) : ControllerBase
 {

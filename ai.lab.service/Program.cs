@@ -1,7 +1,6 @@
 using ai.lab.service;
 using ai.lab.service.Components;
 using ai.lab.service.Services;
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,11 +16,11 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "AI Lab Service API",
         Version = "v1.0.0",
-        Description = "API for AI Lab Service - A hybrid worker and web API service",
+        Description = "API for AI Lab Service",
         Contact = new Microsoft.OpenApi.Models.OpenApiContact
         {
-            Name = "AI Lab Service",
-            Email = "support@ailab.local"
+            Name = "AI & ML Lab Service",
+            Email = "gordilloedwin@hotmail.com"
         }
     });
 });
@@ -32,6 +31,9 @@ builder.Services.AddRazorComponents()
 
 // Add SignalR services
 builder.Services.AddSignalR();
+
+// Add AI Service
+builder.Services.AddScoped<ai.lab.service.Services.Common.IAIService, ai.lab.service.Services.AIService>();
 
 // Add the background worker service
 builder.Services.AddHostedService<AiLabWorker>();
@@ -60,5 +62,5 @@ app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.MapHub<AIService>("/ollamaHub");
+app.MapHub<AIService>("/index");
 app.Run();
