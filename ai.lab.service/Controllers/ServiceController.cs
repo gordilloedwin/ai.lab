@@ -1,12 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace ai.lab.service.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
+[Produces("application/json")]
 public class ServiceController(ILogger<ServiceController> _logger) : ControllerBase
 {
+    /// <summary>
+    /// Gets the current status of the AI Lab service
+    /// </summary>
+    /// <returns>Service status information</returns>
     [HttpGet("status")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult GetStatus()
     {
         return Ok(new
@@ -18,7 +25,12 @@ public class ServiceController(ILogger<ServiceController> _logger) : ControllerB
         });
     }
 
+    /// <summary>
+    /// Gets the health status of the AI Lab service
+    /// </summary>
+    /// <returns>Health status information</returns>
     [HttpGet("health")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult GetHealth()
     {
         return Ok(new
@@ -29,7 +41,14 @@ public class ServiceController(ILogger<ServiceController> _logger) : ControllerB
         });
     }
 
+    /// <summary>
+    /// Logs a message through the service logger
+    /// </summary>
+    /// <param name="request">The log request containing the message</param>
+    /// <returns>Confirmation of logged message</returns>
     [HttpPost("log")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public IActionResult LogMessage([FromBody] LogRequest request)
     {
         if (string.IsNullOrEmpty(request?.Message))
@@ -42,7 +61,15 @@ public class ServiceController(ILogger<ServiceController> _logger) : ControllerB
     }
 }
 
+/// <summary>
+/// Request model for logging messages
+/// </summary>
 public class LogRequest
 {
+    /// <summary>
+    /// The message to be logged
+    /// </summary>
+    [Required(ErrorMessage = "Message is required")]
+    [StringLength(1000, ErrorMessage = "Message cannot exceed 1000 characters")]
     public string? Message { get; set; }
 }
