@@ -1,7 +1,5 @@
 using ai.lab.service.Services.Common;
-using ai.lab.service.Enum;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace ai.lab.service.Controllers;
 
@@ -82,70 +80,4 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
             });
         }
     }
-}
-
-/// <summary>
-/// Request model for AI generation
-/// </summary>
-public class AiGenerateRequest
-{
-    /// <summary>
-    /// The Ollama model to use for generation
-    /// </summary>
-    [Required(ErrorMessage = "Model is required")]
-    public OllamaModel Model { get; set; }
-
-    /// <summary>
-    /// The prompt text to be processed
-    /// </summary>
-    [Required(ErrorMessage = "Prompt is required")]
-    [StringLength(10000, ErrorMessage = "Prompt cannot exceed 10000 characters")]
-    public string Prompt { get; set; } = string.Empty;
-}
-
-/// <summary>
-/// Response model for successful AI generation
-/// </summary>
-public class AiGenerateResponse
-{
-    /// <summary>
-    /// The generated AI response
-    /// </summary>
-    public string? Response { get; set; }
-
-    /// <summary>
-    /// The model used for generation
-    /// </summary>
-    public string Model { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Timestamp of the response
-    /// </summary>
-    public DateTimeOffset Timestamp { get; set; }
-
-    /// <summary>
-    /// Indicates if the generation was successful
-    /// </summary>
-    public bool Success { get; set; }
-}
-
-/// <summary>
-/// Response model for AI generation errors
-/// </summary>
-public class AiErrorResponse
-{
-    /// <summary>
-    /// Error message
-    /// </summary>
-    public string Error { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Detailed error information
-    /// </summary>
-    public string Details { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Timestamp of the error
-    /// </summary>
-    public DateTimeOffset Timestamp { get; set; }
 }

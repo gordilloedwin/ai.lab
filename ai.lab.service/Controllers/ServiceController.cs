@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace ai.lab.service.Controllers;
 
@@ -59,17 +58,4 @@ public class ServiceController(ILogger<ServiceController> _logger) : ControllerB
         _logger.LogInformation("API Log: {Message}", request.Message);
         return Ok(new { Logged = true, Message = request.Message, Timestamp = DateTimeOffset.Now });
     }
-}
-
-/// <summary>
-/// Request model for logging messages
-/// </summary>
-public class LogRequest
-{
-    /// <summary>
-    /// The message to be logged
-    /// </summary>
-    [Required(ErrorMessage = "Message is required")]
-    [StringLength(1000, ErrorMessage = "Message cannot exceed 1000 characters")]
-    public string? Message { get; set; }
 }
