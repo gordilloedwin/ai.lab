@@ -4,15 +4,8 @@ namespace ai.lab.service.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ServiceController : ControllerBase
+public class ServiceController(ILogger<ServiceController> _logger) : ControllerBase
 {
-    private readonly ILogger<ServiceController> _logger;
-
-    public ServiceController(ILogger<ServiceController> _logger)
-    {
-        this._logger = _logger;
-    }
-
     [HttpGet("status")]
     public IActionResult GetStatus()
     {
