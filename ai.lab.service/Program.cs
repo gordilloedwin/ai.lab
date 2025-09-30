@@ -1,6 +1,7 @@
 using ai.lab.service;
 using ai.lab.service.Components;
 using ai.lab.service.Services;
+using ai.lab.service.Services.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,8 +34,8 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSignalR();
 
 // Add AI Service
-builder.Services.AddScoped<ai.lab.service.Services.Common.IAIService, ai.lab.service.Services.AIService>();
-
+builder.Services.AddScoped<IAIService, AIService>();
+ 
 // Add the background worker service
 builder.Services.AddHostedService<AiLabWorker>();
 
