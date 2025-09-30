@@ -21,13 +21,10 @@
     <Content Update="Components\Layout\MainLayout.razor">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Components\Layout\NavMenu.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Update="Components\Pages\Error.razor">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Components\Pages\Ollama.razor">
+    <Content Update="Components\Pages\Index.razor">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Components\Routes.razor">

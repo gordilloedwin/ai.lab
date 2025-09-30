@@ -20,7 +20,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSignalR();
 
 // Add the background worker service
-builder.Services.AddHostedService<Worker>();
+builder.Services.AddHostedService<AiLabWorker>();
 
 var app = builder.Build();
 
