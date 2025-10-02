@@ -1,3 +1,5 @@
+using ai.lab.service.Controllers;
+
 namespace ai.lab.service.Services.Common;
 
 public interface IAIService
@@ -11,14 +13,15 @@ public interface IAIService
     Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Sends a prompt to the specified Ollama model and returns the generated response asynchronously.
+    /// Sends a prompt to the specified Ollama model and asynchronously retrieves the generated AI response.
     /// </summary>
     /// <param name="model">The name of the Ollama model to use for generating the response. Cannot be null or empty.</param>
-    /// <param name="prompt">The input prompt to send to the model. Cannot be null or empty.</param>
-    /// <param name="context">An optional array of context tokens to provide conversational history or additional context for the model. May be null.</param>
+    /// <param name="prompt">The prompt text to send to the model for generation. Cannot be null or empty.</param>
+    /// <param name="chatId">The identifier for the chat session. Used to maintain conversation context. Cannot be null or empty.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the generated response as a string.</returns>
-    Task<string> CallOllamaAsync(string model, string prompt, int[]? context, CancellationToken cancellationToken = default);
+    /// <returns>A task that represents the asynchronous operation. The task result contains an <see cref="AiGenerateResponse"/>
+    /// with the generated response from the model.</returns>
+    Task<AiGenerateResponse> CallOllamaAsync(string model, string prompt, string chatId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Streams the generated response for a chat prompt as an asynchronous sequence of text segments.

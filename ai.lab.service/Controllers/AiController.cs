@@ -6,7 +6,7 @@ namespace ai.lab.service.Controllers;
 [ApiController]
 [Route("[controller]")]
 [Produces("application/json")]
-public class AiController(IOllamaSessionManager sessionManager, IAIService aIService, ILogger<AiController> logger) : ControllerBase
+public class AiController(IAIService aIService, ILogger<AiController> logger) : ControllerBase
 {
     /// <summary>
     /// Retrieves the list of available AI models from the underlying service.
@@ -95,11 +95,10 @@ public class AiController(IOllamaSessionManager sessionManager, IAIService aISer
                 return BadRequest("Prompt is required");
             }
 
-            string response = string.Empty;
             model = string.IsNullOrWhiteSpace(model) ? "deepseek-coder:6.7b" : model;
             var forwardedHeader = Request.Headers["X-Forwarded-For"].FirstOrDefault();
             var ipAddress = forwardedHeader ?? HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
-            response = await aIService.CallOllamaAsync(model, request.Prompt, sessionManager?.GetContext(ipAddress)?.ToArray() ?? [], cancellationToken);
+            var response = await aIService.CallOllamaAsync(model, request.Prompt, ipAddress, cancellationToken);
 
             if (string.IsNullOrWhiteSpace(response))
             {

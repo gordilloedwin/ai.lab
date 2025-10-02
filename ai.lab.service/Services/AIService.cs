@@ -1,8 +1,8 @@
+using ai.lab.service.Controllers;
 using ai.lab.service.Models.Ollama;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
@@ -49,37 +49,33 @@ public class AIService(IOllamaSessionManager sessionManager, ILogger<AIService> 
     }
 
     /// <inheritdoc/>
-    public async Task<string> CallOllamaAsync(string model, string prompt, int[]? context, CancellationToken cancellationToken = default)
+    public async Task<AiGenerateResponse> CallOllamaAsync(string model, string prompt, string chatId, CancellationToken cancellationToken = default)
     {
         try
         {
             var stream = false;
-            logger.LogInformation("Starting Ollama API call with model: {Model}, prompt length: {PromptLength}", 
-                model, prompt?.Length ?? 0);
-
             using var httpClient = new HttpClient();
             httpClient.Timeout = TimeSpan.FromMinutes(10);
-            
+            var context = sessionManager?.GetContext(chatId)?.ToArray() ?? [];
             var requestBody = new { model, prompt, stream, context };
-            var content = new StringContent(
-                System.Text.Json.JsonSerializer.Serialize(requestBody),
-                System.Text.Encoding.UTF8, "application/json");
-
-            logger.LogDebug("Sending request to Ollama API at http://localhost:11434/api/generate");
-
+            var content = new StringContent(JsonSerializer.Serialize(requestBody), System.Text.Encoding.UTF8, "application/json");
             var response = await httpClient.PostAsync("http://localhost:11434/api/generate", content, cancellationToken);
-            response.EnsureSuccessStatusCode();
-            
+            response.EnsureSuccessStatusCode();            
             var responseString = await response.Content.ReadAsStringAsync();
-            logger.LogDebug("Received response from Ollama API, response length: {ResponseLength}", responseString?.Length ?? 0);
 
-            if (string.IsNullOrEmpty(responseString))
+            var aiServiceResponse = new AiGenerateResponse()
             {
-                logger.LogWarning("Received empty response from Ollama API");
-                return string.Empty;
-            }
+                Model = model,
+                Timestamp = DateTimeOffset.Now,
+                Success = true
+            };
 
-            return responseString;
+            string result = string.Empty;
+            using var doc = JsonDocument.Parse(responseString);            
+            aiServiceResponse.Context = doc.RootElement.GetProperty("context").EnumerateArray().Select(x => x.GetInt32()).ToArray();
+            aiServiceResponse.Response = doc.RootElement.TryGetProperty("response", out var message) ? (message.GetString() ?? string.Empty) : string.Empty;
+            sessionManager?.StoreContext(chatId, aiServiceResponse?.Context?.ToList() ?? []); 
+            return aiServiceResponse ?? new AiGenerateResponse();
         }
         catch (HttpRequestException ex)
         {
