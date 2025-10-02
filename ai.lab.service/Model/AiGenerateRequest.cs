@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using ai.lab.service.Enum;
 
 namespace ai.lab.service.Controllers;
 
@@ -8,12 +7,6 @@ namespace ai.lab.service.Controllers;
 /// </summary>
 public class AiGenerateRequest
 {
-    /// <summary>
-    /// The Ollama model to use for generation
-    /// </summary>
-    [Required(ErrorMessage = "Model is required")]
-    public OllamaModel Model { get; set; }
-
     /// <summary>
     /// The prompt text to be processed
     /// </summary>

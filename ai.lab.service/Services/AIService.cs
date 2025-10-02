@@ -1,12 +1,50 @@
-using ai.lab.service.Enum;
+using ai.lab.service.Models.Ollama;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.SignalR;
+using System.Reflection;
 
 namespace ai.lab.service.Services;
 
 public class AIService(ILogger<AIService> logger) : Hub, IAIService
 {
-    public async Task GeneratePrompt(OllamaModel model, string prompt)
+    public async Task<List<string>> GetAvailableAiModels()
+    {
+        try
+        {
+            using var httpClient = new HttpClient();
+            httpClient.Timeout = TimeSpan.FromMinutes(5);
+            var response = await httpClient.GetAsync("http://localhost:11434/api/tags");
+
+            response.EnsureSuccessStatusCode();
+            var responseString = await response.Content.ReadAsStringAsync();
+            var dto = OllamaTagsResponse.FromJson(responseString);
+            var modelNames = dto?.Models.Select(m => m.Name).ToList() ?? new List<string>();
+
+            return modelNames;
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex.Message);
+            throw new InvalidOperationException($"Failed to connect to Ollama service: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException || ex.CancellationToken.IsCancellationRequested)
+        {
+            logger.LogError(ex.Message);
+            throw new TimeoutException("Ollama API request timed out", ex);
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            logger.LogError(ex.Message);
+            throw new InvalidOperationException($"Invalid JSON response from Ollama service: {ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex.Message);
+            throw new InvalidOperationException($"Unexpected error calling Ollama service: {ex.Message}", ex);
+        }
+    }
+
+    public async Task GeneratePrompt(string model, string prompt)
     {
         try
         {
@@ -72,7 +110,7 @@ public class AIService(ILogger<AIService> logger) : Hub, IAIService
         }
     }
 
-    public async Task<string> CallOllamaAsync(OllamaModel model, string prompt)
+    public async Task<string> CallOllamaAsync(string model, string prompt)
     {
         try
         {

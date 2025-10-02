@@ -16,7 +16,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
         Title = "AI Lab Service API",
-        Version = "v1.0.0",
+        Version = "2.0",        
         Description = "API for AI Lab Service",
         Contact = new Microsoft.OpenApi.Models.OpenApiContact
         {
@@ -48,7 +48,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseSwagger();
+app.UseSwagger(options => options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0);
 app.UseSwaggerUI(options =>
 {
     options.DocumentTitle = "AI Lab Service API Docs";

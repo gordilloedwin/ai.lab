@@ -9,15 +9,71 @@ namespace ai.lab.service.Controllers;
 public class AiController(IAIService aIService, ILogger<AiController> logger) : ControllerBase
 {
     /// <summary>
+    /// Retrieves the list of available AI models from the underlying service.
+    /// </summary>
+    /// <remarks>The response will have a status code of 200 (OK) and include the list of models on success.
+    /// If the underlying AI service cannot be reached, a 502 (Bad Gateway) status code is returned. If the request
+    /// times out, a 408 (Request Timeout) status code is returned. For other errors, a 500 (Internal Server Error)
+    /// status code is returned. Error responses include details in the response body to assist with
+    /// troubleshooting.</remarks>
+    /// <returns>An <see cref="IActionResult"/> containing a collection of available AI models if the request is successful.
+    /// Returns an error response with the appropriate HTTP status code if the service is unavailable, times out, or an
+    /// unexpected error occurs.</returns>
+    [HttpGet("models")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status502BadGateway)]
+    [ProducesResponseType(StatusCodes.Status408RequestTimeout)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetAvailableModels()
+    {
+        try
+        {
+            var models = await aIService.GetAvailableAiModels();
+            return Ok(models);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "HTTP error occurred while retrieving available models");
+            return StatusCode(StatusCodes.Status502BadGateway, new AiErrorResponse
+            {
+                Error = "Unable to connect to Ollama service",
+                Details = ex.Message,
+                Timestamp = DateTimeOffset.Now
+            });
+        }
+        catch (TaskCanceledException ex)
+        {
+            logger.LogError(ex, "Timeout occurred while retrieving available models");
+            return StatusCode(StatusCodes.Status408RequestTimeout, new AiErrorResponse
+            {
+                Error = "Request timeout while calling Ollama service",
+                Details = ex.Message,
+                Timestamp = DateTimeOffset.Now
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred while retrieving available models");
+            return StatusCode(StatusCodes.Status500InternalServerError, new AiErrorResponse
+            {
+                Error = "An unexpected error occurred",
+                Details = ex.Message,
+                Timestamp = DateTimeOffset.Now
+            });
+        }
+    }
+
+    /// <summary>
     /// Generates AI response using Ollama service
     /// </summary>
     /// <param name="request">The AI generation request containing model and prompt</param>
     /// <returns>AI generated response</returns>
     [HttpPost("generate")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status502BadGateway)]
+    [ProducesResponseType(StatusCodes.Status408RequestTimeout)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GenerateResponse([FromBody] AiGenerateRequest request)
+    public async Task<IActionResult> GenerateResponse([FromQuery]string model, [FromBody] AiGenerateRequest request)
     {
         try
         {
@@ -33,10 +89,12 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
                 return BadRequest("Prompt is required");
             }
 
-            logger.LogInformation("Generating AI response for model: {Model}, prompt length: {PromptLength}", 
-                request.Model, request.Prompt.Length);
+            model = string.IsNullOrWhiteSpace(model) ? "deepseek-coder:6.7b" : model;
 
-            var response = await aIService.CallOllamaAsync(request.Model, request.Prompt);
+            logger.LogInformation("Generating AI response for model: {Model}, prompt length: {PromptLength}", 
+                model, request.Prompt.Length);
+
+            var response = await aIService.CallOllamaAsync(model, request.Prompt);
 
             logger.LogInformation("AI response generated successfully, response length: {ResponseLength}", 
                 response?.Length ?? 0);
@@ -44,7 +102,7 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
             return Ok(new AiGenerateResponse
             {
                 Response = response,
-                Model = request.Model.ToString(),
+                Model = model,
                 Timestamp = DateTimeOffset.Now,
                 Success = true
             });
