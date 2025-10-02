@@ -11,17 +11,6 @@ public interface IAIService
     Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Generates a prompt using the specified model and input text asynchronously.
-    /// </summary>
-    /// <param name="model">The identifier of the model to use for prompt generation. Cannot be null or empty.</param>
-    /// <param name="prompt">The input text to be processed by the model. Cannot be null.</param>
-    /// <param name="context">An optional array of context token IDs to provide additional information to the model. May be null if no context
-    /// is required.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A task that represents the asynchronous prompt generation operation.</returns>
-    Task GeneratePrompt(string model, string prompt, int[]? context, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Sends a prompt to the specified Ollama model and returns the generated response asynchronously.
     /// </summary>
     /// <param name="model">The name of the Ollama model to use for generating the response. Cannot be null or empty.</param>
@@ -30,4 +19,18 @@ public interface IAIService
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the generated response as a string.</returns>
     Task<string> CallOllamaAsync(string model, string prompt, int[]? context, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Streams the generated response for a chat prompt as an asynchronous sequence of text segments.
+    /// </summary>
+    /// <remarks>The returned sequence yields response segments as they become available, allowing the caller
+    /// to process the output incrementally. The method does not buffer the entire response before yielding results. If
+    /// the operation is canceled via the provided token, the sequence will end early.</remarks>
+    /// <param name="chatId">The unique identifier of the chat session for which the response is generated. Cannot be null or empty.</param>
+    /// <param name="model">The name of the model to use for generating the response. Cannot be null or empty.</param>
+    /// <param name="prompt">The prompt text to send to the model for generating a response. Cannot be null.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the streaming operation.</param>
+    /// <returns>An asynchronous sequence of strings representing segments of the generated response. The sequence completes when
+    /// the full response has been streamed.</returns>
+    IAsyncEnumerable<string> StreamResponse(string chatId, string model, string prompt, CancellationToken cancellationToken = default);
 }

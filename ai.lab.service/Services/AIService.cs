@@ -47,72 +47,6 @@ public class AIService(ILogger<AIService> logger) : Hub, IAIService
     }
 
     /// <inheritdoc/>
-    public async Task GeneratePrompt(string model, string prompt, int[]? context, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            logger.LogInformation("Starting prompt generation via SignalR. Model: {Model}, prompt length: {PromptLength}", model, prompt?.Length ?? 0);
-
-            if (string.IsNullOrWhiteSpace(prompt))
-            {
-                logger.LogWarning("Prompt generation called with null or empty prompt");
-                await Clients.Caller.SendAsync("ReceiveError", new 
-                { 
-                    Error = "Invalid Input", 
-                    Message = "Prompt cannot be null or empty",
-                    Timestamp = DateTimeOffset.Now 
-                }, cancellationToken);
-                return;
-            }
-
-            var result = await CallOllamaAsync(model, prompt, context, cancellationToken);
-            
-            logger.LogDebug("Sending response to SignalR caller, response length: {ResponseLength}", 
-                result?.Length ?? 0);
-            
-            await Clients.Caller.SendAsync("ReceiveResponse", result);
-            
-            logger.LogInformation("Successfully sent response to SignalR caller");
-        }
-        catch (InvalidOperationException ex)
-        {
-            logger.LogError(ex, "Service error occurred during prompt generation. Model: {Model}, Prompt length: {PromptLength}", 
-                model, prompt?.Length ?? 0);
-            
-            await Clients.Caller.SendAsync("ReceiveError", new 
-            { 
-                Error = "Service Error", 
-                Message = ex.Message,
-                Timestamp = DateTimeOffset.Now 
-            });
-        }
-        catch (TimeoutException ex)
-        {
-            logger.LogError(ex, "Timeout occurred during prompt generation. Model: {Model}, Prompt length: {PromptLength}", 
-                model, prompt?.Length ?? 0);
-            
-            await Clients.Caller.SendAsync("ReceiveError", new 
-            { 
-                Error = "Request Timeout", 
-                Message = "The AI service took too long to respond. Please try again.",
-                Timestamp = DateTimeOffset.Now 
-            });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Unexpected error occurred during prompt generation. Model: {Model}, Prompt length: {PromptLength}", 
-                model, prompt?.Length ?? 0);
-            
-            await Clients.Caller.SendAsync("ReceiveError", new 
-            { 
-                Error = "Unexpected Error", 
-                Message = "An unexpected error occurred. Please try again later.",
-                Timestamp = DateTimeOffset.Now 
-            });
-        }
-    }
-
-    /// <inheritdoc/>
     public async Task<string> CallOllamaAsync(string model, string prompt, int[]? context, CancellationToken cancellationToken = default)
     {
         try
@@ -171,7 +105,8 @@ public class AIService(ILogger<AIService> logger) : Hub, IAIService
         }
     }
 
-    public static async IAsyncEnumerable<string> StreamResponse(string model, string prompt, List<int>? context)
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<string> StreamResponse(string chatId, string model, string prompt, CancellationToken cancellationToken = default)
     {
         var psi = new ProcessStartInfo
         {
