@@ -171,8 +171,11 @@ public class AIService(IOllamaSessionManager sessionManager, ILogger<AIService> 
             if (parseSuccess && chunk != null && chunkContext != null)
             {
                 sessionManager?.StoreContext(chatId, chunkContext);
+                await Task.Delay(30, cancellationToken);
                 yield return chunk;
             }
         }
+
+        yield return "[[DONE]]";
     }
 }
