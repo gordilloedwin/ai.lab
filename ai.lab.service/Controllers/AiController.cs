@@ -1,6 +1,5 @@
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace ai.lab.service.Controllers;
 
@@ -74,7 +73,7 @@ public class AiController(IOllamaSessionManager sessionManager, IAIService aISer
     [ProducesResponseType(StatusCodes.Status502BadGateway)]
     [ProducesResponseType(StatusCodes.Status408RequestTimeout)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GenerateResponse([FromQuery]string model, [FromBody] AiGenerateRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> GenerateResponse([FromBody] AiGenerateRequest request, [FromQuery] string model = "", CancellationToken cancellationToken = default)
     {
         try
         {
