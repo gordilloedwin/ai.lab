@@ -73,7 +73,13 @@ public class AiController(IOllamaSessionManager sessionManager, IAIService aISer
     [ProducesResponseType(StatusCodes.Status502BadGateway)]
     [ProducesResponseType(StatusCodes.Status408RequestTimeout)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GenerateResponse([FromBody] AiGenerateRequest request, [FromQuery] string model = "", CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GenerateResponse
+    (
+        [FromBody] AiGenerateRequest request,
+        [FromQuery] bool showContext = false,
+        [FromQuery] string model = "",
+        CancellationToken cancellationToken = default
+    )    
     {
         try
         {
@@ -121,7 +127,7 @@ public class AiController(IOllamaSessionManager sessionManager, IAIService aISer
                     aiServiceResponse.Response = message.GetString() ?? string.Empty;
                 }
 
-                aiServiceResponse.Context = doc.RootElement.GetProperty("context").EnumerateArray().Select(x => x.GetInt32()).ToArray();
+                aiServiceResponse.Context = showContext ? doc.RootElement.GetProperty("context").EnumerateArray().Select(x => x.GetInt32()).ToArray() : null;
                 sessionManager?.StoreContext(ipAddress, aiServiceResponse?.Context?.ToList() ?? []);
                 return Ok(aiServiceResponse);
             }

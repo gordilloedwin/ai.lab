@@ -1,6 +1,8 @@
 using ai.lab.service.Models.Ollama;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.SignalR;
+using System.Diagnostics;
+using System.Text.Json;
 
 namespace ai.lab.service.Services;
 
@@ -49,8 +51,7 @@ public class AIService(ILogger<AIService> logger) : Hub, IAIService
     {
         try
         {
-            logger.LogInformation("Starting prompt generation via SignalR. Model: {Model}, prompt length: {PromptLength}", 
-                model, prompt?.Length ?? 0);
+            logger.LogInformation("Starting prompt generation via SignalR. Model: {Model}, prompt length: {PromptLength}", model, prompt?.Length ?? 0);
 
             if (string.IsNullOrWhiteSpace(prompt))
             {
@@ -169,4 +170,41 @@ public class AIService(ILogger<AIService> logger) : Hub, IAIService
             throw new InvalidOperationException($"Unexpected error calling Ollama service: {ex.Message}", ex);
         }
     }
+
+    public static async IAsyncEnumerable<string> StreamResponse(string model, string prompt, List<int>? context)
+    {
+        var psi = new ProcessStartInfo
+        {
+            FileName = "ollama",
+            Arguments = $"run {model}",
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        using var process = Process.Start(psi)!;
+        await process.StandardInput.WriteLineAsync(JsonSerializer.Serialize(new
+        {
+            model,
+            prompt,
+            stream = true,
+            context
+        }));
+        process.StandardInput.Close();
+
+        while (!process.StandardOutput.EndOfStream)
+        {
+            var line = await process.StandardOutput.ReadLineAsync();
+            if (line is null) continue;
+
+            var json = JsonDocument.Parse(line);
+            var chunk = json.RootElement.GetProperty("response").GetString();
+            context = json.RootElement.GetProperty("context").EnumerateArray().Select(x => x.GetInt32()).ToList();
+
+            yield return chunk!;
+        }
+    }
+
+
 }
