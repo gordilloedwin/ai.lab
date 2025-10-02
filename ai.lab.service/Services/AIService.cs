@@ -129,21 +129,50 @@ public class AIService(IOllamaSessionManager sessionManager, ILogger<AIService> 
             stream = true,
             context
         }));
+
         process.StandardInput.Close();
 
-        while (!process.StandardOutput.EndOfStream)
+        while (!process.StandardOutput.EndOfStream && !cancellationToken.IsCancellationRequested)
         {
             var line = await process.StandardOutput.ReadLineAsync();
             if (line is null) continue;
 
-            var json = JsonDocument.Parse(line);
-            var chunk = json.RootElement.GetProperty("response").GetString();
-            var chunkContext = json.RootElement.GetProperty("context").EnumerateArray().Select(x => x.GetInt32()).ToList();
-            sessionManager?.StoreContext(chatId, chunkContext);
 
-            yield return chunk!;
+            if (cancellationToken.IsCancellationRequested)
+            {
+                try 
+                {
+                    process.Kill();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error killing Ollama process for chatId: {ChatId}", chatId);
+                }
+                
+                yield break;
+            }
+
+            string? chunk = null;
+            List<int>? chunkContext = null;
+            bool parseSuccess = false;
+
+            try
+            {
+                var json = JsonDocument.Parse(line);
+                chunk = json.RootElement.GetProperty("response").GetString();
+                chunkContext = json.RootElement.GetProperty("context").EnumerateArray().Select(x => x.GetInt32()).ToList();
+                parseSuccess = true;
+            }
+            catch (JsonException ex)
+            {
+                logger.LogError(ex, "Failed to parse JSON from Ollama stream: {Line}", line);
+            }
+
+            if (parseSuccess && chunk != null && chunkContext != null)
+            {
+                sessionManager?.StoreContext(chatId, chunkContext);
+                yield return chunk;
+            }
         }
     }
-
-
 }
