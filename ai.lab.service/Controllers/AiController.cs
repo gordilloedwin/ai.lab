@@ -100,7 +100,7 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
             var ipAddress = forwardedHeader ?? HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
             var response = await aIService.CallOllamaAsync(model, request.Prompt, ipAddress, cancellationToken);
 
-            if (string.IsNullOrWhiteSpace(response))
+            if (!response.Success)
             {
                 logger.LogWarning("Received empty response from Ollama service");
                 return StatusCode(StatusCodes.Status502BadGateway, new AiErrorResponse
@@ -110,26 +110,15 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
                     Timestamp = DateTimeOffset.Now
                 });
             }
-            else
+            
+            return Ok(new AiGenerateResponse
             {
-                var aiServiceResponse = new AiGenerateResponse()
-                {
-                    Model = model,
-                    Timestamp = DateTimeOffset.Now,
-                    Success = true
-                };
-
-                string result = string.Empty;
-                using var doc = System.Text.Json.JsonDocument.Parse(response);
-                if (doc.RootElement.TryGetProperty("response", out var message))
-                {
-                    aiServiceResponse.Response = message.GetString() ?? string.Empty;
-                }
-
-                aiServiceResponse.Context = showContext ? doc.RootElement.GetProperty("context").EnumerateArray().Select(x => x.GetInt32()).ToArray() : null;
-                sessionManager?.StoreContext(ipAddress, aiServiceResponse?.Context?.ToList() ?? []);
-                return Ok(aiServiceResponse);
-            }
+                Response = response.Response,
+                Model = response.Model,
+                Timestamp = response.Timestamp,
+                Success = response.Success,
+                Context = showContext ? response.Context : null
+            });
         }
         catch (HttpRequestException ex)
         {
