@@ -1,12 +1,13 @@
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ai.lab.service.Controllers;
 
 [ApiController]
 [Route("[controller]")]
 [Produces("application/json")]
-public class AiController(IAIService aIService, ILogger<AiController> logger) : ControllerBase
+public class AiController(IOllamaSessionManager sessionManager, IAIService aIService, ILogger<AiController> logger) : ControllerBase
 {
     /// <summary>
     /// Retrieves the list of available AI models from the underlying service.
@@ -24,11 +25,11 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
     [ProducesResponseType(StatusCodes.Status502BadGateway)]
     [ProducesResponseType(StatusCodes.Status408RequestTimeout)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetAvailableModels()
+    public async Task<IActionResult> GetAvailableModels(CancellationToken cancellationToken)
     {
         try
         {
-            var models = await aIService.GetAvailableAiModels();
+            var models = await aIService.GetAvailableAiModels(cancellationToken);
             return Ok(models);
         }
         catch (HttpRequestException ex)
@@ -73,7 +74,7 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
     [ProducesResponseType(StatusCodes.Status502BadGateway)]
     [ProducesResponseType(StatusCodes.Status408RequestTimeout)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GenerateResponse([FromQuery]string model, [FromBody] AiGenerateRequest request)
+    public async Task<IActionResult> GenerateResponse([FromQuery]string model, [FromBody] AiGenerateRequest request, CancellationToken cancellationToken)
     {
         try
         {
@@ -89,23 +90,42 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
                 return BadRequest("Prompt is required");
             }
 
+            string response = string.Empty;
             model = string.IsNullOrWhiteSpace(model) ? "deepseek-coder:6.7b" : model;
+            var forwardedHeader = Request.Headers["X-Forwarded-For"].FirstOrDefault();
+            var ipAddress = forwardedHeader ?? HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
+            response = await aIService.CallOllamaAsync(model, request.Prompt, sessionManager?.GetContext(ipAddress)?.ToArray() ?? [], cancellationToken);
 
-            logger.LogInformation("Generating AI response for model: {Model}, prompt length: {PromptLength}", 
-                model, request.Prompt.Length);
-
-            var response = await aIService.CallOllamaAsync(model, request.Prompt);
-
-            logger.LogInformation("AI response generated successfully, response length: {ResponseLength}", 
-                response?.Length ?? 0);
-
-            return Ok(new AiGenerateResponse
+            if (string.IsNullOrWhiteSpace(response))
             {
-                Response = response,
-                Model = model,
-                Timestamp = DateTimeOffset.Now,
-                Success = true
-            });
+                logger.LogWarning("Received empty response from Ollama service");
+                return StatusCode(StatusCodes.Status502BadGateway, new AiErrorResponse
+                {
+                    Error = "Empty response from Ollama service",
+                    Details = "The Ollama service returned an empty response.",
+                    Timestamp = DateTimeOffset.Now
+                });
+            }
+            else
+            {
+                var aiServiceResponse = new AiGenerateResponse()
+                {
+                    Model = model,
+                    Timestamp = DateTimeOffset.Now,
+                    Success = true
+                };
+
+                string result = string.Empty;
+                using var doc = System.Text.Json.JsonDocument.Parse(response);
+                if (doc.RootElement.TryGetProperty("response", out var message))
+                {
+                    aiServiceResponse.Response = message.GetString() ?? string.Empty;
+                }
+
+                aiServiceResponse.Context = doc.RootElement.GetProperty("context").EnumerateArray().Select(x => x.GetInt32()).ToArray();
+                sessionManager?.StoreContext(ipAddress, aiServiceResponse?.Context?.ToList() ?? []);
+                return Ok(aiServiceResponse);
+            }
         }
         catch (HttpRequestException ex)
         {

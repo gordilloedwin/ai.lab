@@ -24,4 +24,9 @@ public class AiGenerateResponse
     /// Indicates if the generation was successful
     /// </summary>
     public bool Success { get; set; }
+
+    /// <summary>
+    /// Gets or sets the context information associated with the current operation.
+    /// </summary>
+    public int[]? Context { get; set; }
 }

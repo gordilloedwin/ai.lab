@@ -1,19 +1,19 @@
 using ai.lab.service.Models.Ollama;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.SignalR;
-using System.Reflection;
 
 namespace ai.lab.service.Services;
 
 public class AIService(ILogger<AIService> logger) : Hub, IAIService
 {
-    public async Task<List<string>> GetAvailableAiModels()
+    /// <inheritdoc/>
+    public async Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default)
     {
         try
         {
             using var httpClient = new HttpClient();
             httpClient.Timeout = TimeSpan.FromMinutes(5);
-            var response = await httpClient.GetAsync("http://localhost:11434/api/tags");
+            var response = await httpClient.GetAsync("http://localhost:11434/api/tags", cancellationToken);
 
             response.EnsureSuccessStatusCode();
             var responseString = await response.Content.ReadAsStringAsync();
@@ -44,7 +44,8 @@ public class AIService(ILogger<AIService> logger) : Hub, IAIService
         }
     }
 
-    public async Task GeneratePrompt(string model, string prompt)
+    /// <inheritdoc/>
+    public async Task GeneratePrompt(string model, string prompt, int[]? context, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -59,11 +60,11 @@ public class AIService(ILogger<AIService> logger) : Hub, IAIService
                     Error = "Invalid Input", 
                     Message = "Prompt cannot be null or empty",
                     Timestamp = DateTimeOffset.Now 
-                });
+                }, cancellationToken);
                 return;
             }
 
-            var result = await CallOllamaAsync(model, prompt);
+            var result = await CallOllamaAsync(model, prompt, context, cancellationToken);
             
             logger.LogDebug("Sending response to SignalR caller, response length: {ResponseLength}", 
                 result?.Length ?? 0);
@@ -110,47 +111,38 @@ public class AIService(ILogger<AIService> logger) : Hub, IAIService
         }
     }
 
-    public async Task<string> CallOllamaAsync(string model, string prompt)
+    /// <inheritdoc/>
+    public async Task<string> CallOllamaAsync(string model, string prompt, int[]? context, CancellationToken cancellationToken = default)
     {
         try
         {
+            var stream = false;
             logger.LogInformation("Starting Ollama API call with model: {Model}, prompt length: {PromptLength}", 
                 model, prompt?.Length ?? 0);
 
             using var httpClient = new HttpClient();
-            httpClient.Timeout = TimeSpan.FromMinutes(5); // Set reasonable timeout
+            httpClient.Timeout = TimeSpan.FromMinutes(10);
             
-            var requestBody = new { model, prompt };
+            var requestBody = new { model, prompt, stream, context };
             var content = new StringContent(
                 System.Text.Json.JsonSerializer.Serialize(requestBody),
                 System.Text.Encoding.UTF8, "application/json");
 
             logger.LogDebug("Sending request to Ollama API at http://localhost:11434/api/generate");
 
-            var response = await httpClient.PostAsync("http://localhost:11434/api/generate", content);
+            var response = await httpClient.PostAsync("http://localhost:11434/api/generate", content, cancellationToken);
             response.EnsureSuccessStatusCode();
             
             var responseString = await response.Content.ReadAsStringAsync();
-            logger.LogDebug("Received response from Ollama API, response length: {ResponseLength}", 
-                responseString?.Length ?? 0);
+            logger.LogDebug("Received response from Ollama API, response length: {ResponseLength}", responseString?.Length ?? 0);
 
             if (string.IsNullOrEmpty(responseString))
             {
                 logger.LogWarning("Received empty response from Ollama API");
-                return "No response from Ollama.";
+                return string.Empty;
             }
 
-            using var doc = System.Text.Json.JsonDocument.Parse(responseString);
-            if (doc.RootElement.TryGetProperty("response", out var message))
-            {
-                var result = message.GetString() ?? string.Empty;
-                logger.LogInformation("Successfully processed Ollama response, result length: {ResultLength}", 
-                    result.Length);
-                return result;
-            }
-
-            logger.LogWarning("No 'response' property found in Ollama API response");
-            return "No response from Ollama.";
+            return responseString;
         }
         catch (HttpRequestException ex)
         {

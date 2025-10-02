@@ -1,7 +1,10 @@
 using ai.lab.service;
 using ai.lab.service.Components;
+using ai.lab.service.Managers;
 using ai.lab.service.Services;
 using ai.lab.service.Services.Common;
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,16 +29,27 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// configure fowarders for session handling
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.KnownProxies.Add(IPAddress.Parse("127.0.0.1"));
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;    
+});
+
 // Add Blazor Server services
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Add Memory Cache services
+builder.Services.AddMemoryCache();
 
 // Add SignalR services
 builder.Services.AddSignalR();
 
 // Add AI Service
 builder.Services.AddScoped<IAIService, AIService>();
- 
+builder.Services.AddScoped<IOllamaSessionManager, OllamaSessionManager>();
+
 // Add the background worker service
 builder.Services.AddHostedService<AiLabWorker>();
 
@@ -66,6 +80,11 @@ app.MapControllers();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 app.MapHub<AIService>("/index");
 app.Run();
