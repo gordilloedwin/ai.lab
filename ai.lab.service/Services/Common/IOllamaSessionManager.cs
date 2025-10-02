@@ -2,9 +2,9 @@
 
 public interface IOllamaSessionManager
 {
-    void StoreContext(string ipAddress, List<int> context);
+    void StoreContext(string chatId, List<int> context);
 
-    List<int>? GetContext(string ipAddress);
+    List<int>? GetContext(string chatId);
 
-    void ClearContext(string ipAddress);
+    void ClearContext(string chatId);
 }
