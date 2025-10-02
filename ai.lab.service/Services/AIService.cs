@@ -63,6 +63,19 @@ public class AIService(IOllamaSessionManager sessionManager, ILogger<AIService> 
             response.EnsureSuccessStatusCode();            
             var responseString = await response.Content.ReadAsStringAsync();
 
+            if (string.IsNullOrWhiteSpace(responseString))
+            {
+                logger.LogWarning("Ollama API returned empty response. Model: {Model}, Prompt length: {PromptLength}", model, prompt?.Length ?? 0);
+                return new AiGenerateResponse
+                {
+                    Model = model,
+                    Timestamp = DateTimeOffset.Now,
+                    Success = false,
+                    Response = string.Empty,
+                    Context = context
+                };
+            }
+
             var aiServiceResponse = new AiGenerateResponse()
             {
                 Model = model,
