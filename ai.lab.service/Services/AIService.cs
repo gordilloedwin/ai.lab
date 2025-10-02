@@ -2,11 +2,13 @@ using ai.lab.service.Models.Ollama;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
+using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace ai.lab.service.Services;
 
-public class AIService(ILogger<AIService> logger) : Hub, IAIService
+public class AIService(IOllamaSessionManager sessionManager, ILogger<AIService> logger) : Hub, IAIService
 {
     /// <inheritdoc/>
     public async Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default)
@@ -106,7 +108,7 @@ public class AIService(ILogger<AIService> logger) : Hub, IAIService
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> StreamResponse(string chatId, string model, string prompt, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> StreamResponse(string chatId, string model, string prompt, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var psi = new ProcessStartInfo
         {
@@ -119,6 +121,7 @@ public class AIService(ILogger<AIService> logger) : Hub, IAIService
         };
 
         using var process = Process.Start(psi)!;
+        var context = sessionManager?.GetContext(chatId)?.ToArray() ?? [];
         await process.StandardInput.WriteLineAsync(JsonSerializer.Serialize(new
         {
             model,
@@ -135,7 +138,8 @@ public class AIService(ILogger<AIService> logger) : Hub, IAIService
 
             var json = JsonDocument.Parse(line);
             var chunk = json.RootElement.GetProperty("response").GetString();
-            context = json.RootElement.GetProperty("context").EnumerateArray().Select(x => x.GetInt32()).ToList();
+            var chunkContext = json.RootElement.GetProperty("context").EnumerateArray().Select(x => x.GetInt32()).ToList();
+            sessionManager?.StoreContext(chatId, chunkContext);
 
             yield return chunk!;
         }
