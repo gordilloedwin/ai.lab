@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "X:\\Github\\gordilloedwin\\ai.lab\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\options\\ailaboptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\options\\ailaboptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\options\\databaseoptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\options\\databaseoptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -95,6 +99,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "AILabOptions.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Options\\AILabOptions.cs",
+              "RelativeDocumentMoniker": "ai.lab.service\\Options\\AILabOptions.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Options\\AILabOptions.cs",
+              "RelativeToolTip": "ai.lab.service\\Options\\AILabOptions.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-06T10:00:46.442Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "DatabaseOptions.cs",
               "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Options\\DatabaseOptions.cs",
               "RelativeDocumentMoniker": "ai.lab.service\\Options\\DatabaseOptions.cs",
@@ -107,7 +124,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "OtelOptions.cs",
               "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Options\\OtelOptions.cs",
               "RelativeDocumentMoniker": "ai.lab.service\\Options\\OtelOptions.cs",
@@ -120,7 +137,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "OllamaSessionManager.cs",
               "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\OllamaSessionManager.cs",
               "RelativeDocumentMoniker": "ai.lab.service\\Managers\\OllamaSessionManager.cs",
@@ -133,7 +150,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "SemanticsService.cs",
               "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\SemanticsService.cs",
               "RelativeDocumentMoniker": "ai.lab.service\\Services\\SemanticsService.cs",
@@ -146,7 +163,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "DatabaseService.cs",
               "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\DatabaseService.cs",
               "RelativeDocumentMoniker": "ai.lab.service\\Services\\DatabaseService.cs",
