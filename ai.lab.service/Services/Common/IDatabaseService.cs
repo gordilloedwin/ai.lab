@@ -2,4 +2,5 @@
 
 public interface IDatabaseService
 {
+    Task TestDataBaseAccessAsync(CancellationToken cancellationToken = default);
 }

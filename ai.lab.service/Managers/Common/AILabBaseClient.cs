@@ -8,17 +8,18 @@ public abstract class AILabBaseClient(ILogger logger, IHttpClientFactory httpCli
     private bool disposedValue;
 
     private HttpClient? _httpClient;    
-    protected abstract string HttpClientName { get; }
 
-    public HttpClient HttpClient => _httpClient ??= httpClientFactory.CreateClient(HttpClientName);
+    public static string? HttpClientName { get; }
 
-    public IAsyncPolicy<HttpResponseMessage> GetRetryPolicy() => HttpPolicyExtensions
+    public HttpClient HttpClient => _httpClient ??= httpClientFactory.CreateClient(HttpClientName ?? string.Empty);
+
+    public static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy() => HttpPolicyExtensions
         .HandleTransientHttpError()
         .WaitAndRetryAsync(5, retryAttempt =>
             TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))
         );
 
-    public IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy() => HttpPolicyExtensions
+    public static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy() => HttpPolicyExtensions
             .HandleTransientHttpError()
             .CircuitBreakerAsync(
                 handledEventsAllowedBeforeBreaking: 3,

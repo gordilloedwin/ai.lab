@@ -1,5 +1,4 @@
 using ai.lab.service.Model.Outbound;
-using ai.lab.service.Models.Ollama;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
@@ -8,60 +7,24 @@ using System.Text.Json;
 
 namespace ai.lab.service.Services;
 
-public class AIService(IContextSessionManager sessionManager, ILogger<AIService> logger) : Hub, IAIService
+public sealed class AIService
+(
+    ILogger<AIService> logger,
+    IOllamaClient ollamaClient,
+    IContextSessionManager sessionManager
+) : Hub, IAIService
 {
     /// <inheritdoc/>
-    public async Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            using var httpClient = new HttpClient();
-            httpClient.Timeout = TimeSpan.FromMinutes(5);
-            var response = await httpClient.GetAsync("http://localhost:11434/api/tags", cancellationToken);
-
-            response.EnsureSuccessStatusCode();
-            var responseString = await response.Content.ReadAsStringAsync();
-            var dto = OllamaTagsResponse.FromJson(responseString);
-            var modelNames = dto?.Models.Select(m => m.Name).ToList() ?? new List<string>();
-
-            return modelNames;
-        }
-        catch (HttpRequestException ex)
-        {
-            logger.LogError(ex.Message);
-            throw new InvalidOperationException($"Failed to connect to Ollama service: {ex.Message}", ex);
-        }
-        catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException || ex.CancellationToken.IsCancellationRequested)
-        {
-            logger.LogError(ex.Message);
-            throw new TimeoutException("Ollama API request timed out", ex);
-        }
-        catch (System.Text.Json.JsonException ex)
-        {
-            logger.LogError(ex.Message);
-            throw new InvalidOperationException($"Invalid JSON response from Ollama service: {ex.Message}", ex);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex.Message);
-            throw new InvalidOperationException($"Unexpected error calling Ollama service: {ex.Message}", ex);
-        }
-    }
+    public async Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default) => 
+        await ollamaClient.GetAvailableAiModels(cancellationToken);
 
     /// <inheritdoc/>
-    public async Task<AiGenerateResponse> CallOllamaAsync(string model, string prompt, string chatId, CancellationToken cancellationToken = default)
+    public async Task<AiGenerateResponse> GenerateResponseFromApiAsync(string model, string prompt, string chatId, CancellationToken cancellationToken = default)
     {
         try
         {
-            var stream = false;
-            using var httpClient = new HttpClient();
-            httpClient.Timeout = TimeSpan.FromMinutes(10);
             var context = sessionManager?.GetContext(chatId)?.ToArray() ?? [];
-            var requestBody = new { model, prompt, stream, context };
-            var content = new StringContent(JsonSerializer.Serialize(requestBody), System.Text.Encoding.UTF8, "application/json");
-            var response = await httpClient.PostAsync("http://localhost:11434/api/generate", content, cancellationToken);
-            response.EnsureSuccessStatusCode();            
-            var responseString = await response.Content.ReadAsStringAsync();
+            var responseString = await ollamaClient.CallOllamaApiAsync(model, prompt, context, cancellationToken);
 
             if (string.IsNullOrWhiteSpace(responseString))
             {
@@ -102,7 +65,7 @@ public class AIService(IContextSessionManager sessionManager, ILogger<AIService>
                 model, prompt?.Length ?? 0);
             throw new TimeoutException("Ollama API request timed out", ex);
         }
-        catch (System.Text.Json.JsonException ex)
+        catch (JsonException ex)
         {
             logger.LogError(ex, "JSON parsing error while processing Ollama API response. Model: {Model}, Prompt length: {PromptLength}", 
                 model, prompt?.Length ?? 0);

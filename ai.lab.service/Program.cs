@@ -1,5 +1,6 @@
 using ai.lab.service;
 using ai.lab.service.Components;
+using ai.lab.service.HealthCheck;
 using ai.lab.service.Managers;
 using ai.lab.service.Services;
 using ai.lab.service.Services.Common;
@@ -9,15 +10,18 @@ using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Use Kestrel as the web server
 builder.WebHost.UseKestrel();
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.KnownProxies.Add(IPAddress.Parse("127.0.0.1"));
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
 
-builder.Services.AddHttpClient(OllamaClientManager.ClientName)
+builder.Services.AddHttpClient(OllamaClientManager.HttpClientName)
     .AddPolicyHandler(Policy.WrapAsync(OllamaClientManager.GetRetryPolicy(), OllamaClientManager.GetCircuitBreakerPolicy()));
-builder.Services.AddHttpClient("QdrantClient")
-    .AddPolicyHandler(Policy.WrapAsync(GetRetryPolicy(), GetCircuitBreakerPolicy()));
+builder.Services.AddHttpClient(QdrantClientManager.HttpClientName)
+    .AddPolicyHandler(Policy.WrapAsync(QdrantClientManager.GetRetryPolicy(), QdrantClientManager.GetCircuitBreakerPolicy()));
 
-// Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -35,33 +39,24 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// configure fowarders for session handling
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    options.KnownProxies.Add(IPAddress.Parse("127.0.0.1"));
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;    
-});
-
-// Add Blazor Server services
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Add Memory Cache services
-builder.Services.AddMemoryCache();
-
-// Add SignalR services
 builder.Services.AddSignalR();
-
-// Add AI Service
+builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IAIService, AIService>();
+builder.Services.AddScoped<IDatabaseService, DatabaseService>();
+builder.Services.AddScoped<IOllamaClient, OllamaClientManager>();
+builder.Services.AddScoped<IQdrantClient, QdrantClientManager>();
+//builder.Services.AddScoped<IEmbeddingManager, EmbeddingManager>();
 builder.Services.AddScoped<IContextSessionManager, ContextSessionManager>();
-
-// Add the background worker service
 builder.Services.AddHostedService<AiLabWorker>();
 
-var app = builder.Build();
+builder.Services.AddHealthChecks()
+    .AddCheck<CacheHealthCheck>("cache_health_check")
+    .AddCheck<DatabaseHealthCheck>("database_health_check");
 
-// Configure the HTTP request pipeline
+var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -78,13 +73,11 @@ app.UseSwaggerUI(options =>
 
 app.UseStaticFiles();
 app.UseAntiforgery();
-
 app.UseAuthorization();
 app.MapControllers();
-
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
+app.MapHealthChecks("/healthcheck");
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto

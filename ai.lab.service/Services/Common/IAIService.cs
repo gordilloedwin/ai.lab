@@ -21,7 +21,7 @@ public interface IAIService
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains an <see cref="AiGenerateResponse"/>
     /// with the generated response from the model.</returns>
-    Task<AiGenerateResponse> CallOllamaAsync(string model, string prompt, string chatId, CancellationToken cancellationToken = default);
+    Task<AiGenerateResponse> GenerateResponseFromApiAsync(string model, string prompt, string chatId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Streams the generated response for a chat prompt as an asynchronous sequence of text segments.

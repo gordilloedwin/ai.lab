@@ -1,18 +1,15 @@
-﻿using ai.lab.service.Options;
-using ai.lab.service.Services.Common;
+﻿using ai.lab.service.Services.Common;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Options;
 using System.Diagnostics;
 
 namespace ai.lab.service.HealthCheck;
 
 public class DatabaseHealthCheck
 (
-    ILogger<DatabaseHealthCheck> logger,
-    IDatabaseService databaseService,
     IMemoryCache memoryCache,
-    IOptionsMonitor<DatabaseOptions> eventApiOptions
+    IDatabaseService databaseService,
+    ILogger<DatabaseHealthCheck> logger
 ) : IHealthCheck
 {
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = new CancellationToken())
@@ -23,9 +20,9 @@ public class DatabaseHealthCheck
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
-                await databaseService.TestMasterDataAccessAsync(cancellationToken);
+                await databaseService.TestDataBaseAccessAsync(cancellationToken);
                 stopwatch.Stop();
-                if (stopwatch.ElapsedMilliseconds >= (eventApiOptions?.CurrentValue?.MasterDataAccessHealthyTimeoutSeconds ?? 60) * 1000)
+                if (stopwatch.ElapsedMilliseconds >= 500)
                 {
                     logger.LogWarning(
                         "Database access took too long: {ElapsedMilliseconds} ms. " +

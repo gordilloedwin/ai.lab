@@ -99,7 +99,7 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
             model = string.IsNullOrWhiteSpace(model) ? "deepseek-coder:6.7b" : model;
             var forwardedHeader = Request.Headers["X-Forwarded-For"].FirstOrDefault();
             var ipAddress = forwardedHeader ?? HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
-            var response = await aIService.CallOllamaAsync(model, request.Prompt, ipAddress, cancellationToken);
+            var response = await aIService.GenerateResponseFromApiAsync(model, request.Prompt, ipAddress, cancellationToken);
 
             if (!response.Success)
             {
