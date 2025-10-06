@@ -3,7 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace ai.lab.service.Managers;
 
-public class OllamaSessionManager(IMemoryCache cache) : IOllamaSessionManager
+public class ContextSessionManager(IMemoryCache cache) : IContextSessionManager
 {
     private readonly int maxTokens = 2048;
     private readonly TimeSpan _sessionTimeout = TimeSpan.FromMinutes(30);

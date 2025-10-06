@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace ai.lab.service.Services;
 
-public class AIService(IOllamaSessionManager sessionManager, ILogger<AIService> logger) : Hub, IAIService
+public class AIService(IContextSessionManager sessionManager, ILogger<AIService> logger) : Hub, IAIService
 {
     /// <inheritdoc/>
     public async Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default)

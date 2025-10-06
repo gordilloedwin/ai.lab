@@ -4,12 +4,18 @@ using ai.lab.service.Managers;
 using ai.lab.service.Services;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.HttpOverrides;
+using Polly;
 using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Use Kestrel as the web server
 builder.WebHost.UseKestrel();
+
+builder.Services.AddHttpClient(OllamaClientManager.ClientName)
+    .AddPolicyHandler(Policy.WrapAsync(OllamaClientManager.GetRetryPolicy(), OllamaClientManager.GetCircuitBreakerPolicy()));
+builder.Services.AddHttpClient("QdrantClient")
+    .AddPolicyHandler(Policy.WrapAsync(GetRetryPolicy(), GetCircuitBreakerPolicy()));
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -48,7 +54,7 @@ builder.Services.AddSignalR();
 
 // Add AI Service
 builder.Services.AddScoped<IAIService, AIService>();
-builder.Services.AddScoped<IOllamaSessionManager, OllamaSessionManager>();
+builder.Services.AddScoped<IContextSessionManager, ContextSessionManager>();
 
 // Add the background worker service
 builder.Services.AddHostedService<AiLabWorker>();

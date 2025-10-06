@@ -1,6 +1,6 @@
 ﻿namespace ai.lab.service.Services.Common;
 
-public interface IOllamaSessionManager
+public interface IContextSessionManager
 {
     void StoreContext(string chatId, List<int> context);
 
