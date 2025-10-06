@@ -1,3 +1,4 @@
+using ai.lab.service.Model.Inbound;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ai.lab.service.Controllers;

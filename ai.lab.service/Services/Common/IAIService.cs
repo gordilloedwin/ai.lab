@@ -1,4 +1,4 @@
-using ai.lab.service.Controllers;
+using ai.lab.service.Model.Outbound;
 
 namespace ai.lab.service.Services.Common;
 

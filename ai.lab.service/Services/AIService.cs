@@ -1,4 +1,4 @@
-using ai.lab.service.Controllers;
+using ai.lab.service.Model.Outbound;
 using ai.lab.service.Models.Ollama;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.SignalR;

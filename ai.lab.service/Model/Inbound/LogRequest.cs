@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ai.lab.service.Controllers;
+namespace ai.lab.service.Model.Inbound;
 
 /// <summary>
 /// Request model for logging messages

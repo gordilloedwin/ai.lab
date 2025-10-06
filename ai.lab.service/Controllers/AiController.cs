@@ -1,3 +1,4 @@
+using ai.lab.service.Model.Inbound;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.Mvc;
 

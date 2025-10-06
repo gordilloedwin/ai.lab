@@ -1,4 +1,4 @@
-namespace ai.lab.service.Controllers;
+namespace ai.lab.service.Model.Outbound;
 
 /// <summary>
 /// Response model for AI generation errors
