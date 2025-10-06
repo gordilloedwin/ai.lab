@@ -3,24 +3,28 @@
   "WorkspaceRootPath": "X:\\Github\\gordilloedwin\\ai.lab\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\managers\\qdrantclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\managers\\qdrantclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\managers\\ollamaclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\managers\\ollamaclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\managers\\common\\ailabbaseclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\managers\\common\\ailabbaseclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\services\\common\\iqdrantclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\services\\common\\iqdrantclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\services\\common\\iollamaclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\services\\common\\iollamaclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\services\\common\\iailabhttpclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\services\\common\\iailabhttpclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\managers\\qdrantclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\managers\\qdrantclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\managers\\ollamaclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\managers\\ollamaclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,7 +34,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 15,
+          "SelectedChildIndex": 19,
           "Children": [
             {
               "$type": "Bookmark",
@@ -94,7 +98,33 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
+              "Title": "IQdrantClient.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\Common\\IQdrantClient.cs",
+              "RelativeDocumentMoniker": "ai.lab.service\\Services\\Common\\IQdrantClient.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\Common\\IQdrantClient.cs",
+              "RelativeToolTip": "ai.lab.service\\Services\\Common\\IQdrantClient.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-06T20:27:32.676Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AILabBaseClient.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\Common\\AILabBaseClient.cs",
+              "RelativeDocumentMoniker": "ai.lab.service\\Managers\\Common\\AILabBaseClient.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\Common\\AILabBaseClient.cs",
+              "RelativeToolTip": "ai.lab.service\\Managers\\Common\\AILabBaseClient.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-06T20:26:58.939Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "QdrantClientManager.cs",
               "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\QdrantClientManager.cs",
               "RelativeDocumentMoniker": "ai.lab.service\\Managers\\QdrantClientManager.cs",
@@ -107,46 +137,33 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "IOllamaClient.cs",
               "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\Common\\IOllamaClient.cs",
               "RelativeDocumentMoniker": "ai.lab.service\\Services\\Common\\IOllamaClient.cs",
               "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\Common\\IOllamaClient.cs",
               "RelativeToolTip": "ai.lab.service\\Services\\Common\\IOllamaClient.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAA3AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-06T19:17:18.292Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "IAILabHttpClient.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\Common\\IAILabHttpClient.cs",
-              "RelativeDocumentMoniker": "ai.lab.service\\Services\\Common\\IAILabHttpClient.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\Common\\IAILabHttpClient.cs",
-              "RelativeToolTip": "ai.lab.service\\Services\\Common\\IAILabHttpClient.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAEAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-06T19:16:53.849Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
               "Title": "OllamaClientManager.cs",
               "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\OllamaClientManager.cs",
               "RelativeDocumentMoniker": "ai.lab.service\\Managers\\OllamaClientManager.cs",
               "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\OllamaClientManager.cs",
               "RelativeToolTip": "ai.lab.service\\Managers\\OllamaClientManager.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAgAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-06T19:13:31.98Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
               "Title": "Program.cs",
               "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Program.cs",
               "RelativeDocumentMoniker": "ai.lab.service\\Program.cs",

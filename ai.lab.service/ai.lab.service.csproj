@@ -47,10 +47,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="HealthCheck\" />
-    <Folder Include="RetryPolicy\" />
-    <Folder Include="Otel\" />
-  </ItemGroup>
 </Project>
