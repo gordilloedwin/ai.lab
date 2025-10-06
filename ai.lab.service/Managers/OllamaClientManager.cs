@@ -1,8 +1,10 @@
 ﻿using ai.lab.service.Managers.Common;
+using ai.lab.service.Model.Semantics;
 using ai.lab.service.Models.Ollama;
 using ai.lab.service.Options;
 using ai.lab.service.Services.Common;
 using Microsoft.Extensions.Options;
+using System.Net.Http;
 using System.Text.Json;
 
 namespace ai.lab.service.Managers;
@@ -68,12 +70,13 @@ public class OllamaClientManager : AILabBaseClient, IOllamaClient
             var response = await HttpClient.PostAsync($"{_options.CurrentValue.OllamaUrl}/api/generate", content, cancellationToken);
             response.EnsureSuccessStatusCode();
             var responseString = await response.Content.ReadAsStringAsync();
+
             if (string.IsNullOrWhiteSpace(responseString))
             {
                 _logger.LogWarning("Ollama API returned empty response. Model: {Model}, Prompt length: {PromptLength}", model, prompt?.Length ?? 0);
                 return string.Empty;
             }
-            
+
             return responseString;
         }
         catch (HttpRequestException ex)
@@ -89,6 +92,39 @@ public class OllamaClientManager : AILabBaseClient, IOllamaClient
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error occurred while calling Ollama API. Model: {Model}, Prompt length: {PromptLength}", model, prompt?.Length ?? 0);
+            throw new InvalidOperationException($"Unexpected error calling Ollama service: {ex.Message}", ex);
+        }
+    }
+
+    public async Task<EmbeddingResponse> GenerateEmbeddingResponseAsync(string model, string chunkText, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var embeddingRequest = new
+            {
+                model = model ?? "llama3",
+                prompt = chunkText
+            };
+
+            HttpClient.Timeout = TimeSpan.FromMinutes(10);
+            var ollamaResponse = await HttpClient.PostAsJsonAsync($"{_options.CurrentValue.OllamaUrl}/api/embeddings", embeddingRequest);
+            ollamaResponse.EnsureSuccessStatusCode();
+            var embeddingResult = await ollamaResponse.Content.ReadFromJsonAsync<EmbeddingResponse>();
+            return embeddingResult ?? new EmbeddingResponse { embedding = Array.Empty<float>() };
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP error occurred while generating embedding. Model: {Model}, ChunkText length: {ChunkTextLength}", model, chunkText?.Length ?? 0);
+            throw new InvalidOperationException($"Failed to connect to Ollama service: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException || ex.CancellationToken.IsCancellationRequested)
+        {
+            _logger.LogError(ex, "Timeout occurred while generating embedding. Model: {Model}, ChunkText length: {ChunkTextLength}", model, chunkText?.Length ?? 0);
+            throw new TimeoutException("Ollama API request timed out", ex);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occurred while generating embedding. Model: {Model}, ChunkText length: {ChunkTextLength}", model, chunkText?.Length ?? 0);
             throw new InvalidOperationException($"Unexpected error calling Ollama service: {ex.Message}", ex);
         }
     }

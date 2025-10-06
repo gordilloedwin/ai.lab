@@ -1,4 +1,6 @@
-﻿namespace ai.lab.service.Services.Common;
+﻿using ai.lab.service.Model.Semantics;
+
+namespace ai.lab.service.Services.Common;
 
 public interface IOllamaClient
 {
@@ -21,4 +23,14 @@ public interface IOllamaClient
     /// <returns>A task that represents the asynchronous operation. The task result contains the generated response from the
     /// model as a string.</returns>
     Task<string> CallOllamaApiAsync(string model, string prompt, int[]? context, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Generates an embedding response for the specified text chunk using the given model asynchronously.
+    /// </summary>
+    /// <param name="model">The name or identifier of the embedding model to use for generating the response. Cannot be null or empty.</param>
+    /// <param name="chunkText">The text content to be embedded. Cannot be null or empty.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains an <see cref="EmbeddingResponse"/>
+    /// with the generated embedding data.</returns>
+    Task<EmbeddingResponse> GenerateEmbeddingResponseAsync(string model, string chunkText, CancellationToken cancellationToken = default);
 }
