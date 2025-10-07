@@ -2,6 +2,8 @@
 
 public class AILabOptions
 {
+    public bool SaveChunksToMariaDb { get; set; } = false;
+
     public int MaxRagChunksPerPrompt { get; set; } = 10;
 
     public string QdrantCollectionName { get; set; } = "ai_lab";
