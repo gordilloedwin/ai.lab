@@ -16,6 +16,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var meters = new OtelMetrics("XRS.Reporting.DriverLogService");
+var jwtOptions = builder.Configuration.GetSection("JwtOptions").Get<JwtOptions>() ?? new JwtOptions();
 var otelOptions = builder.Configuration.GetSection("OtelOptions").Get<OtelOptions>() ?? new OtelOptions();
 
 builder.WebHost.UseKestrel();
@@ -29,6 +30,10 @@ builder.Services.AddHttpClient(OllamaClientManager.HttpClientName)
     .AddPolicyHandler(Policy.WrapAsync(OllamaClientManager.GetRetryPolicy(), OllamaClientManager.GetCircuitBreakerPolicy()));
 builder.Services.AddHttpClient(QdrantClientManager.HttpClientName)
     .AddPolicyHandler(Policy.WrapAsync(QdrantClientManager.GetRetryPolicy(), QdrantClientManager.GetCircuitBreakerPolicy()));
+
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
+builder.Services.Configure<AILabOptions>(builder.Configuration.GetSection("AILabOptions"));
+builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection("DatabaseOptions"));    
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -59,9 +64,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = config["Jwt:Issuer"],
-            ValidAudience = config["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Secret"]!))
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key))
         };
 
         options.Events = new JwtBearerEvents
@@ -78,8 +83,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             }
         };
     });
-
-builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection("DatabaseOptions"));
 
 builder.Services.AddSignalR();
 builder.Services.AddMemoryCache();
