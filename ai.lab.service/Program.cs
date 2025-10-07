@@ -2,16 +2,21 @@ using ai.lab.service;
 using ai.lab.service.Components;
 using ai.lab.service.HealthCheck;
 using ai.lab.service.Managers;
+using ai.lab.service.Metrics;
+using ai.lab.service.Options;
 using ai.lab.service.Services;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Polly;
 using System.Net;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+var meters = new OtelMetrics("XRS.Reporting.DriverLogService");
+var otelOptions = builder.Configuration.GetSection("OtelOptions").Get<OtelOptions>() ?? new OtelOptions();
 
 builder.WebHost.UseKestrel();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -74,18 +79,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection("DatabaseOptions"));
+
 builder.Services.AddSignalR();
 builder.Services.AddMemoryCache();
-builder.Services.AddScoped<IAIService, AIService>();
-builder.Services.AddScoped<IDatabaseService, DatabaseService>();
-builder.Services.AddScoped<IOllamaClient, OllamaClientManager>();
-builder.Services.AddScoped<IQdrantClient, QdrantClientManager>();
-builder.Services.AddScoped<IEmbeddingManager, EmbeddingManager>();
-builder.Services.AddScoped<IContextSessionManager, ContextSessionManager>();
+builder.Services.AddSingleton(meters);
+builder.Services.TryAddScoped<IAIService, AIService>();
+builder.Services.TryAddSingleton<ITokenService, TokenService>();
+builder.Services.TryAddScoped<IDatabaseService, DatabaseService>();
+builder.Services.TryAddScoped<IOllamaClient, OllamaClientManager>();
+builder.Services.TryAddScoped<IQdrantClient, QdrantClientManager>();
+builder.Services.TryAddScoped<IEmbeddingManager, EmbeddingManager>();
+builder.Services.TryAddScoped<IContextSessionManager, ContextSessionManager>();
+builder.Services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
 builder.Services.AddHostedService<AiLabWorker>();
 
 builder.Services.AddHealthChecks()
     .AddCheck<CacheHealthCheck>("cache_health_check")
+    .AddCheck<OllamaHealthCheck>("ollama_health_check")
     .AddCheck<DatabaseHealthCheck>("database_health_check");
 
 var app = builder.Build();
