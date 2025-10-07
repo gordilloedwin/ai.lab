@@ -17,7 +17,7 @@ public sealed class AIService
     IEmbeddingManager embeddingManager,
     IOptionsMonitor<AILabOptions> options,
     IContextSessionManager sessionManager
-) : Hub, IAIService
+) : IAIService
 {
     /// <inheritdoc/>
     public async Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default) => 
