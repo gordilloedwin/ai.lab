@@ -3,7 +3,7 @@ using Polly.Extensions.Http;
 
 namespace ai.lab.service.Managers.Common;
 
-public abstract class AILabBaseClient(ILogger logger, IHttpClientFactory httpClientFactory) : IDisposable
+public abstract class AILabBaseClient(IHttpClientFactory httpClientFactory) : IDisposable
 {
     private bool disposedValue;
 
@@ -26,16 +26,16 @@ public abstract class AILabBaseClient(ILogger logger, IHttpClientFactory httpCli
                 durationOfBreak: TimeSpan.FromSeconds(30),
                 onBreak: (outcome, breakDelay) =>
                 {
-                    logger.LogWarning("Circuit broken due to: {Reason}. Breaking for {Delay} seconds.",
+                    Console.WriteLine("Circuit broken due to: {Reason}. Breaking for {Delay} seconds.",
                         outcome.Exception?.Message ?? outcome.Result?.StatusCode.ToString(), breakDelay.TotalSeconds);
                 },
                 onReset: () =>
                 {
-                    logger.LogInformation("Circuit reset.");
+                    Console.WriteLine("Circuit reset.");
                 },
                 onHalfOpen: () =>
                 {
-                    logger.LogInformation("Circuit half-open. Testing...");
+                    Console.WriteLine("Circuit half-open. Testing...");
                 }
             );
 
