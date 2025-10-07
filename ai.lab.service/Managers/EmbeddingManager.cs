@@ -1,6 +1,7 @@
-﻿using ai.lab.service.Services.Common;
+﻿using ai.lab.service.Model.Embeddings;
+using ai.lab.service.Services.Common;
 
-namespace ai.lab.service.Services;
+namespace ai.lab.service.Managers;
 
 public class EmbeddingManager
 (
@@ -9,7 +10,7 @@ public class EmbeddingManager
     ILogger<EmbeddingManager> logger
 ) : IEmbeddingManager
 {
-    public async Task<List<string>> SearchChunksAsync(string model, string prompt, int topK = 5, CancellationToken cancellationToken = default)
+    public async Task<QdrantSearchResponse> SearchChunksAsync(string model, string prompt, int topK = 5, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -19,15 +20,10 @@ public class EmbeddingManager
             if (queryVector == null || queryVector.Length == 0)
             {
                 logger.LogError("Failed to get embedding for prompt");
-                return new List<string>();
+                return new QdrantSearchResponse();
             }
 
-            var qdrantSearchResponse = await qdrantClient.QdrantSearchResponseAsync(queryVector, topK, cancellationToken);
-
-            var matchedChunks = qdrantSearchResponse?.result?
-                .Select(r => r.payload != null && r.payload.TryGetValue("text", out var textObj) ? textObj?.ToString() : null)?
-                .Where(text => !string.IsNullOrEmpty(text))?.Select(text => text!)?.ToList() ?? [];
-            return matchedChunks;
+            return await qdrantClient.QdrantSearchResponseAsync(queryVector, topK, cancellationToken);
         }
         catch (Exception ex)
         {

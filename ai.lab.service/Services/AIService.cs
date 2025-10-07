@@ -1,6 +1,9 @@
+using ai.lab.service.Managers.Common;
 using ai.lab.service.Model.Outbound;
+using ai.lab.service.Options;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -11,6 +14,8 @@ public sealed class AIService
 (
     ILogger<AIService> logger,
     IOllamaClient ollamaClient,
+    IEmbeddingManager embeddingManager,
+    IOptionsMonitor<AILabOptions> options,
     IContextSessionManager sessionManager
 ) : Hub, IAIService
 {
@@ -74,6 +79,36 @@ public sealed class AIService
         catch (Exception ex)
         {
             logger.LogError(ex, "Unexpected error occurred while calling Ollama API. Model: {Model}, Prompt length: {PromptLength}", 
+                model, prompt?.Length ?? 0);
+            throw new InvalidOperationException($"Unexpected error calling Ollama service: {ex.Message}", ex);
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<AiGenerateResponse> GenerateResponseFromRagAsync(string model, string prompt, string chatId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var embeddings = await embeddingManager.SearchChunksAsync(model, prompt, options.CurrentValue.MaxRagChunksPerPrompt, cancellationToken);
+            var qdrantContextWindow = new QdrantContextBuilder(embeddings).BuildContextWindow();
+            string finalPrompt = $"Use the following context to answer the question.\n\nContext:\n{qdrantContextWindow}\n\nQuestion:\n{prompt}\n\nAnswer:";
+            return await GenerateResponseFromApiAsync(model, finalPrompt, chatId, cancellationToken);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "HTTP error occurred while calling Ollama or Qdrant service for RAG. Model: {Model}, Prompt length: {PromptLength}", 
+                model, prompt?.Length ?? 0);
+            throw new InvalidOperationException($"Failed to connect to Ollama or Qdrant service: {ex.Message}", ex);
+        }
+        catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException || ex.CancellationToken.IsCancellationRequested)
+        {
+            logger.LogError(ex, "Timeout occurred while calling Ollama or Qdrant service for RAG. Model: {Model}, Prompt length: {PromptLength}", 
+                model, prompt?.Length ?? 0);
+            throw new TimeoutException("Ollama API request timed out", ex);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected error occurred while calling Ollama or Qdrant service for RAG. Model: {Model}, Prompt length: {PromptLength}", 
                 model, prompt?.Length ?? 0);
             throw new InvalidOperationException($"Unexpected error calling Ollama service: {ex.Message}", ex);
         }

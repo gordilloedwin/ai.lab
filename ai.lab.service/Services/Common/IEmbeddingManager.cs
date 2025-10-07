@@ -1,18 +1,19 @@
-﻿namespace ai.lab.service.Services.Common;
+﻿using ai.lab.service.Model.Embeddings;
+
+namespace ai.lab.service.Services.Common;
 
 public interface IEmbeddingManager
 {
     /// <summary>
-    /// Asynchronously searches for relevant text chunks using the specified model and prompt, returning up to the
-    /// specified number of top results.
+    /// Performs a semantic search for relevant chunks using the specified model and prompt.
     /// </summary>
-    /// <param name="model">The name or identifier of the model to use for searching. Cannot be null or empty.</param>
-    /// <param name="prompt">The input prompt or query used to find relevant chunks. Cannot be null or empty.</param>
+    /// <param name="model">The name of the model to use for the semantic search. Cannot be null or empty.</param>
+    /// <param name="prompt">The input prompt or query to search for relevant chunks. Cannot be null or empty.</param>
     /// <param name="topK">The maximum number of top matching chunks to return. Must be greater than zero. The default is 5.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the search operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains a list of strings representing the
-    /// top matching chunks. The list will be empty if no relevant chunks are found.</returns>
-    Task<List<string>> SearchChunksAsync(string model, string prompt, int topK = 5, CancellationToken cancellationToken = default);
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="QdrantSearchResponse"/>
+    /// with the search results.</returns>
+    Task<QdrantSearchResponse> SearchChunksAsync(string model, string prompt, int topK = 5, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously uploads a text chunk to the specified model, associating it with a unique chunk identifier, file

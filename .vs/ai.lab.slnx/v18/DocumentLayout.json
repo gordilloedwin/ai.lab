@@ -3,12 +3,20 @@
   "WorkspaceRootPath": "X:\\Github\\gordilloedwin\\ai.lab\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\services\\embeddingmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\services\\embeddingmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\managers\\embeddingmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\managers\\embeddingmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\services\\aiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\services\\aiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\options\\ailaboptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\options\\ailaboptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\managers\\qdrantclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\managers\\qdrantclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -24,13 +32,39 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "EmbeddingManager.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\EmbeddingManager.cs",
-              "RelativeDocumentMoniker": "ai.lab.service\\Services\\EmbeddingManager.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\EmbeddingManager.cs",
-              "RelativeToolTip": "ai.lab.service\\Services\\EmbeddingManager.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\EmbeddingManager.cs",
+              "RelativeDocumentMoniker": "ai.lab.service\\Managers\\EmbeddingManager.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\EmbeddingManager.cs",
+              "RelativeToolTip": "ai.lab.service\\Managers\\EmbeddingManager.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAACXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T01:01:07.289Z",
+              "WhenOpened": "2025-10-07T01:56:32.531Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "QdrantClientManager.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\QdrantClientManager.cs",
+              "RelativeDocumentMoniker": "ai.lab.service\\Managers\\QdrantClientManager.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\QdrantClientManager.cs",
+              "RelativeToolTip": "ai.lab.service\\Managers\\QdrantClientManager.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAGIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-07T01:48:43.4Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AILabOptions.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Options\\AILabOptions.cs",
+              "RelativeDocumentMoniker": "ai.lab.service\\Options\\AILabOptions.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Options\\AILabOptions.cs",
+              "RelativeToolTip": "ai.lab.service\\Options\\AILabOptions.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-07T01:42:41.722Z",
               "EditorCaption": ""
             },
             {
@@ -96,14 +130,14 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Program.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Program.cs",
-              "RelativeDocumentMoniker": "ai.lab.service\\Program.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Program.cs",
-              "RelativeToolTip": "ai.lab.service\\Program.cs",
-              "ViewState": "AgIAABUAAAAAAAAAAAAAADIAAAAuAAAAAAAAAA==",
+              "Title": "AIService.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\AIService.cs",
+              "RelativeDocumentMoniker": "ai.lab.service\\Services\\AIService.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\AIService.cs",
+              "RelativeToolTip": "ai.lab.service\\Services\\AIService.cs",
+              "ViewState": "AgIAAEgAAAAAAAAAAAAowFwAAAA9AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T01:00:44.707Z",
+              "WhenOpened": "2025-10-07T01:25:29.452Z",
               "EditorCaption": ""
             }
           ]
