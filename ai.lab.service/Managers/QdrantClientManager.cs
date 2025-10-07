@@ -1,5 +1,5 @@
 ﻿using ai.lab.service.Managers.Common;
-using ai.lab.service.Model.Semantics;
+using ai.lab.service.Model.Embeddings;
 using ai.lab.service.Options;
 using ai.lab.service.Services.Common;
 using Microsoft.Extensions.Options;
@@ -62,6 +62,7 @@ public class QdrantClientManager
             {
             var qdrantUrl = options.CurrentValue.QdrantUrl;
             var collectionName = options.CurrentValue.QdrantCollectionName;
+
             var searchRequest = new
             {
                 vector = vector,

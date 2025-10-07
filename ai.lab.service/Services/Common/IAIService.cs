@@ -24,6 +24,21 @@ public interface IAIService
     Task<AiGenerateResponse> GenerateResponseFromApiAsync(string model, string prompt, string chatId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Generates a response using Retrieval-Augmented Generation (RAG) based on the specified model and prompt within
+    /// the context of a chat session.
+    /// </summary>
+    /// <remarks>This method performs retrieval-augmented generation, which may involve accessing external
+    /// knowledge sources to enhance the response. The operation is asynchronous and may be cancelled using the provided
+    /// cancellation token.</remarks>
+    /// <param name="model">The name or identifier of the AI model to use for generating the response. Cannot be null or empty.</param>
+    /// <param name="prompt">The input prompt or user message to be processed by the model. Cannot be null or empty.</param>
+    /// <param name="chatId">The unique identifier of the chat session in which the response is generated. Cannot be null or empty.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains an <see cref="AiGenerateResponse"/>
+    /// with the generated response data.</returns>
+    Task<AiGenerateResponse> GenerateResponseFromRagAsync(string model, string prompt, string chatId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Streams the generated response for a chat prompt as an asynchronous sequence of text segments.
     /// </summary>
     /// <remarks>The returned sequence yields response segments as they become available, allowing the caller

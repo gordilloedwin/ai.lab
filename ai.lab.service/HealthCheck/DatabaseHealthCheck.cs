@@ -27,7 +27,7 @@ public class DatabaseHealthCheck
                     logger.LogWarning(
                         "Database access took too long: {ElapsedMilliseconds} ms. " +
                         "Entering degraded state for this node [XRS.Reporting.DriverLogService]", stopwatch.ElapsedMilliseconds);
-                    return HealthCheckResult.Degraded("xrs_master ping slow!");
+                    return HealthCheckResult.Degraded("database ping slow!");
                 }
 
                 logger.LogInformation("Database access took {ElapsedMilliseconds} ms", stopwatch.ElapsedMilliseconds);
@@ -35,12 +35,12 @@ public class DatabaseHealthCheck
                     new MemoryCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10), Size = 1, Priority = CacheItemPriority.Low });
             }
 
-            return HealthCheckResult.Healthy("xrs_master ping successful!");
+            return HealthCheckResult.Healthy("database ping successful!");
         }
         catch (Exception e)
         {
             logger.LogCritical(e, "HealthCheck Database Access failure: {ErrorMessage}", e.Message);
-            return HealthCheckResult.Unhealthy("xrs_master ping failed!");
+            return HealthCheckResult.Unhealthy("database ping failed!");
         }
     }
 }

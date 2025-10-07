@@ -1,4 +1,4 @@
-﻿namespace ai.lab.service.Model.Semantics;
+﻿namespace ai.lab.service.Model.Embeddings;
 
 public class QdrantSearchResponse
 {

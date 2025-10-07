@@ -1,4 +1,4 @@
-﻿using ai.lab.service.Model.Semantics;
+﻿using ai.lab.service.Model.Embeddings;
 
 namespace ai.lab.service.Services.Common;
 

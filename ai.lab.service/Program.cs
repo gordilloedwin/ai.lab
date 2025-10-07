@@ -48,7 +48,7 @@ builder.Services.AddScoped<IAIService, AIService>();
 builder.Services.AddScoped<IDatabaseService, DatabaseService>();
 builder.Services.AddScoped<IOllamaClient, OllamaClientManager>();
 builder.Services.AddScoped<IQdrantClient, QdrantClientManager>();
-//builder.Services.AddScoped<IEmbeddingManager, EmbeddingManager>();
+builder.Services.AddScoped<IEmbeddingManager, EmbeddingManager>();
 builder.Services.AddScoped<IContextSessionManager, ContextSessionManager>();
 builder.Services.AddHostedService<AiLabWorker>();
 

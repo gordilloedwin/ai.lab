@@ -1,5 +1,5 @@
 ﻿using ai.lab.service.Managers.Common;
-using ai.lab.service.Model.Semantics;
+using ai.lab.service.Model.Embeddings;
 using ai.lab.service.Models.Ollama;
 using ai.lab.service.Options;
 using ai.lab.service.Services.Common;
