@@ -145,9 +145,8 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 app.UseAuthorization();
 app.MapControllers();
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
 app.MapHealthChecks("/healthcheck");
+app.MapRazorComponents<ai.lab.service.Components.App>().AddInteractiveServerRenderMode();
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
