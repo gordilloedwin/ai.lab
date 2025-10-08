@@ -7,7 +7,6 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace ai.lab.service.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("[controller]")]
 [Produces("application/json")]
@@ -24,6 +23,7 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
     /// <returns>An <see cref="IActionResult"/> containing a collection of available AI models if the request is successful.
     /// Returns an error response with the appropriate HTTP status code if the service is unavailable, times out, or an
     /// unexpected error occurs.</returns>
+    [Authorize]
     [HttpGet("models")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status502BadGateway)]
@@ -76,6 +76,7 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
     /// </summary>
     /// <param name="request">The AI generation request containing model and prompt</param>
     /// <returns>AI generated response</returns>
+    [Authorize]
     [HttpPost("generate")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -179,6 +180,7 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>An <see cref="IActionResult"/> containing the generated AI response. Returns HTTP 200 (OK) with the response on
     /// success, or an error response with the appropriate status code if the request is invalid or an error occurs.</returns>
+    [Authorize]
     [HttpPost("rag")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status502BadGateway)]

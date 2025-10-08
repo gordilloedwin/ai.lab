@@ -14,8 +14,8 @@ using Polly;
 using System.Net;
 using System.Text;
 
+var meters = new OtelMetrics("AI.Lab.Service");
 var builder = WebApplication.CreateBuilder(args);
-var meters = new OtelMetrics("XRS.Reporting.DriverLogService");
 var jwtOptions = builder.Configuration.GetSection("JwtOptions").Get<JwtOptions>() ?? new JwtOptions();
 var otelOptions = builder.Configuration.GetSection("OtelOptions").Get<OtelOptions>() ?? new OtelOptions();
 
@@ -42,7 +42,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "AI Lab Service API",
-        Version = "2.0",        
+        Version = "v1",        
         Description = "API for AI Lab Service",
         Contact = new OpenApiContact
         {
@@ -53,11 +53,12 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
         Name = "Authorization",
-        In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
-        Scheme = "Bearer"
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer' followed by your JWT token. Example: Bearer abc123"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -69,9 +70,12 @@ builder.Services.AddSwaggerGen(c =>
                 {
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
-                }
+                },
+                Scheme = "Bearer",
+                Name = "Authorization",
+                In = ParameterLocation.Header
             },
-            Array.Empty<string>()
+            new List<string>()
         }
     });
 });
@@ -132,7 +136,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
 
-app.UseSwagger(options => options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0);
+app.UseSwagger(options => options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0);
 app.UseSwaggerUI(options =>
 {
     options.DocumentTitle = "AI Lab Service API Docs";

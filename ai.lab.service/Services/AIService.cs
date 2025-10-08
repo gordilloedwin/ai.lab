@@ -24,11 +24,11 @@ public sealed class AIService
         await ollamaClient.GetAvailableAiModels(cancellationToken);
 
     /// <inheritdoc/>
-    public async Task<AiGenerateResponse> GenerateResponseFromApiAsync(string model, string prompt, string chatId, CancellationToken cancellationToken = default)
+    public async Task<AiGenerateResponse> GenerateResponseFromApiAsync(string model, string prompt, string email, CancellationToken cancellationToken = default)
     {
         try
         {
-            var context = sessionManager?.GetContext(chatId)?.ToArray() ?? [];
+            var context = sessionManager?.GetContext(email)?.ToArray() ?? [];
             var responseString = await ollamaClient.CallOllamaApiAsync(model, prompt, context, cancellationToken);
 
             if (string.IsNullOrWhiteSpace(responseString))
@@ -55,7 +55,7 @@ public sealed class AIService
             using var doc = JsonDocument.Parse(responseString);            
             aiServiceResponse.Context = doc.RootElement.GetProperty("context").EnumerateArray().Select(x => x.GetInt32()).ToArray();
             aiServiceResponse.Response = doc.RootElement.TryGetProperty("response", out var message) ? (message.GetString() ?? string.Empty) : string.Empty;
-            sessionManager?.StoreContext(chatId, aiServiceResponse?.Context?.ToList() ?? []); 
+            sessionManager?.StoreContext(email, aiServiceResponse?.Context?.ToList() ?? []); 
             return aiServiceResponse ?? new AiGenerateResponse();
         }
         catch (HttpRequestException ex)
@@ -85,14 +85,14 @@ public sealed class AIService
     }
 
     /// <inheritdoc/>
-    public async Task<AiGenerateResponse> GenerateResponseFromRagAsync(string model, string prompt, string chatId, CancellationToken cancellationToken = default)
+    public async Task<AiGenerateResponse> GenerateResponseFromRagAsync(string model, string prompt, string email, CancellationToken cancellationToken = default)
     {
         try
         {
             var embeddings = await embeddingManager.SearchChunksAsync(model, prompt, options.CurrentValue.MaxRagChunksPerPrompt, cancellationToken);
             var qdrantContextWindow = new QdrantContextBuilder(embeddings).BuildContextWindow();
             string finalPrompt = $"Use the following context to answer the question.\n\nContext:\n{qdrantContextWindow}\n\nQuestion:\n{prompt}\n\nAnswer:";
-            return await GenerateResponseFromApiAsync(model, finalPrompt, chatId, cancellationToken);
+            return await GenerateResponseFromApiAsync(model, finalPrompt, email, cancellationToken);
         }
         catch (HttpRequestException ex)
         {
@@ -115,7 +115,7 @@ public sealed class AIService
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> StreamResponse(string chatId, string model, string prompt, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> StreamResponse(string email, string model, string prompt, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var psi = new ProcessStartInfo
         {
@@ -128,7 +128,7 @@ public sealed class AIService
         };
 
         using var process = Process.Start(psi)!;
-        var context = sessionManager?.GetContext(chatId)?.ToArray() ?? [];
+        var context = sessionManager?.GetContext(email)?.ToArray() ?? [];
         await process.StandardInput.WriteLineAsync(JsonSerializer.Serialize(new
         {
             model,
@@ -153,7 +153,7 @@ public sealed class AIService
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Error killing Ollama process for chatId: {ChatId}", chatId);
+                    logger.LogError(ex, "Error killing Ollama process for email: {ChatId}", email);
                 }
                 
                 yield break;
@@ -177,7 +177,7 @@ public sealed class AIService
 
             if (parseSuccess && chunk != null && chunkContext != null)
             {
-                sessionManager?.StoreContext(chatId, chunkContext);
+                sessionManager?.StoreContext(email, chunkContext);
                 await Task.Delay(30, cancellationToken);
                 yield return chunk;
             }
