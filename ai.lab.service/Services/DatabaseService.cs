@@ -165,7 +165,7 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
         }
     }
 
-    public async Task UpdateUserLastSeenAsync(long userId, DateTime lastSeen, List<int> context, CancellationToken cancellationToken)
+    public async Task UpdateUserLastSeenAsync(string email, DateTime lastSeen, List<int> context, CancellationToken cancellationToken)
     {
         try
         {
@@ -181,12 +181,12 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                 last_seen = @LastSeen,
                 context_json = @ContextJson
             WHERE 
-                id = @UserId;";
+                email = @Email;";
             
             using var connection = new MySqlConnection(connectionString);
             await connection.OpenAsync(cancellationToken);
             await connection.ExecuteAsync(new CommandDefinition(sql,
-                new { UserId = userId, LastSeen = lastSeen, ContextJson = System.Text.Json.JsonSerializer.Serialize(context) }, cancellationToken: cancellationToken));
+                new { Email = email, LastSeen = lastSeen, ContextJson = System.Text.Json.JsonSerializer.Serialize(context) }, cancellationToken: cancellationToken));
         }
         catch (Exception ex)
         {

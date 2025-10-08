@@ -1,5 +1,4 @@
 using ai.lab.service;
-using ai.lab.service.Components;
 using ai.lab.service.HealthCheck;
 using ai.lab.service.Managers;
 using ai.lab.service.Metrics;
@@ -10,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Polly;
 using System.Net;
 using System.Text;
@@ -39,15 +39,39 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "AI Lab Service API",
         Version = "2.0",        
         Description = "API for AI Lab Service",
-        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        Contact = new OpenApiContact
         {
             Name = "AI & ML Lab Service",
             Email = "gordilloedwin@hotmail.com"
+        }
+    });
+
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
         }
     });
 });
@@ -88,7 +112,7 @@ builder.Services.AddSignalR();
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton(meters);
 builder.Services.TryAddScoped<IAIService, AIService>();
-builder.Services.TryAddSingleton<IAuthService, AuthService>();
+builder.Services.TryAddScoped<IAuthService, AuthService>();
 builder.Services.TryAddScoped<IDatabaseService, DatabaseService>();
 builder.Services.TryAddScoped<IOllamaClient, OllamaClientManager>();
 builder.Services.TryAddScoped<IQdrantClient, QdrantClientManager>();

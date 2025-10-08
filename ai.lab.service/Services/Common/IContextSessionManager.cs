@@ -2,9 +2,9 @@
 
 public interface IContextSessionManager
 {
-    void StoreContext(string chatId, List<int> context);
+    void StoreContext(string email, List<int> context);
 
-    List<int>? GetContext(string chatId);
+    List<int>? GetContext(string email);
 
-    void ClearContext(string chatId);
+    void ClearContext(string email);
 }

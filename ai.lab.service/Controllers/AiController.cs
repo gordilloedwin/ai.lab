@@ -3,6 +3,7 @@ using ai.lab.service.Model.Outbound;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ai.lab.service.Controllers;
 
@@ -28,7 +29,9 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
     [ProducesResponseType(StatusCodes.Status502BadGateway)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status408RequestTimeout)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]    
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [SwaggerOperation(Summary = "Get Available AI Models",
+        Description = "Retrieves the list of available AI models from the underlying service.")]
     public async Task<IActionResult> GetAvailableModels(CancellationToken cancellationToken)
     {
         try
@@ -80,6 +83,8 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status408RequestTimeout)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [SwaggerOperation(Summary = "Generate AI Response",
+        Description = "Generates an AI response based on the provided prompt and model settings.")]
     public async Task<IActionResult> GenerateResponse
     (
         [FromBody] AiGenerateRequest request,
@@ -104,8 +109,8 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
 
             model = string.IsNullOrWhiteSpace(model) ? "deepseek-coder:6.7b" : model;
             var forwardedHeader = Request.Headers["X-Forwarded-For"].FirstOrDefault();
-            var ipAddress = forwardedHeader ?? HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
-            var response = await aIService.GenerateResponseFromApiAsync(model, request.Prompt, ipAddress, cancellationToken);
+            var userEmail = User.Claims.FirstOrDefault(c => c.Type == "email")?.Value ?? "unknown";
+            var response = await aIService.GenerateResponseFromApiAsync(model, request.Prompt, userEmail, cancellationToken);
 
             if (!response.Success)
             {
@@ -181,6 +186,8 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status408RequestTimeout)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [SwaggerOperation(Summary = "Generate RAG AI Response",
+        Description = "Generates an AI response using Retrieval-Augmented Generation (RAG) based on the provided prompt and model settings.")]
     public async Task<IActionResult> GenerateRagResponse
     (
         [FromBody] AiGenerateRequest request,
@@ -205,8 +212,8 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
 
             model = string.IsNullOrWhiteSpace(model) ? "deepseek-coder:6.7b" : model;
             var forwardedHeader = Request.Headers["X-Forwarded-For"].FirstOrDefault();
-            var ipAddress = forwardedHeader ?? HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
-            var response = await aIService.GenerateResponseFromRagAsync(model, request.Prompt, ipAddress, cancellationToken);
+            var userEmail = User.Claims.FirstOrDefault(c => c.Type == "email")?.Value ?? "unknown";
+            var response = await aIService.GenerateResponseFromRagAsync(model, request.Prompt, userEmail, cancellationToken);
 
             if (!response.Success)
             {
