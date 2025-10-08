@@ -3,44 +3,12 @@
   "WorkspaceRootPath": "X:\\Github\\gordilloedwin\\ai.lab\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\services\\databaseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\services\\databaseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\managers\\qdrantclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\managers\\qdrantclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\healthcheck\\ollamahealthcheck.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\healthcheck\\ollamahealthcheck.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\healthcheck\\databasehealthcheck.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\healthcheck\\databasehealthcheck.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\services\\common\\iollamaclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\services\\common\\iollamaclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\managers\\ollamaclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\managers\\ollamaclientmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\services\\tokenservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\services\\tokenservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\ailabhub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\ailabhub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\model\\database\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\model\\database\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -50,7 +18,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 15,
+          "SelectedChildIndex": 16,
           "Children": [
             {
               "$type": "Bookmark",
@@ -114,132 +82,28 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\appsettings.json",
-              "RelativeDocumentMoniker": "ai.lab.service\\appsettings.json",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\appsettings.json",
-              "RelativeToolTip": "ai.lab.service\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAADAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-10-07T07:00:52.275Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "QdrantClientManager.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\QdrantClientManager.cs",
-              "RelativeDocumentMoniker": "ai.lab.service\\Managers\\QdrantClientManager.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\QdrantClientManager.cs",
-              "RelativeToolTip": "ai.lab.service\\Managers\\QdrantClientManager.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAAABwAAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T06:56:32.575Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "DatabaseHealthCheck.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\HealthCheck\\DatabaseHealthCheck.cs",
-              "RelativeDocumentMoniker": "ai.lab.service\\HealthCheck\\DatabaseHealthCheck.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\HealthCheck\\DatabaseHealthCheck.cs",
-              "RelativeToolTip": "ai.lab.service\\HealthCheck\\DatabaseHealthCheck.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAQAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T06:51:34.876Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "OllamaHealthCheck.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\HealthCheck\\OllamaHealthCheck.cs",
-              "RelativeDocumentMoniker": "ai.lab.service\\HealthCheck\\OllamaHealthCheck.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\HealthCheck\\OllamaHealthCheck.cs",
-              "RelativeToolTip": "ai.lab.service\\HealthCheck\\OllamaHealthCheck.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAABiAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T06:51:17.32Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "OllamaClientManager.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\OllamaClientManager.cs",
-              "RelativeDocumentMoniker": "ai.lab.service\\Managers\\OllamaClientManager.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\OllamaClientManager.cs",
-              "RelativeToolTip": "ai.lab.service\\Managers\\OllamaClientManager.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T06:49:27.788Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "IOllamaClient.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\Common\\IOllamaClient.cs",
-              "RelativeDocumentMoniker": "ai.lab.service\\Services\\Common\\IOllamaClient.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\Common\\IOllamaClient.cs",
-              "RelativeToolTip": "ai.lab.service\\Services\\Common\\IOllamaClient.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAQAAAAeAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T06:48:09.091Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "AiLabHub.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\AiLabHub.cs",
-              "RelativeDocumentMoniker": "ai.lab.service\\AiLabHub.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\AiLabHub.cs",
-              "RelativeToolTip": "ai.lab.service\\AiLabHub.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACsAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T06:05:48.253Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Program.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Program.cs",
-              "RelativeDocumentMoniker": "ai.lab.service\\Program.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Program.cs",
-              "RelativeToolTip": "ai.lab.service\\Program.cs",
-              "ViewState": "AgIAACcAAAAAAAAAAAAAAFgAAAA3AAAAAAAAAA==",
+              "Title": "User.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Model\\Database\\User.cs",
+              "RelativeDocumentMoniker": "ai.lab.service\\Model\\Database\\User.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Model\\Database\\User.cs",
+              "RelativeToolTip": "ai.lab.service\\Model\\Database\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T06:03:45.556Z",
+              "WhenOpened": "2025-10-08T17:51:05.844Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "AuthController.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Controllers\\AuthController.cs",
-              "RelativeDocumentMoniker": "ai.lab.service\\Controllers\\AuthController.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "ai.lab.service\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAJAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "DatabaseService.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\DatabaseService.cs",
+              "RelativeDocumentMoniker": "ai.lab.service\\Services\\DatabaseService.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\DatabaseService.cs",
+              "RelativeToolTip": "ai.lab.service\\Services\\DatabaseService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAE0AAABjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T05:56:38.953Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "TokenService.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\TokenService.cs",
-              "RelativeDocumentMoniker": "ai.lab.service\\Services\\TokenService.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Services\\TokenService.cs",
-              "RelativeToolTip": "ai.lab.service\\Services\\TokenService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAqAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T05:49:49.473Z",
+              "WhenOpened": "2025-10-08T17:33:22.496Z",
               "EditorCaption": ""
             }
           ]

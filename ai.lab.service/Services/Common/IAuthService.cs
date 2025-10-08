@@ -2,7 +2,11 @@
 
 namespace ai.lab.service.Services.Common;
 
-public interface ITokenService
+public interface IAuthService
 {
     string GenerateToken(User user);
+
+    Task<bool> AddUser(User user);
+
+    Task<User?> GetUserByEmail(string email);
 }

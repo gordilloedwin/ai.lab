@@ -1,10 +1,12 @@
 using ai.lab.service.Model.Inbound;
 using ai.lab.service.Model.Outbound;
 using ai.lab.service.Services.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ai.lab.service.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 [Produces("application/json")]
@@ -24,8 +26,9 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
     [HttpGet("models")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status502BadGateway)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status408RequestTimeout)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]    
     public async Task<IActionResult> GetAvailableModels(CancellationToken cancellationToken)
     {
         try
@@ -72,7 +75,9 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
     /// <returns>AI generated response</returns>
     [HttpPost("generate")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status502BadGateway)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status408RequestTimeout)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GenerateResponse
@@ -172,6 +177,8 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
     [HttpPost("rag")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status502BadGateway)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status408RequestTimeout)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GenerateRagResponse

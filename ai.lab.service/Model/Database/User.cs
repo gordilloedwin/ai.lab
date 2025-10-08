@@ -17,4 +17,6 @@ public class User
     public DateTime? LastSeen { get; set; }
 
     public DateTime CreatedAt { get; set; }
+
+    public string? ContextJson { get; set; }
 }

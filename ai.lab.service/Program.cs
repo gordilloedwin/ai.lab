@@ -88,7 +88,7 @@ builder.Services.AddSignalR();
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton(meters);
 builder.Services.TryAddScoped<IAIService, AIService>();
-builder.Services.TryAddSingleton<ITokenService, TokenService>();
+builder.Services.TryAddSingleton<IAuthService, AuthService>();
 builder.Services.TryAddScoped<IDatabaseService, DatabaseService>();
 builder.Services.TryAddScoped<IOllamaClient, OllamaClientManager>();
 builder.Services.TryAddScoped<IQdrantClient, QdrantClientManager>();

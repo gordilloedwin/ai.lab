@@ -1,12 +1,13 @@
 ﻿using ai.lab.service.Model;
 using ai.lab.service.Model.Database;
+using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ai.lab.service.Controllers;
 
 [ApiController]
 [Route("auth")]
-public class AuthController() : ControllerBase
+public class AuthController(ILogger<AuthController> logger, IAuthService authService) : ControllerBase
 {
     [HttpPost("signin")]
     public async Task<IActionResult> SignIn(SignInRequest request)
