@@ -18,8 +18,8 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-var meters = new OtelMetrics("AI.Lab.Service");
 var builder = WebApplication.CreateBuilder(args);
+var aiLabOtelMeter = new OtelMetrics("AI.Lab.Service");
 var jwtOptions = builder.Configuration.GetSection("JwtOptions").Get<JwtOptions>() ?? new JwtOptions();
 var openTelemetryOptions = builder.Configuration.GetSection("OtelOptions").Get<OtelOptions>() ?? new OtelOptions();
 
@@ -118,7 +118,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddSignalR();
 builder.Services.AddMemoryCache();
-builder.Services.AddSingleton(meters);
+builder.Services.AddSingleton(aiLabOtelMeter);
 builder.Services.TryAddScoped<IAIService, AIService>();
 builder.Services.TryAddScoped<IAuthService, AuthService>();
 builder.Services.TryAddScoped<IDatabaseService, DatabaseService>();
@@ -140,9 +140,9 @@ if (openTelemetryOptions.Enabled)
     builder.Services.AddOpenTelemetry()
     .WithMetrics(metrics =>
     {
-        metrics.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(meters.MeterName));
-        metrics.AddMeter(meters.MeterName);
-        metrics.AddInstrumentation(meters.ActivitySource);
+        metrics.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(aiLabOtelMeter.MeterName));
+        metrics.AddMeter(aiLabOtelMeter.MeterName);
+        metrics.AddInstrumentation(aiLabOtelMeter.ActivitySource);
         metrics.AddHttpClientInstrumentation();
         metrics.AddAspNetCoreInstrumentation();
         metrics.AddRuntimeInstrumentation();
@@ -182,9 +182,9 @@ if (openTelemetryOptions.Enabled)
     })
     .WithTracing(tracing =>
     {
-        tracing.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(meters.ActivitySource.Name));
+        tracing.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(aiLabOtelMeter.ActivitySource.Name));
         tracing.AddHttpClientInstrumentation();
-        tracing.AddSource(meters.ActivitySource.Name);
+        tracing.AddSource(aiLabOtelMeter.ActivitySource.Name);
         tracing.AddAspNetCoreInstrumentation(options =>
         {
             options.RecordException = true;
@@ -221,8 +221,8 @@ if (openTelemetryOptions.Enabled)
     })
     .WithLogging(logging =>
     {
-        logging.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(meters.MeterName));
-        logging.AddInstrumentation(meters.ActivitySource);
+        logging.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(aiLabOtelMeter.MeterName));
+        logging.AddInstrumentation(aiLabOtelMeter.ActivitySource);
 
         if (openTelemetryOptions.EnableConsoleExporter)
         {
