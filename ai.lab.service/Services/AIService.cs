@@ -28,7 +28,7 @@ public sealed class AIService
     {
         try
         {
-            var context = sessionManager?.GetContext(email)?.ToArray() ?? [];
+            var context = sessionManager != null ? (await sessionManager.GetContextAsync(email, cancellationToken))?.ToArray() ?? [] : [];
             var responseString = await ollamaClient.CallOllamaApiAsync(model, prompt, context, cancellationToken);
 
             if (string.IsNullOrWhiteSpace(responseString))
@@ -55,7 +55,11 @@ public sealed class AIService
             using var doc = JsonDocument.Parse(responseString);            
             aiServiceResponse.Context = doc.RootElement.GetProperty("context").EnumerateArray().Select(x => x.GetInt32()).ToArray();
             aiServiceResponse.Response = doc.RootElement.TryGetProperty("response", out var message) ? (message.GetString() ?? string.Empty) : string.Empty;
-            sessionManager?.StoreContext(email, aiServiceResponse?.Context?.ToList() ?? []); 
+            if (sessionManager != null)
+            {
+                await sessionManager.StoreContextAsync(email, aiServiceResponse?.Context?.ToList() ?? [], cancellationToken);
+            }
+
             return aiServiceResponse ?? new AiGenerateResponse();
         }
         catch (HttpRequestException ex)
@@ -115,7 +119,7 @@ public sealed class AIService
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> StreamResponse(string email, string model, string prompt, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> StreamResponseAsync(string email, string model, string prompt, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var psi = new ProcessStartInfo
         {
@@ -128,7 +132,7 @@ public sealed class AIService
         };
 
         using var process = Process.Start(psi)!;
-        var context = sessionManager?.GetContext(email)?.ToArray() ?? [];
+        var context = sessionManager != null ? (await sessionManager.GetContextAsync(email, cancellationToken))?.ToArray() ?? [] : [];
         await process.StandardInput.WriteLineAsync(JsonSerializer.Serialize(new
         {
             model,
@@ -177,12 +181,16 @@ public sealed class AIService
 
             if (parseSuccess && chunk != null && chunkContext != null)
             {
-                sessionManager?.StoreContext(email, chunkContext);
+                if (sessionManager != null)
+                {
+                    await sessionManager.StoreContextAsync(email, chunkContext, cancellationToken);
+                }
+
                 await Task.Delay(30, cancellationToken);
                 yield return chunk;
             }
         }
 
-        yield return "[[DONE]]";
+        yield return "\n\n[[DONE]]";
     }
 }

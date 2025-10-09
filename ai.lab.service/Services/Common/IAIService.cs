@@ -50,5 +50,5 @@ public interface IAIService
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the streaming operation.</param>
     /// <returns>An asynchronous sequence of strings representing segments of the generated response. The sequence completes when
     /// the full response has been streamed.</returns>
-    IAsyncEnumerable<string> StreamResponse(string email, string model, string prompt, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<string> StreamResponseAsync(string email, string model, string prompt, CancellationToken cancellationToken = default);
 }

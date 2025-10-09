@@ -8,7 +8,7 @@ public class ContextSessionManager(IMemoryCache cache, IDatabaseService database
     private readonly int maxTokens = 2048;
     private readonly TimeSpan _sessionTimeout = TimeSpan.FromMinutes(60);
 
-    public void StoreContext(string email, List<int> context)
+    public async Task StoreContextAsync(string email, List<int> context, CancellationToken cancellationToken)
     {
         if (cache.TryGetValue(email, out List<int>? existing) && existing is not null)
         {
@@ -18,7 +18,7 @@ public class ContextSessionManager(IMemoryCache cache, IDatabaseService database
                 .ToList();
 
             cache.Set(email, trimmed, _sessionTimeout);
-            databaseService.UpdateUserLastSeenAsync(email, DateTime.UtcNow, trimmed, CancellationToken.None);
+            await databaseService.UpdateUserLastSeenAsync(email, DateTime.UtcNow, trimmed, cancellationToken);
         }
         else
         {
@@ -27,22 +27,25 @@ public class ContextSessionManager(IMemoryCache cache, IDatabaseService database
                 : context;
 
             cache.Set(email, trimmed, _sessionTimeout);
-            databaseService.UpdateUserLastSeenAsync(email, DateTime.UtcNow, trimmed, CancellationToken.None);
+            await databaseService.UpdateUserLastSeenAsync(email, DateTime.UtcNow, trimmed, cancellationToken);
         }
+
+        return;
     }
 
     // GetContext still trims defensively (idempotent + safety).
-    public List<int>? GetContext(string email)
+    public async Task<List<int>?> GetContextAsync(string email, CancellationToken cancellationToken)
     {
         if (cache.TryGetValue(email, out List<int>? context) && context is not null)
         {
-            return context.Count > maxTokens ? context.TakeLast(maxTokens).ToList() : context;
+            return context;
         }
 
-        var contextJson = databaseService.GetUserByEmailAsync(email, CancellationToken.None).Result?.ContextJson;
-        if (contextJson is not null)
+        var contextJson = await databaseService.GetUserByEmailAsync(email, cancellationToken);
+
+        if (contextJson != null && !string.IsNullOrEmpty(contextJson.ContextJson))
         {
-            var dbContext = System.Text.Json.JsonSerializer.Deserialize<List<int>>(contextJson);
+            var dbContext = System.Text.Json.JsonSerializer.Deserialize<List<int>>(contextJson.ContextJson);
             if (dbContext is not null)
             {
                 var trimmed = dbContext.Count > maxTokens ? dbContext.TakeLast(maxTokens).ToList() : dbContext;

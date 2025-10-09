@@ -2,9 +2,9 @@
 
 public interface IContextSessionManager
 {
-    void StoreContext(string email, List<int> context);
+    Task StoreContextAsync(string email, List<int> context, CancellationToken cancellationToken);
 
-    List<int>? GetContext(string email);
+    Task<List<int>?> GetContextAsync(string email, CancellationToken cancellationToken);
 
     void ClearContext(string email);
 }

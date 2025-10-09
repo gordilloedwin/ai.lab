@@ -109,8 +109,8 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
             }
 
             model = string.IsNullOrWhiteSpace(model) ? "deepseek-coder:6.7b" : model;
-            var forwardedHeader = Request.Headers["X-Forwarded-For"].FirstOrDefault();
-            var userEmail = User.Claims.FirstOrDefault(c => c.Type == "email")?.Value ?? "unknown";
+            var userEmail = User.Claims.FirstOrDefault(c => 
+                c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value ?? "unknown";
             var response = await aIService.GenerateResponseFromApiAsync(model, request.Prompt, userEmail, cancellationToken);
 
             if (!response.Success)
@@ -213,8 +213,8 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
             }
 
             model = string.IsNullOrWhiteSpace(model) ? "deepseek-coder:6.7b" : model;
-            var forwardedHeader = Request.Headers["X-Forwarded-For"].FirstOrDefault();
-            var userEmail = User.Claims.FirstOrDefault(c => c.Type == "email")?.Value ?? "unknown";
+            var userEmail = User.Claims.FirstOrDefault(c =>
+                c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value ?? "unknown";
             var response = await aIService.GenerateResponseFromRagAsync(model, request.Prompt, userEmail, cancellationToken);
 
             if (!response.Success)
