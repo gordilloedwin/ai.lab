@@ -13,11 +13,15 @@ using Microsoft.OpenApi.Models;
 using Polly;
 using System.Net;
 using System.Text;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var meters = new OtelMetrics("AI.Lab.Service");
 var builder = WebApplication.CreateBuilder(args);
 var jwtOptions = builder.Configuration.GetSection("JwtOptions").Get<JwtOptions>() ?? new JwtOptions();
-var otelOptions = builder.Configuration.GetSection("OtelOptions").Get<OtelOptions>() ?? new OtelOptions();
+var openTelemetryOptions = builder.Configuration.GetSection("OtelOptions").Get<OtelOptions>() ?? new OtelOptions();
 
 builder.WebHost.UseKestrel();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -129,6 +133,122 @@ builder.Services.AddHealthChecks()
     .AddCheck<CacheHealthCheck>("cache_health_check")
     .AddCheck<OllamaHealthCheck>("ollama_health_check")
     .AddCheck<DatabaseHealthCheck>("database_health_check");
+
+#region Telemetry
+if (openTelemetryOptions.Enabled)
+{
+    builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics =>
+    {
+        metrics.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(meters.MeterName));
+        metrics.AddMeter(meters.MeterName);
+        metrics.AddInstrumentation(meters.ActivitySource);
+        metrics.AddHttpClientInstrumentation();
+        metrics.AddAspNetCoreInstrumentation();
+        metrics.AddRuntimeInstrumentation();
+        metrics.AddView("ws_service_call_duration_ticks", new ExplicitBucketHistogramConfiguration
+        {
+            Boundaries = OtelMetrics.histogramBuckets,
+            Name = "ws_service_call_duration_ticks"
+        });
+        metrics.AddView("ai_qdrant_database_call_duration_ticks", new ExplicitBucketHistogramConfiguration
+        {
+            Boundaries = OtelMetrics.histogramBuckets,
+            Name = "ai_qdrant_database_call_duration_ticks"
+        });
+
+        if (openTelemetryOptions.EnableConsoleExporter)
+        {
+            metrics.AddConsoleExporter();
+        }
+
+        if (!string.IsNullOrEmpty(openTelemetryOptions.ExporterOptions.Endpoint))
+        {
+            metrics.AddOtlpExporter(telemetryOptions =>
+            {
+                telemetryOptions.TimeoutMilliseconds = 10000;
+                telemetryOptions.HttpClientFactory = () =>
+                {
+                    var client = new HttpClient();
+                    client.Timeout = TimeSpan.FromMilliseconds(10000);
+                    return client;
+                };
+                telemetryOptions.Endpoint = new Uri(openTelemetryOptions.ExporterOptions.Endpoint);
+                telemetryOptions.Protocol = openTelemetryOptions.ExporterOptions.Protocol.ToLower() == "grpc" ?
+                                            OpenTelemetry.Exporter.OtlpExportProtocol.Grpc :
+                                            OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;                
+            });
+        }
+    })
+    .WithTracing(tracing =>
+    {
+        tracing.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(meters.ActivitySource.Name));
+        tracing.AddHttpClientInstrumentation();
+        tracing.AddSource(meters.ActivitySource.Name);
+        tracing.AddAspNetCoreInstrumentation(options =>
+        {
+            options.RecordException = true;
+            options.Filter = httpContext => !httpContext.Request.Path.StartsWithSegments("/healthcheck");
+            options.EnrichWithHttpRequest = (activity, request) =>
+            {
+                activity.SetTag("http.request.method", request.Method);
+                activity.SetTag("http.request.url", request.Path);
+            };
+        });
+
+        if (openTelemetryOptions.EnableConsoleExporter)
+        {
+            tracing.AddConsoleExporter();
+        }
+
+        if (!string.IsNullOrEmpty(openTelemetryOptions.ExporterOptions.Endpoint))
+        {
+            tracing.AddOtlpExporter(telemetryOptions =>
+            {
+                telemetryOptions.TimeoutMilliseconds = 10000;
+                telemetryOptions.HttpClientFactory = () =>
+                {
+                    var client = new HttpClient();
+                    client.Timeout = TimeSpan.FromMilliseconds(10000);
+                    return client;
+                };
+                telemetryOptions.Endpoint = new Uri(openTelemetryOptions.ExporterOptions.Endpoint);
+                telemetryOptions.Protocol = openTelemetryOptions.ExporterOptions.Protocol.ToLower() == "grpc" ?
+                                            OpenTelemetry.Exporter.OtlpExportProtocol.Grpc :
+                                            OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
+            });
+        }
+    })
+    .WithLogging(logging =>
+    {
+        logging.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(meters.MeterName));
+        logging.AddInstrumentation(meters.ActivitySource);
+
+        if (openTelemetryOptions.EnableConsoleExporter)
+        {
+            logging.AddConsoleExporter();
+        }
+
+        if (!string.IsNullOrEmpty(openTelemetryOptions.ExporterOptions.Endpoint))
+        {
+            logging.AddOtlpExporter(telemetryOptions =>
+            {
+                telemetryOptions.TimeoutMilliseconds = 10000;
+                telemetryOptions.HttpClientFactory = () =>
+                {
+                    var client = new HttpClient();
+                    client.Timeout = TimeSpan.FromMilliseconds(10000);
+                    return client;
+                };
+                telemetryOptions.Endpoint = new Uri(openTelemetryOptions.ExporterOptions.Endpoint);
+                telemetryOptions.Protocol = openTelemetryOptions.ExporterOptions.Protocol.ToLower() == "grpc" ?
+                                            OpenTelemetry.Exporter.OtlpExportProtocol.Grpc :
+                                            OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
+            });
+        }
+    });
+}
+#endregion
 
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())
