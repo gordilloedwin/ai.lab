@@ -1,0 +1,62 @@
+@page "/chat"
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.JSInterop
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>AI Lab Chat</h3>
+
+<div class="mb-3">
+    <input @bind="user" placeholder="Your name" class="form-control" />
+</div>
+<div class="mb-3">
+    <input @bind="message" placeholder="Your message" class="form-control" />
+</div>
+<button class="btn btn-primary" @onclick="SendMessage">Send</button>
+
+<hr />
+
+<ul>
+    @foreach (var msg in messages)
+    {
+        <li><strong>@msg.User:</strong> @msg.Text</li>
+    }
+</ul>
+
+@code {
+    private HubConnection? connection;
+    private string user = "";
+    private string message = "";
+    private List<ChatMessage> messages = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        connection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/ailabchat"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        connection.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            messages.Add(new ChatMessage { User = user, Text = message });
+            StateHasChanged();
+        });
+
+        await connection.StartAsync();
+    }
+
+    private async Task SendMessage()
+    {
+        if (connection is not null)
+        {
+            await connection.SendAsync("SendMessage", user, message);
+            message = "";
+        }
+    }
+
+    private class ChatMessage
+    {
+        public string User { get; set; } = "";
+        public string Text { get; set; } = "";
+    }
+}

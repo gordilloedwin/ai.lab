@@ -42,4 +42,22 @@ public class AiLabHub : Hub
 
         await base.OnDisconnectedAsync(exception);
     }
+
+    // Optional: Called by client to send a message to a specific group
+    public async Task SendToGroup(string groupName, string user, string message)
+    {
+        await Clients.Group(groupName).SendAsync("ReceiveMessage", user, message);
+    }
+
+    // Optional: Join a group
+    public async Task JoinGroup(string groupName)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+    }
+
+    // Optional: Leave a group
+    public async Task LeaveGroup(string groupName)
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+    }
 }

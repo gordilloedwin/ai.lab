@@ -85,8 +85,9 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -277,5 +278,8 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
+app.UseRouting();
+app.MapBlazorHub();
+app.MapFallbackToPage("/_Host");
 app.MapHub<AiLabHub>("/ailabchat");
 app.Run();
