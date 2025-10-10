@@ -17,6 +17,7 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using ai.lab.service.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 var aiLabOtelMeter = new OtelMetrics("AI.Lab.Service");
@@ -270,7 +271,7 @@ app.UseAntiforgery();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/healthcheck");
-app.MapRazorComponents<ai.lab.service.Components.App>().AddInteractiveServerRenderMode();
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
