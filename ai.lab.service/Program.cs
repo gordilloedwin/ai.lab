@@ -268,18 +268,19 @@ app.UseSwaggerUI(options =>
 });
 
 app.UseStaticFiles();
-app.UseAntiforgery();
+app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
 app.MapControllers();
 app.MapHealthChecks("/healthcheck");
+app.MapRazorPages();
+app.MapBlazorHub();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-app.UseRouting();
-app.MapBlazorHub();
-app.MapFallbackToPage("/_Host");
 app.MapHub<AiLabHub>("/ailabchat");
 app.Run();
