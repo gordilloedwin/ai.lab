@@ -1,0 +1,14 @@
+﻿@page "/dashboard"
+@inject IJSRuntime JS
+
+<h3>Welcome to the Dashboard</h3>
+<p>Your token: @token</p>
+
+@code {
+    string token;
+
+    protected override async Task OnInitializedAsync()
+    {
+        token = await JS.InvokeAsync<string>("localStorage.getItem", "jwt");
+    }
+}

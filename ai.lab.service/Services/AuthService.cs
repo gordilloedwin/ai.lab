@@ -98,6 +98,23 @@ public class AuthService(ILogger<AuthService> logger, IOptionsMonitor<JwtOptions
         }
     }
 
+    public async Task<string> LoginAsync(SignInRequest signInRequest)
+    {
+        var user = await SingInUserAsync(signInRequest, CancellationToken.None);
+        if (user == null)
+        {
+            return "Invalid email or password";
+        }
+
+        var token = GenerateToken(user);
+        if (string.IsNullOrEmpty(token))
+        {
+            return "Failed to generate authentication token";
+        }
+
+        return token;
+    }
+
     /// <summary>
     /// Generates a secure hash for the specified password using PBKDF2 with a random salt.
     /// </summary>

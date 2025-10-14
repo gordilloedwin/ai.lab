@@ -10,7 +10,16 @@ public interface IAuthService
     /// </summary>
     /// <param name="user">The user for whom the authentication token is to be generated. Cannot be null.</param>
     /// <returns>A string containing the generated authentication token for the user.</returns>
-    string GenerateToken(User user);    
+    string GenerateToken(User user);
+
+    /// <summary>
+    /// Authenticates a user asynchronously using the specified sign-in request and returns an access token if
+    /// authentication is successful.
+    /// </summary>
+    /// <param name="signInRequest">The sign-in request containing user credentials and any additional authentication parameters. Cannot be null.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the access token as a string if
+    /// authentication succeeds; otherwise, an empty string or an error may be returned depending on the implementation.</returns>
+    Task<string> LoginAsync(SignInRequest signInRequest);
 
     /// <summary>
     /// Asynchronously adds a new user to the system and returns the unique identifier of the created user.

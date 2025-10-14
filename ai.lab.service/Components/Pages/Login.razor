@@ -1,0 +1,34 @@
+﻿@page "/"
+@using Microsoft.JSInterop
+@using ai.lab.service.Model
+@using ai.lab.service.Services.Common
+@inject NavigationManager Nav
+@inject IAuthService AuthService
+@inject IJSRuntime JS
+
+<h3>Login</h3>
+<div>
+    <input @bind="username" placeholder="Username" />
+    <input @bind="password" type="password" />
+    <button @onclick="OnLogin">Login</button>
+</div>
+
+@code {
+    string username = "", password = "";
+
+    async Task OnLogin()
+    {
+        var signInRequest = new SignInRequest
+        {
+            Email = username,
+            Password = password
+		};
+
+        var token = await AuthService.LoginAsync(signInRequest);
+        if (!string.IsNullOrEmpty(token))
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "jwt", token);
+            Nav.NavigateTo("/dashboard");
+        }
+    }
+}
