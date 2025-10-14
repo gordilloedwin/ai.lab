@@ -104,7 +104,7 @@
               "RelativeDocumentMoniker": "ai.lab.service\\Components\\Pages\\_Host.cshtml",
               "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Components\\Pages\\_Host.cshtml",
               "RelativeToolTip": "ai.lab.service\\Components\\Pages\\_Host.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAABIAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAHAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-10-14T22:12:27.496Z",
               "EditorCaption": ""
@@ -119,8 +119,7 @@
               "RelativeToolTip": "ai.lab.service\\Program.cs",
               "ViewState": "AgIAAIoAAAAAAAAAAAAAABoBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-14T22:11:43.998Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-14T22:11:43.998Z"
             },
             {
               "$type": "Document",
@@ -132,8 +131,7 @@
               "RelativeToolTip": "ai.lab.service\\Components\\Pages\\Login.razor",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-10-14T22:05:38.36Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-14T22:05:38.36Z"
             },
             {
               "$type": "Document",
@@ -145,8 +143,7 @@
               "RelativeToolTip": "ai.lab.service\\Components\\App.razor",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-10-14T22:00:26.873Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-14T22:00:26.873Z"
             },
             {
               "$type": "Document",
@@ -158,8 +155,7 @@
               "RelativeToolTip": "ai.lab.service\\Components\\_Imports.razor",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-10-14T21:58:35.065Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-14T21:58:35.065Z"
             },
             {
               "$type": "Document",
@@ -171,8 +167,7 @@
               "RelativeToolTip": "ai.lab.service\\Components\\Routes.razor",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-10-14T21:58:05.669Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-14T21:58:05.669Z"
             }
           ]
         }
