@@ -269,21 +269,22 @@ app.UseSwaggerUI(options =>
     options.SwaggerEndpoint($"{swaggerJsonBasePath}/swagger/v1/swagger.json", "AI Lab Service API v1");
 });
 
-app.UseRouting();
-app.UseStaticFiles();
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseAntiforgery();
-app.MapControllers();
-app.MapRazorPages();
-//app.MapBlazorHub();
-app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
+app.UseRouting();
+app.UseStaticFiles();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseAntiforgery();
+
+app.MapControllers();
 app.MapHealthChecks("/healthcheck");
 app.MapHub<AiLabHub>("/ailabchat");
+// Map the Blazor Server hub so _Host.cshtml delivers the shell that includes CSS links
+app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
 app.Run();

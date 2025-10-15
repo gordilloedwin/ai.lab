@@ -1,11 +1,12 @@
 @using Microsoft.AspNetCore.Components.Routing
+@using ai.lab.service.Pages.Shared
 
 <Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" />
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
     </Found>
     <NotFound>
-        <LayoutView>
+        <LayoutView Layout="@typeof(MainLayout)">
             <p>Sorry, nothing here!</p>
         </LayoutView>
     </NotFound>

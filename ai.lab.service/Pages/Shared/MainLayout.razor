@@ -1,44 +1,28 @@
 @inherits LayoutComponentBase
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Lab</title>
-    <base href="~/" />
-    <link href="~/bootstrap/bootstrap.min.css" rel="stylesheet" />
-    <link href="~/app.css" rel="stylesheet" />
-    <link href="~/chat.css" rel="stylesheet" />
-    <HeadOutlet />
-</head>
-<body>
-    <header class="header px-4 py-3 d-flex align-items-center justify-content-between border-bottom bg-light">
-        <div class="d-flex align-items-center gap-3">
-            <img src="~/images/ai-lab-logo.png" class="logo" alt="AI Lab logo" style="height: 40px;" />
-            <span class="fw-bold fs-5">AI Lab</span>
-        </div>
-        <nav>
-            <ul class="nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/dashboard">Dashboard</a>
-                </li>
-            </ul>
-        </nav>
-    </header>
+<header class="header px-4 py-3 d-flex align-items-center justify-content-between border-bottom bg-light">
+    <div class="d-flex align-items-center gap-3">
+        <!-- Updated logo path to root to avoid 404 (file resides at wwwroot/ai-lab-logo.png) -->
+        <img src="/ai-lab-logo.png" class="logo" alt="AI Lab logo" style="height: 40px;" />
+        <span class="fw-bold fs-5">AI Lab</span>
+    </div>
+    <nav>
+        <ul class="nav">
+            <li class="nav-item">
+                <a class="nav-link" href="/">Login</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/dashboard">Dashboard</a>
+            </li>
+        </ul>
+    </nav>
+</header>
 
-    <main class="container-fluid py-4">
-        @Body
-    </main>
+<main class="container-fluid py-4">
+    @Body
+</main>
 
-    <footer class="footer px-4 py-3 text-center text-muted border-top mt-auto bg-light">
-        <p class="mb-0">&copy; 2025 AI Lab. All rights reserved.</p>
-        <p class="mb-0 small">Built with ASP.NET Core & Blazor</p>
-    </footer>
-
-    <script src="_framework/blazor.server.js"></script>
-</body>
-</html>
+<footer class="footer px-4 py-3 text-center text-muted border-top mt-auto bg-light">
+    <p class="mb-0">&copy; 2025 AI Lab. All rights reserved.</p>
+    <p class="mb-0 small">Built with ASP.NET Core & Blazor</p>
+</footer>

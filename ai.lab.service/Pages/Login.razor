@@ -1,4 +1,6 @@
-@page "/"
+@page "/login"
+@layout LoginLayout
+@rendermode InteractiveServer
 @using ai.lab.service.Model
 @using ai.lab.service.Services.Common
 @using Microsoft.AspNetCore.Components.Authorization
@@ -8,21 +10,9 @@
 @inject NavigationManager Navigation
 @inject ProtectedLocalStorage LocalStorage
 @inject AuthenticationStateProvider AuthProvider
+@inject ILogger<Login> Logger
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login - AI Lab</title>
-    <base href="/" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="bootstrap/bootstrap.min.css" rel="stylesheet" />
-    <link href="app.css" rel="stylesheet" />
-    <link href="login.css" rel="stylesheet" />
-</head>
-<body>
-    <!-- Header -->
+<!-- Header -->
     <header class="header px-4 py-3 d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-3">
             <img src="ai-lab-logo.png" class="logo" alt="AI Lab logo" />
@@ -148,20 +138,16 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p class="text-muted">&copy; 2025 AI Lab. All rights reserved.</p>
-        <div class="footer-links">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
-            <a href="#">Contact Us</a>
-            <a href="#">Documentation</a>
-        </div>
-    </footer>
-
-    <script src="_framework/blazor.server.js"></script>
-</body>
-</html>
+<!-- Footer -->
+<footer class="footer">
+    <p class="text-muted">&copy; 2025 AI Lab. All rights reserved.</p>
+    <div class="footer-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Contact Us</a>
+        <a href="#">Documentation</a>
+    </div>
+</footer>
 
 @code {
     private SignInRequest signInRequest = new SignInRequest { Email = string.Empty, Password = string.Empty };
@@ -178,12 +164,16 @@
 
     private async Task HandleLogin()
     {
+        Logger.LogInformation("HandleLogin method called!");
+        Console.WriteLine("HandleLogin method called!");
+        
         try
         {
             // Clear previous messages
             errorMessage = null;
             successMessage = null;
             isLoading = true;
+            StateHasChanged();
 
             var user = await AuthService.SingInUserAsync(signInRequest, CancellationToken.None);
             if (user is not null)
