@@ -1,7 +1,12 @@
 @inherits LayoutComponentBase
 
 <div class="main">
-    <img src="images/ai-lab-logo.png" class="logo" />
+    <header class="header px-4 py-3 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <img src="images/ai-lab-logo.png" class="logo" alt="AI Lab logo" />
+            <span class="fw-semibold">AI Lab</span>
+        </div>
+    </header>
     <div class="content px-4">
         @Body
     </div>
