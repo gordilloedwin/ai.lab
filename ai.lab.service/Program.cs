@@ -18,6 +18,8 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Microsoft.AspNetCore.DataProtection;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 var aiLabOtelMeter = new OtelMetrics("AI.Lab.Service");
@@ -39,6 +41,11 @@ builder.Services.AddHttpClient(QdrantClientManager.HttpClientName)
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 builder.Services.Configure<AILabOptions>(builder.Configuration.GetSection("AILabOptions"));
 builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection("DatabaseOptions"));    
+
+// Persist DataProtection keys to avoid expensive per-process key regeneration impacting protected storage operations
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "dpkeys")))
+    .SetApplicationName("ai.lab.service");
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

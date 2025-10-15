@@ -186,7 +186,37 @@
             if (user is not null)
             {
                 var token = AuthService.GenerateToken(user);
-                await LocalStorage.SetAsync("jwt", token);
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                bool stored = false;
+                try
+                {
+                    await LocalStorage.SetAsync("jwt", token);
+                    stored = true;
+                    Logger.LogInformation("JWT persisted via ProtectedLocalStorage in {Elapsed} ms", sw.ElapsedMilliseconds);
+                }
+                catch (Exception lsEx)
+                {
+                    Logger.LogWarning(lsEx, "ProtectedLocalStorage.SetAsync failed after {Elapsed} ms. Falling back to JS localStorage.", sw.ElapsedMilliseconds);
+                }
+                finally
+                {
+                    sw.Stop();
+                }
+
+                if (!stored)
+                {
+                    try
+                    {
+                        // Fallback: direct JS localStorage (non-protected) so user can proceed
+                        await Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync((Microsoft.JSInterop.IJSRuntime)Navigation.ToAbsoluteUri("/").GetType().GetProperty("JsRuntime", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(Navigation)!, "eval", $"localStorage.setItem('jwt', '{token.Replace("'", "\\'")}')");
+                        Logger.LogInformation("JWT stored via JS localStorage fallback.");
+                    }
+                    catch (Exception jsEx)
+                    {
+                        Logger.LogError(jsEx, "Failed to store JWT via JS fallback");
+                        errorMessage = "Login succeeded but storing session token failed.";
+                    }
+                }
 
                 if (AuthProvider is JwtAuthStateProvider jwtProvider)
                 {
