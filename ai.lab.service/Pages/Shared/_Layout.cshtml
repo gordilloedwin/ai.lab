@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AI Lab</title>
+    <base href="~/" />
+    <link href="~/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/app.css" rel="stylesheet" />
+    <link href="~/chat.css" rel="stylesheet" />
+</head>
+<body>
+    <header class="header px-4 py-3 d-flex align-items-center justify-content-between border-bottom">
+        <div class="d-flex align-items-center gap-3">
+            <img src="~/images/ai-lab-logo.png" class="logo" alt="AI Lab logo" style="height: 40px;" />
+            <span class="fw-bold fs-5">AI Lab</span>
+        </div>
+        <nav>
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboard">Dashboard</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container-fluid py-4">
+        @RenderBody()
+    </main>
+
+    <footer class="footer px-4 py-3 text-center text-muted border-top mt-auto">
+        <p class="mb-0">&copy; 2025 AI Lab. All rights reserved.</p>
+        <p class="mb-0 small">Built with ASP.NET Core</p>
+    </footer>
+
+    <script src="_framework/blazor.server.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
