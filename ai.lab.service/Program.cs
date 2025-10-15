@@ -17,7 +17,6 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using ai.lab.service.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 var aiLabOtelMeter = new OtelMetrics("AI.Lab.Service");
@@ -273,14 +272,15 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 app.MapControllers();
-app.MapHealthChecks("/healthcheck");
 app.MapRazorPages();
-app.MapBlazorHub();
+//app.MapBlazorHub();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
+app.MapHealthChecks("/healthcheck");
 app.MapHub<AiLabHub>("/ailabchat");
+app.MapFallbackToPage("/_Host");
 app.Run();
