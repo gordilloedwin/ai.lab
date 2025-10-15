@@ -1,13 +1,56 @@
 @page "/"
+@using ai.lab.service.Model
+@using ai.lab.service.Services.Common
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject ProtectedLocalStorage LocalStorage
+@inject AuthenticationStateProvider AuthProvider
+
 
 <h1>Login</h1>
 
-<form>
-    <label for="email">Email</label>
-    <input id="email" type="email" />
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color:red">@errorMessage</p>
+}
 
-    <label for="password">Password</label>
-    <input id="password" type="password" />
+<form @onsubmit="HandleLogin">
+    <label>Email</label>
+    <input @bind="signInRequest.Email" type="email" />
+
+    <label>Password</label>
+    <input @bind="signInRequest.Password" type="password" />
 
     <button type="submit">Login</button>
 </form>
+
+@code {
+    private SignInRequest signInRequest = new SignInRequest { Email = string.Empty, Password = string.Empty };
+
+    private string? errorMessage;
+
+    private async Task HandleLogin()
+    {
+        var user = await AuthService.SingInUserAsync(signInRequest, CancellationToken.None);
+        if (user is not null)
+        {
+            var token = AuthService.GenerateToken(user);
+            await LocalStorage.SetAsync("jwt", token);
+
+            if (AuthProvider is JwtAuthStateProvider jwtProvider)
+            {
+                jwtProvider.SetToken(token);
+            }
+
+            Navigation.NavigateTo("/dashboard");
+
+        }
+        else
+        {
+            errorMessage = "Invalid credentials. Please try again.";
+        }
+    }
+}

@@ -6,6 +6,7 @@ using ai.lab.service.Options;
 using ai.lab.service.Services;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
@@ -127,7 +128,9 @@ builder.Services.TryAddScoped<IOllamaClient, OllamaClientManager>();
 builder.Services.TryAddScoped<IQdrantClient, QdrantClientManager>();
 builder.Services.TryAddScoped<IEmbeddingManager, EmbeddingManager>();
 builder.Services.TryAddScoped<IContextSessionManager, ContextSessionManager>();
+builder.Services.TryAddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
 builder.Services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
+builder.Services.AddAuthorizationCore();
 builder.Services.AddHostedService<AiLabWorker>();
 
 builder.Services.AddHealthChecks()

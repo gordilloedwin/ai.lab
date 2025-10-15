@@ -1,4 +1,37 @@
 @page "/dashboard"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components
+@using System.Security.Claims
 
-<h1>Dashboard</h1>
-<p>Welcome to your dashboard, Edwin!</p>
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthProvider
+
+@attribute [Authorize]
+
+<AuthorizeView>
+    <Authorized>
+        <h1>Welcome to your dashboard!</h1>
+    </Authorized>
+    <NotAuthorized>
+        <p>You are not authorized to view this page.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity is not null && user.Identity.IsAuthenticated)
+        {
+            var userName = user.Identity.Name;
+            var emailClaim = user.FindFirst(c => c.Type == ClaimTypes.Email)?.Value;
+        }
+        else
+        {            
+            Navigation.NavigateTo("/");
+        }
+    }
+}
