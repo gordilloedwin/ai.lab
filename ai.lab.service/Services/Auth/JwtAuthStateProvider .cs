@@ -9,6 +9,7 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
     private readonly ILogger<JwtAuthStateProvider> _logger;
     private ClaimsPrincipal _user = new(new ClaimsIdentity());
     private bool _attemptedRestore = false;
+    private System.Threading.Timer? _expiryTimer;
 
     public JwtAuthStateProvider(ProtectedLocalStorage localStorage, ILogger<JwtAuthStateProvider> logger)
     {
@@ -27,6 +28,24 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
             var identity = new ClaimsIdentity(claims, "jwt");
             _user = new ClaimsPrincipal(identity);
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_user)));
+
+            // Schedule auto-logout based on exp claim if present
+            var expUnix = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp)?.Value;
+            if (long.TryParse(expUnix, out var seconds))
+            {
+                var expUtc = DateTimeOffset.FromUnixTimeSeconds(seconds);
+                var delay = expUtc - DateTimeOffset.UtcNow;
+                if (delay < TimeSpan.Zero)
+                {
+                    PerformLogout();
+                }
+                else
+                {
+                    _expiryTimer?.Dispose();
+                    _expiryTimer = new System.Threading.Timer(_ => PerformLogout(), null, delay, Timeout.InfiniteTimeSpan);
+                    _logger.LogInformation("Scheduled auto logout in {Minutes} minutes", delay.TotalMinutes.ToString("F2"));
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -54,5 +73,14 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
             }
         }
         return new AuthenticationState(_user);
+    }
+
+    private void PerformLogout()
+    {
+        _logger.LogInformation("JWT expired; performing auto logout");
+        _user = new ClaimsPrincipal(new ClaimsIdentity());
+        _expiryTimer?.Dispose();
+        _expiryTimer = null;
+        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_user)));
     }
 }
