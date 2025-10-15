@@ -269,8 +269,8 @@ app.UseSwaggerUI(options =>
     options.SwaggerEndpoint($"{swaggerJsonBasePath}/swagger/v1/swagger.json", "AI Lab Service API v1");
 });
 
-app.UseStaticFiles();
 app.UseRouting();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
