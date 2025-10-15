@@ -1,5 +1,6 @@
 ﻿@page "/dashboard"
 @inject IJSRuntime JS
+@inject NavigationManager Navigation
 
 <h3>Welcome to the Dashboard</h3>
 <p>Your token: @token</p>
@@ -10,5 +11,10 @@
     protected override async Task OnInitializedAsync()
     {
         token = await JS.InvokeAsync<string>("localStorage.getItem", "jwt");
+        if (string.IsNullOrEmpty(token))
+        {
+            // Redirect to login if token is not found
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }        
     }
 }
