@@ -1,11 +1,18 @@
 ﻿<Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout)" />
+        <ErrorBoundary>
+            <ChildContent>
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout)" />
+            </ChildContent>
+            <ErrorContent>
+                <LayoutView Layout="@typeof(Layout)">
+                    <Error />
+                </LayoutView>
+            </ErrorContent>
+        </ErrorBoundary>
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
     <NotFound>
-        <LayoutView Layout="@typeof(Layout)">
-            <p>Sorry, nothing here matches your request.</p>
-        </LayoutView>
+        <NotFoundRedirect />
     </NotFound>
 </Router>
