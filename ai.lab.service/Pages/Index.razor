@@ -2,8 +2,10 @@
 @using Microsoft.AspNetCore.Components
 @using ai.lab.service.Model
 @using ai.lab.service.Services.Common
+@using Microsoft.JSInterop
 @inject IAuthService AuthService
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 @attribute [LayoutAttribute(typeof(NoLayout))]
 
 <div>
@@ -43,15 +45,13 @@
 
             var result = await AuthService.LoginAsync(signInRequest);
 
-            // If result is a JWT token (not an error message), login succeeded
             if (result.Contains('.') && result.Split('.').Length == 3)
             {
-                // TODO: Store token and navigate to dashboard
+                await JS.InvokeVoidAsync("localStorage.setItem", "authToken", result);
                 Nav.NavigateTo("/dashboard", forceLoad: true);
             }
             else
             {
-                // Result is an error message
                 errorMessage = result;
             }
         }
