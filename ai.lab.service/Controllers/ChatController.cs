@@ -9,9 +9,9 @@ namespace ai.lab.service.Controllers;
 /// <summary>
 /// REST API endpoints for chat room management.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class ChatController : ControllerBase
 {
     private readonly IChatService _chatService;
