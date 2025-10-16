@@ -1,0 +1,17 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+
+@implements IDisposable
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize authentication state
+        await AuthStateProvider.GetAuthenticationStateAsync();
+    }
+
+    public void Dispose()
+    {
+        // Cleanup if needed
+    }
+}

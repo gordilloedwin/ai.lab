@@ -25,13 +25,12 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
         
         try
         {
-            // Store token in localStorage
             await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", token);
             SetToken(token);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed storing token in localStorage");
+            _logger.LogError(ex, "Failed storing token in localStorage");
         }
     }
 
@@ -59,13 +58,10 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
             var jwtToken = handler.ReadJwtToken(token);
             var claims = jwtToken.Claims.ToList();
             
-            // Create authenticated identity with JWT bearer scheme
-            var identity = new ClaimsIdentity(claims, "Bearer", ClaimTypes.Email, ClaimTypes.Role);
+            // Create authenticated identity with Bearer authentication type
+            // Use "name" claim as the name identifier (matches what's in the JWT)
+            var identity = new ClaimsIdentity(claims, "Bearer", "name", ClaimTypes.Role);
             _user = new ClaimsPrincipal(identity);
-            
-            _logger.LogInformation("User authenticated: {Email}, IsAuthenticated: {IsAuth}", 
-                _user.Identity?.Name, 
-                _user.Identity?.IsAuthenticated);
             
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_user)));
 
@@ -83,7 +79,6 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
                 {
                     _expiryTimer?.Dispose();
                     _expiryTimer = new System.Threading.Timer(_ => PerformLogout(), null, delay, Timeout.InfiniteTimeSpan);
-                    _logger.LogInformation("Scheduled auto logout in {Minutes} minutes", delay.TotalMinutes.ToString("F2"));
                 }
             }
         }
@@ -104,7 +99,6 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
                 if (!string.IsNullOrWhiteSpace(token))
                 {
                     SetToken(token);
-                    _logger.LogInformation("Restored JWT from localStorage");
                 }
             }
             catch (Exception ex)
@@ -112,12 +106,12 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
                 _logger.LogWarning(ex, "Failed restoring JWT from localStorage");
             }
         }
+        
         return new AuthenticationState(_user);
     }
 
     private void PerformLogout()
     {
-        _logger.LogInformation("JWT expired; performing auto logout");
         _user = new ClaimsPrincipal(new ClaimsIdentity());
         _expiryTimer?.Dispose();
         _expiryTimer = null;
