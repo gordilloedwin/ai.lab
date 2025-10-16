@@ -282,11 +282,9 @@ app.UseAntiforgery();
 app.MapControllers();
 app.MapHealthChecks("/healthcheck");
 app.MapHub<AiLabHub>("/ailabchat");
-// Map the Blazor Server hub so _Host.cshtml delivers the shell that includes CSS links
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
-// --- Route Audit (debug) ---
 try
 {
     using var scope = app.Services.CreateScope();
@@ -310,7 +308,6 @@ try
         logger.LogDebug("Route audit start: {Count} endpoints discovered", endpoints.Count);
         foreach (var ep in endpoints)
         {
-            // Filter out framework noise if desired later
             logger.LogDebug("Route: {Route,-25} | Order: {Order,3} | Display: {Display}", ep.Route, ep.Order, ep.Display);
         }
         logger.LogDebug("Route audit end");
@@ -322,9 +319,7 @@ try
 }
 catch (Exception ex)
 {
-    // Non-fatal; continue startup if audit fails.
     Console.WriteLine($"Route audit failed: {ex.Message}");
 }
-// --- End Route Audit ---
 
 app.Run();
