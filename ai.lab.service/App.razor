@@ -1,1 +1,13 @@
-<Routes />
+@using Microsoft.AspNetCore.Components.Routing
+@using ai.lab.service.Pages.Shared
+<Router AppAssembly="typeof(Program).Assembly">
+	<Found Context="rd">
+		<RouteView RouteData="rd" DefaultLayout="typeof(Layout)" />
+	</Found>
+	<NotFound>
+		<LayoutView Layout="typeof(Layout)">
+			<h3>Page not found</h3>
+			<a href="/">Home</a>
+		</LayoutView>
+	</NotFound>
+</Router>
