@@ -1,0 +1,35 @@
+@page "/documentation"
+@layout MainLayout
+
+<section class="container py-5">
+    <h1 class="mb-3">Documentation</h1>
+    <p class="text-muted" style="max-width:720px;">This is a lightweight placeholder for AI Lab docs. In the future, this page can surface:
+        <ul>
+            <li>Getting started (authentication, dashboard overview).</li>
+            <li>Embedding & vector search API usage examples.</li>
+            <li>Model orchestration flows and prompt guidelines.</li>
+            <li>Telemetry & metrics integration details.</li>
+            <li>Security, rate limiting and data retention policies.</li>
+        </ul>
+    </p>
+
+    <div class="mt-4">
+        <h5>Next Steps</h5>
+        <ol class="small text-muted">
+            <li>Decide on format (Markdown import, static Razor components, or generated docs).</li>
+            <li>Add code samples with syntax highlighting.</li>
+            <li>Link to API Swagger and model playground examples.</li>
+            <li>Provide troubleshooting and FAQ section.</li>
+        </ol>
+    </div>
+
+    <div class="alert alert-info mt-4" role="alert">
+        Coming soon: richer interactive guides & copy/paste examples.
+    </div>
+    <button class="btn btn-primary mt-2" @onclick="GoHome">Back to Home</button>
+</section>
+
+@code {
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+    private void GoHome() => Nav.NavigateTo("/");
+}

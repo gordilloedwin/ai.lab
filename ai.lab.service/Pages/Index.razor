@@ -1,33 +1,42 @@
 @page "/"
 @using Microsoft.AspNetCore.Components.Authorization
-@inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager Nav
 
-<div class="text-center text-muted" style="padding:2rem;">
-    <p>Redirecting...</p>
+<div class="landing-root d-flex flex-column align-items-center justify-content-center" style="min-height:65vh; padding:2rem;">
+    <h1 class="display-5 fw-semibold mb-3">AI Lab</h1>
+    <p class="text-muted mb-4" style="max-width:600px;">Experimental playground for embeddings, model orchestration and observability. Sign in to access your dashboard.</p>
+    <div class="d-flex gap-3">
+        <button class="btn btn-primary px-4 py-2" @onclick="GoLogin">Sign In</button>
+        <button class="btn btn-outline-secondary px-4 py-2" @onclick="GoDocs">Docs</button>
+    </div>
+    @if (forwarding)
+    {
+        <div class="mt-4 text-muted small">Redirecting to your dashboard...</div>
+    }
 </div>
 
 @code {
-    protected override async Task OnInitializedAsync()
-    {
-        // Determine if a user is already authenticated; if so go to dashboard, else login.
-        var state = await AuthProvider.GetAuthenticationStateAsync();
+    private bool forwarding = false;
 
-        var user = state.User;
-        if (user?.Identity is not null && user.Identity.IsAuthenticated)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        try
         {
-            Nav.NavigateTo("/dashboard", replace: true);
-        }
-        else
-        {
-            try 
+            var state = await AuthProvider.GetAuthenticationStateAsync();
+            if (state.User?.Identity?.IsAuthenticated == true)
             {
-                Nav.NavigateTo("/login", replace: true);
-            }
-            catch (Microsoft.AspNetCore.Components.NavigationException)
-            {
-                // Expected during prerender – safely ignore.
+                forwarding = true;
+                StateHasChanged();
+                // brief UX pause
+                await Task.Delay(200);
+                Nav.NavigateTo("/dashboard", replace: true);
             }
         }
+        catch { /* ignore */ }
     }
+
+    private void GoLogin() => Nav.NavigateTo("/login");
+    private void GoDocs() => Nav.NavigateTo("/documentation", forceLoad: true);
 }

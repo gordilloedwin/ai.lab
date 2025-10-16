@@ -293,4 +293,45 @@ app.MapHub<AiLabHub>("/ailabchat");
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
+// --- Route Audit (debug) ---
+try
+{
+    using var scope = app.Services.CreateScope();
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("RoutesAudit");
+    var endpointDataSources = scope.ServiceProvider.GetServices<EndpointDataSource>();
+    var endpoints = endpointDataSources
+        .SelectMany(ds => ds.Endpoints)
+        .OfType<RouteEndpoint>()
+        .Select(e => new
+        {
+            Route = e.RoutePattern.RawText,
+            Order = e.Order,
+            Display = e.DisplayName
+        })
+        .OrderBy(e => e.Route)
+        .ThenBy(e => e.Order)
+        .ToList();
+
+    if (endpoints.Count > 0)
+    {
+        logger.LogDebug("Route audit start: {Count} endpoints discovered", endpoints.Count);
+        foreach (var ep in endpoints)
+        {
+            // Filter out framework noise if desired later
+            logger.LogDebug("Route: {Route,-25} | Order: {Order,3} | Display: {Display}", ep.Route, ep.Order, ep.Display);
+        }
+        logger.LogDebug("Route audit end");
+    }
+    else
+    {
+        logger.LogWarning("Route audit found zero endpoints.");
+    }
+}
+catch (Exception ex)
+{
+    // Non-fatal; continue startup if audit fails.
+    Console.WriteLine($"Route audit failed: {ex.Message}");
+}
+// --- End Route Audit ---
+
 app.Run();

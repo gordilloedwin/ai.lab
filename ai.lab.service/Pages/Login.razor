@@ -13,6 +13,15 @@
 @inject ILogger<Login> Logger
 
 <div class="theme-root" data-theme="@currentTheme">
+    @if (redirecting)
+    {
+        <div class="redirect-overlay" aria-live="polite">
+            <div class="redirect-dialog">
+                <div class="redirect-spinner"></div>
+                <div class="redirect-text">Taking you to your dashboard...</div>
+            </div>
+        </div>
+    }
     <!-- Header -->
     <header class="header px-4 py-3 d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-3">
@@ -143,6 +152,7 @@
     private bool showPassword = false;
     private bool rememberMe = false;
     private string currentTheme = "light";
+    private bool redirecting = false;
 
     private void TogglePasswordVisibility()
     {
@@ -161,6 +171,26 @@
             }
         }
         catch { /* ignore */ }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var state = await AuthProvider.GetAuthenticationStateAsync();
+                if (state.User?.Identity?.IsAuthenticated == true)
+                {
+                    redirecting = true;
+                    StateHasChanged();
+                    // Small delay for fade-in effect & to prevent login form flash
+                    await Task.Delay(250);
+                    Navigation.NavigateTo("/dashboard", replace: true);
+                }
+            }
+            catch { /* ignore */ }
+        }
     }
 
     private async Task ToggleTheme()
