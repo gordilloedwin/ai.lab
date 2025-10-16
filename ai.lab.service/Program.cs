@@ -125,6 +125,7 @@ builder.Services.AddSingleton(aiLabOtelMeter);
 builder.Services.TryAddScoped<IAIService, AIService>();
 builder.Services.TryAddScoped<IAuthService, AuthService>();
 builder.Services.TryAddScoped<IDatabaseService, DatabaseService>();
+builder.Services.TryAddScoped<IChatService, ChatService>();
 builder.Services.TryAddScoped<IOllamaClient, OllamaClientManager>();
 builder.Services.TryAddScoped<IQdrantClient, QdrantClientManager>();
 builder.Services.TryAddScoped<IEmbeddingManager, EmbeddingManager>();
