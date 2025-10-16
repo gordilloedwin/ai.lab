@@ -1,29 +1,70 @@
 @page "/"
 @using Microsoft.AspNetCore.Components
+@using ai.lab.service.Model
+@using ai.lab.service.Services.Common
+@inject IAuthService AuthService
+@inject NavigationManager Nav
 @attribute [LayoutAttribute(typeof(NoLayout))]
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <title>Login - AI Lab</title>
-    <base href="/" />
-</head>
-<body>
-    <div>
-        <h3>Login</h3>
-        <p>Enter credentials (placeholder):</p>
+<div>
+    <h3>Login</h3>
+    <p>Enter credentials:</p>
 
-        <form>
-            <label>Email <input type="email" /></label><br />
-            <label>Password <input type="password" /></label><br />
-            <button type="submit">Sign In</button>
-        </form>
-    </div>
-</body>
-</html>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div style="color: red; margin-bottom: 10px;">@errorMessage</div>
+    }
+
+    <form @onsubmit="HandleLoginAsync">
+        <label>Email <input type="email" @bind="email" required /></label><br />
+        <label>Password <input type="password" @bind="password" required /></label><br />
+        <button type="submit" disabled="@isLoading">@(isLoading ? "Signing in..." : "Sign In")</button>
+    </form>
+</div>
 
 @code {
+    private string email = string.Empty;
+    private string password = string.Empty;
+    private string errorMessage = string.Empty;
+    private bool isLoading = false;
+
+    private async Task HandleLoginAsync()
+    {
+        errorMessage = string.Empty;
+        isLoading = true;
+
+        try
+        {
+            var signInRequest = new SignInRequest
+            {
+                Email = email,
+                Password = password
+            };
+
+            var result = await AuthService.LoginAsync(signInRequest);
+
+            // If result is a JWT token (not an error message), login succeeded
+            if (result.Contains('.') && result.Split('.').Length == 3)
+            {
+                // TODO: Store token and navigate to dashboard
+                Nav.NavigateTo("/dashboard", forceLoad: true);
+            }
+            else
+            {
+                // Result is an error message
+                errorMessage = result;
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "An error occurred during login. Please try again.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
     public class NoLayout : LayoutComponentBase
     {
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
