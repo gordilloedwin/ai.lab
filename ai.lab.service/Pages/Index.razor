@@ -1,42 +1,34 @@
 @page "/"
-@using Microsoft.AspNetCore.Components.Authorization
-@inject AuthenticationStateProvider AuthProvider
-@inject NavigationManager Nav
+@using Microsoft.AspNetCore.Components
+@attribute [LayoutAttribute(typeof(NoLayout))]
 
-<div class="landing-root d-flex flex-column align-items-center justify-content-center" style="min-height:65vh; padding:2rem;">
-    <h1 class="display-5 fw-semibold mb-3">AI Lab</h1>
-    <p class="text-muted mb-4" style="max-width:600px;">Experimental playground for embeddings, model orchestration and observability. Sign in to access your dashboard.</p>
-    <div class="d-flex gap-3">
-        <button class="btn btn-primary px-4 py-2" @onclick="GoLogin">Sign In</button>
-        <button class="btn btn-outline-secondary px-4 py-2" @onclick="GoDocs">Docs</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Login - AI Lab</title>
+    <base href="/" />
+</head>
+<body>
+    <div>
+        <h3>Login</h3>
+        <p>Enter credentials (placeholder):</p>
+
+        <form>
+            <label>Email <input type="email" /></label><br />
+            <label>Password <input type="password" /></label><br />
+            <button type="submit">Sign In</button>
+        </form>
     </div>
-    @if (forwarding)
-    {
-        <div class="mt-4 text-muted small">Redirecting to your dashboard...</div>
-    }
-</div>
+</body>
+</html>
 
 @code {
-    private bool forwarding = false;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    public class NoLayout : LayoutComponentBase
     {
-        if (!firstRender) return;
-        try
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
         {
-            var state = await AuthProvider.GetAuthenticationStateAsync();
-            if (state.User?.Identity?.IsAuthenticated == true)
-            {
-                forwarding = true;
-                StateHasChanged();
-                // brief UX pause
-                await Task.Delay(200);
-                Nav.NavigateTo("/dashboard", replace: true);
-            }
+            builder.AddContent(0, Body);
         }
-        catch { /* ignore */ }
     }
-
-    private void GoLogin() => Nav.NavigateTo("/login");
-    private void GoDocs() => Nav.NavigateTo("/documentation", forceLoad: true);
 }
