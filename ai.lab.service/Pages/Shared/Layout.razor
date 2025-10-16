@@ -1,6 +1,6 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using ai.lab.service.Services.Auth
-@inject AuthenticationStateProvider AuthStateProvider
+@inject JwtAuthStateProvider AuthStateProvider
 @inject NavigationManager Nav
 @inherits LayoutComponentBase
 
@@ -31,8 +31,7 @@
 @code {
     private async Task HandleLogoutAsync()
     {
-        var provider = (JwtAuthStateProvider)AuthStateProvider;
-        await provider.LogoutAsync();
+        await AuthStateProvider.LogoutAsync();
         Nav.NavigateTo("/", forceLoad: true);
     }
 }

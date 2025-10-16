@@ -57,9 +57,16 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
-            var claims = jwtToken.Claims;
-            var identity = new ClaimsIdentity(claims, "jwt");
+            var claims = jwtToken.Claims.ToList();
+            
+            // Create authenticated identity with JWT bearer scheme
+            var identity = new ClaimsIdentity(claims, "Bearer", ClaimTypes.Email, ClaimTypes.Role);
             _user = new ClaimsPrincipal(identity);
+            
+            _logger.LogInformation("User authenticated: {Email}, IsAuthenticated: {IsAuth}", 
+                _user.Identity?.Name, 
+                _user.Identity?.IsAuthenticated);
+            
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_user)));
 
             // Schedule auto-logout based on exp claim if present

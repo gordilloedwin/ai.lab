@@ -4,9 +4,11 @@
 @using ai.lab.service.Services.Common
 @using ai.lab.service.Services.Auth
 @using Microsoft.AspNetCore.Components.Authorization
+
 @inject IAuthService AuthService
 @inject NavigationManager Nav
-@inject AuthenticationStateProvider AuthStateProvider
+@inject JwtAuthStateProvider AuthStateProvider
+
 @attribute [LayoutAttribute(typeof(NoLayout))]
 
 <div>
@@ -48,9 +50,12 @@
 
             if (result.Contains('.') && result.Split('.').Length == 3)
             {
-                var provider = (JwtAuthStateProvider)AuthStateProvider;
-                await provider.MarkUserAsAuthenticatedAsync(result);   
-                Nav.NavigateTo("/dashboard", forceLoad: true);
+                await AuthStateProvider.MarkUserAsAuthenticatedAsync(result);
+                
+                // Give the auth state a moment to propagate
+                await Task.Delay(100);
+                
+                Nav.NavigateTo("/dashboard");
             }
             else
             {
