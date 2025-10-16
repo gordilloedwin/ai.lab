@@ -4,6 +4,7 @@ using ai.lab.service.Managers;
 using ai.lab.service.Metrics;
 using ai.lab.service.Options;
 using ai.lab.service.Services;
+using ai.lab.service.Services.Auth;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;

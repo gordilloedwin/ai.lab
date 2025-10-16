@@ -1,7 +1,20 @@
 @page "/dashboard"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using ai.lab.service.Services.Auth
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+@attribute [Authorize]
 
 <h1>Dashboard</h1>
 <p>Welcome to your AI Lab dashboard.</p>
+
+<AuthorizeView>
+    <Authorized>
+        <p>Hello, @context.User.Identity?.Name!</p>
+        <button @onclick="HandleLogoutAsync">Logout</button>
+    </Authorized>
+</AuthorizeView>
 
 <div>
     <h2>Quick Stats</h2>
@@ -16,3 +29,12 @@
     <h2>Recent Activity</h2>
     <p>No recent activity.</p>
 </div>
+
+@code {
+    private async Task HandleLogoutAsync()
+    {
+        var provider = (JwtAuthStateProvider)AuthStateProvider;
+        await provider.LogoutAsync();
+        Nav.NavigateTo("/", forceLoad: true);
+    }
+}

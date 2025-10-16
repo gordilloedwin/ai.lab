@@ -2,10 +2,11 @@
 @using Microsoft.AspNetCore.Components
 @using ai.lab.service.Model
 @using ai.lab.service.Services.Common
-@using Microsoft.JSInterop
+@using ai.lab.service.Services.Auth
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IAuthService AuthService
 @inject NavigationManager Nav
-@inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthStateProvider
 @attribute [LayoutAttribute(typeof(NoLayout))]
 
 <div>
@@ -47,7 +48,8 @@
 
             if (result.Contains('.') && result.Split('.').Length == 3)
             {
-                await JS.InvokeVoidAsync("localStorage.setItem", "authToken", result);
+                var provider = (JwtAuthStateProvider)AuthStateProvider;
+                await provider.MarkUserAsAuthenticatedAsync(result);   
                 Nav.NavigateTo("/dashboard", forceLoad: true);
             }
             else

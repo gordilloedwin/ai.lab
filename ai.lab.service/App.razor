@@ -1,13 +1,23 @@
 @using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Authorization
 @using ai.lab.service.Pages.Shared
-<Router AppAssembly="typeof(Program).Assembly">
-	<Found Context="rd">
-		<RouteView RouteData="rd" DefaultLayout="typeof(Layout)" />
-	</Found>
-	<NotFound>
-		<LayoutView Layout="typeof(Layout)">
-			<h3>Page not found</h3>
-			<a href="/">Home</a>
-		</LayoutView>
-	</NotFound>
-</Router>
+
+<CascadingAuthenticationState>
+	<Router AppAssembly="typeof(Program).Assembly">
+		<Found Context="rd">
+			<AuthorizeRouteView RouteData="rd" DefaultLayout="typeof(Layout)">
+				<NotAuthorized>
+					<h3>Access Denied</h3>
+					<p>You must be logged in to access this page.</p>
+					<a href="/">Go to Login</a>
+				</NotAuthorized>
+			</AuthorizeRouteView>
+		</Found>
+		<NotFound>
+			<LayoutView Layout="typeof(Layout)">
+				<h3>Page not found</h3>
+				<a href="/">Home</a>
+			</LayoutView>
+		</NotFound>
+	</Router>
+</CascadingAuthenticationState>
