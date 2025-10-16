@@ -1,43 +1,18 @@
 @page "/dashboard"
-@layout MainLayout
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components
-@using System.Security.Claims
 
-@inject NavigationManager Navigation
-@inject AuthenticationStateProvider AuthProvider
+<h1>Dashboard</h1>
+<p>Welcome to your AI Lab dashboard.</p>
 
-@attribute [Authorize]
+<div>
+    <h2>Quick Stats</h2>
+    <ul>
+        <li>Models: 0</li>
+        <li>Sessions: 0</li>
+        <li>Requests: 0</li>
+    </ul>
+</div>
 
-<AuthorizeView>
-    <Authorized Context="auth">
-        <h1>Welcome to your dashboard!</h1>
-        @{
-            var principal = auth.User;
-            var isAdmin = principal.Claims.Any(c => c.Type == "is_admin" && c.Value == "true");
-            var email = principal.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value;
-        }
-        <p class="text-muted">Signed in as @email</p>
-        @if (isAdmin)
-        {
-            <section class="admin-panel mt-4 p-3 border rounded">
-                <h2 class="h5">Admin Panel</h2>
-                <ul class="mb-0">
-                    <li>User management (coming soon)</li>
-                    <li>System metrics (coming soon)</li>
-                    <li>Embedding maintenance (coming soon)</li>
-                </ul>
-            </section>
-        }
-    </Authorized>
-    <NotAuthorized>
-        <p>Redirecting to login...</p>
-        <RedirectToLogin />
-    </NotAuthorized>
-    <Authorizing>
-        <p>Authorizing...</p>
-    </Authorizing>
-</AuthorizeView>
-
-@code { }
+<div>
+    <h2>Recent Activity</h2>
+    <p>No recent activity.</p>
+</div>
