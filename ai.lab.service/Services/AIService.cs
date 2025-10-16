@@ -2,7 +2,6 @@ using ai.lab.service.Managers.Common;
 using ai.lab.service.Model.Outbound;
 using ai.lab.service.Options;
 using ai.lab.service.Services.Common;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
