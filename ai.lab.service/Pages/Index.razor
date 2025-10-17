@@ -1,29 +1,117 @@
 @page "/"
 @using Microsoft.AspNetCore.Components
+@using ai.lab.service.Model
+@using ai.lab.service.Services.Common
+@using ai.lab.service.Services.Auth
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@inject IAuthService AuthService
+@inject NavigationManager Nav
+@inject JwtAuthStateProvider AuthStateProvider
+
 @attribute [LayoutAttribute(typeof(NoLayout))]
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <title>Login - AI Lab</title>
-    <base href="/" />
-</head>
-<body>
+@if (checkingAuth)
+{
+    <p>Checking session...</p>
+}
+else if (isAuthenticated)
+{
+    <p>Redirecting to dashboard...</p>
+}
+else
+{
     <div>
         <h3>Login</h3>
-        <p>Enter credentials (placeholder):</p>
+        <p>Enter credentials:</p>
 
-        <form>
-            <label>Email <input type="email" /></label><br />
-            <label>Password <input type="password" /></label><br />
-            <button type="submit">Sign In</button>
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div style="color: red; margin-bottom: 10px;">@errorMessage</div>
+        }
+
+        <form @onsubmit="HandleLoginAsync">
+            <label>Email <input type="email" @bind="email" required /></label><br />
+            <label>Password <input type="password" @bind="password" required /></label><br />
+            <button type="submit" disabled="@isLoading">@(isLoading ? "Signing in..." : "Sign In")</button>
         </form>
     </div>
-</body>
-</html>
+}
 
 @code {
+    private string email = string.Empty;
+    private string password = string.Empty;
+    private string errorMessage = string.Empty;
+    private bool isLoading = false;
+    private bool checkingAuth = true;
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check existing authentication state; if valid, redirect.
+        try
+        {
+            var state = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = state.User;
+            if (user.Identity?.IsAuthenticated == true && !string.IsNullOrWhiteSpace(user.FindFirstValue(ClaimTypes.Email)))
+            {
+                isAuthenticated = true;
+                // Slight delay to allow UI to render message
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(100);
+                    Nav.NavigateTo("/dashboard", forceLoad: true);
+                });
+            }
+        }
+        catch { }
+        finally
+        {
+            checkingAuth = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleLoginAsync()
+    {
+        errorMessage = string.Empty;
+        isLoading = true;
+
+        try
+        {
+            var signInRequest = new SignInRequest
+            {
+                Email = email,
+                Password = password
+            };
+
+            var result = await AuthService.LoginAsync(signInRequest);
+
+            if (result.Contains('.') && result.Split('.').Length == 3)
+            {
+                await AuthStateProvider.MarkUserAsAuthenticatedAsync(result);
+                
+                // Give the auth state a moment to propagate
+                await Task.Delay(100);
+                
+                Nav.NavigateTo("/dashboard");
+            }
+            else
+            {
+                errorMessage = result;
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "An error occurred during login. Please try again.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
     public class NoLayout : LayoutComponentBase
     {
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)

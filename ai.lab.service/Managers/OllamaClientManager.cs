@@ -51,6 +51,7 @@ public class OllamaClientManager
         try
         {
             var stream = false;
+            HttpClient.Timeout = TimeSpan.FromHours(1);
             var requestBody = new { model, prompt, stream, context };
             var content = new StringContent(JsonSerializer.Serialize(requestBody), System.Text.Encoding.UTF8, "application/json");
             var response = await HttpClient.PostAsync($"{options.CurrentValue.OllamaUrl}/api/generate", content, cancellationToken);
@@ -91,7 +92,8 @@ public class OllamaClientManager
                 model = model ?? "llama3",
                 prompt = chunkText
             };
-
+            
+            HttpClient.Timeout = TimeSpan.FromHours(1);
             var ollamaResponse = await HttpClient.PostAsJsonAsync($"{options.CurrentValue.OllamaUrl}/api/embeddings", embeddingRequest, cancellationToken);
             ollamaResponse.EnsureSuccessStatusCode();
             var embeddingResult = await ollamaResponse.Content.ReadFromJsonAsync<EmbeddingResponse>(cancellationToken: cancellationToken);

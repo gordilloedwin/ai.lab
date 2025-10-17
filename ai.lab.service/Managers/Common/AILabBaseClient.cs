@@ -14,7 +14,7 @@ public abstract class AILabBaseClient(IHttpClientFactory httpClientFactory) : ID
     public HttpClient HttpClient => _httpClient ??= httpClientFactory.CreateClient(HttpClientName ?? string.Empty);
 
     public static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy() => HttpPolicyExtensions
-        .HandleTransientHttpError()
+        .HandleTransientHttpError().OrInner<System.TimeoutException>()
         .WaitAndRetryAsync(5, retryAttempt =>
             TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))
         );

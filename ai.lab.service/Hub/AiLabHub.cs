@@ -1,63 +1,158 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using ai.lab.service.Model.Outbound;
+using ai.lab.service.Services.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
 namespace ai.lab.service;
 
 [Authorize]
-public class AiLabHub : Hub
+public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAIService aIService) : Hub
 {
-    public override async Task OnConnectedAsync()
-    {
-        var email = Context.User?.FindFirst(ClaimTypes.Email)?.Value;
-        var name = Context.User?.FindFirst("name")?.Value;
-        var avatar = Context.User?.FindFirst("avatar_uri")?.Value;
+    private string? GetUserEmail() => Context.User?.FindFirst(ClaimTypes.Email)?.Value
+		?? Context.User?.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email)?.Value
+		?? Context.User?.FindFirst("email")?.Value;
 
-        // You can broadcast presence or store in-memory
-        await Clients.All.SendAsync("UserJoined", new { email, name, avatar });
-    }
+	public override async Task OnDisconnectedAsync(Exception? exception)
+	{
+		var email = GetUserEmail();
+		if (!string.IsNullOrWhiteSpace(email))
+		{
+			try
+			{
+				// Get rooms tied to this connection and mark user disconnected
+				var rooms = await chatService.GetUserActiveRoomsAsync(email, Context.ConnectionId);
+				foreach (var room in rooms)
+				{
+					await chatService.MarkUserAsDisconnectedAsync(room.Id, email, Context.ConnectionId);
+					await Clients.Group(RoomGroup(room.Id)).SendAsync("ParticipantDisconnected", email);
+				}
+			}
+			catch (Exception ex)
+			{
+				logger.LogError(ex, "Failed handling disconnect for {Email}", email);
+			}
+		}
+		await base.OnDisconnectedAsync(exception);
+	}
 
-    public async Task SendMessage(string message)
-    {
-        var email = Context.User?.FindFirst(ClaimTypes.Email)?.Value;
-        var name = Context.User?.FindFirst("name")?.Value;
+	private static string RoomGroup(long roomId) => $"chat-room-{roomId}";
 
-        await Clients.All.SendAsync("ReceiveMessage", new
-        {
-            from = name ?? email,
-            text = message
-        });
-    }
+	public async Task<ChatRoomInitResponse?> JoinChatRoom(long roomId)
+	{
+		var email = GetUserEmail();
+		if (string.IsNullOrWhiteSpace(email)) return null;
 
-    public override async Task OnDisconnectedAsync(Exception? exception)
-    {
-        var email = Context.User?.FindFirst(ClaimTypes.Email)?.Value;
-        var name = Context.User?.FindFirst("name")?.Value;
+		try
+		{
+			var joined = await chatService.JoinChatRoomAsync(roomId, email, Context.ConnectionId);
+			if (!joined)
+			{
+				return null;
+			}
 
-        await Clients.All.SendAsync("UserLeft", new
-        {
-            email,
-            name
-        });
+			await Groups.AddToGroupAsync(Context.ConnectionId, RoomGroup(roomId));
 
-        await base.OnDisconnectedAsync(exception);
-    }
+			// Fetch snapshot
+			var room = await chatService.GetChatRoomByIdAsync(roomId, email);
+			var participants = await chatService.GetChatParticipantsAsync(roomId, email);
+			var messages = await chatService.GetChatMessagesAsync(roomId, email, 100);
 
-    // Optional: Called by client to send a message to a specific group
-    public async Task SendToGroup(string groupName, string user, string message)
-    {
-        await Clients.Group(groupName).SendAsync("ReceiveMessage", user, message);
-    }
+			// Broadcast participant joined
+			await Clients.Group(RoomGroup(roomId)).SendAsync("ParticipantJoined", email);
 
-    // Optional: Join a group
-    public async Task JoinGroup(string groupName)
-    {
-        await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-    }
+			return new ChatRoomInitResponse
+			{
+				Room = room,
+				Participants = participants,
+				Messages = messages
+			};
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Failed JoinChatRoom for {Email} room {RoomId}", email, roomId);
+			return null;
+		}
+	}
 
-    // Optional: Leave a group
-    public async Task LeaveGroup(string groupName)
-    {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-    }
+	public async Task LeaveChatRoom(long roomId)
+	{
+		var email = GetUserEmail();
+		if (string.IsNullOrWhiteSpace(email)) return;
+
+		try
+		{
+			var left = await chatService.LeaveChatRoomAsync(roomId, email);
+			if (left)
+			{
+				await Groups.RemoveFromGroupAsync(Context.ConnectionId, RoomGroup(roomId));
+				await Clients.Group(RoomGroup(roomId)).SendAsync("ParticipantLeft", email);
+			}
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Failed LeaveChatRoom for {Email} room {RoomId}", email, roomId);
+		}
+	}
+
+	public async Task SendMessage(long roomId, string content)
+	{
+		var email = GetUserEmail();
+		if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(content))
+		{
+			return;
+		}
+
+		try
+		{
+			var message = await chatService.AddUserMessageAsync(roomId, email, content);
+			await Clients.Group(RoomGroup(roomId)).SendAsync("ReceiveMessage", message);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Failed SendMessage for {Email} room {RoomId}", email, roomId);
+		}
+	}
+
+	public async Task AskAi(long roomId, string prompt, bool useRag)
+	{
+		var email = GetUserEmail();
+		if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(prompt))
+		{
+			return;
+		}
+
+		try
+		{
+
+			var userQuestionMessage = await chatService.AddUserMessageAsync(roomId, email, prompt);
+			await Clients.Group(RoomGroup(roomId)).SendAsync("ReceiveMessage", userQuestionMessage);
+
+			var room = await chatService.GetChatRoomByIdAsync(roomId, email);
+			var modelToUse = room?.AiModel ?? "llama3:latest";
+			var aiResponse = await aIService.GenerateResponseFromApiAsync(modelToUse!, prompt, email);
+			var aiMessage = await chatService.AddAiMessageAsync(roomId, aiResponse.Response ?? "[[AI-Unavailable]]");
+			await Clients.Group(RoomGroup(roomId)).SendAsync("ReceiveMessage", aiMessage);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Failed AskAi for {Email} room {RoomId}", email, roomId);
+		}
+	}
+
+	public async Task MarkRead(long roomId, long lastReadMessageId)
+	{
+		var email = GetUserEmail();
+		if (string.IsNullOrWhiteSpace(email)) return;
+		try
+		{
+			await chatService.UpdateReadReceiptAsync(roomId, email, lastReadMessageId);
+			// Broadcast to group so others can update read-by indicators
+			await Clients.Group(RoomGroup(roomId)).SendAsync("ReadReceiptUpdated", roomId, email, lastReadMessageId);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Failed MarkRead for {Email} room {RoomId} msg {MessageId}", email, roomId, lastReadMessageId);
+		}
+	}
 }

@@ -1,0 +1,310 @@
+@page "/chat/{RoomId:long}"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
+@using ai.lab.service.Model.Outbound
+@using System.Security.Claims
+@using Microsoft.JSInterop
+
+@attribute [Authorize]
+
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthProvider
+@inject ai.lab.service.Services.Auth.JwtAuthStateProvider JwtProvider
+@inject IJSRuntime Js
+
+
+<h2>Chat Room @RoomId</h2>
+
+@if (InitError != null)
+{
+    <p style="color:red">@InitError</p>
+}
+else if (!Connected)
+{
+    <p>Connecting to chat...</p>
+}
+else
+{
+    <div style="display:flex; gap:10px; align-items:stretch;">
+    <div id="chatMessages" style="flex:1; border:1px solid #ccc; padding:6px; max-height:60vh; overflow:auto;">
+            <h3>Messages</h3>
+            @if (Messages.Count == 0)
+            {
+                <p>No messages yet.</p>
+            }
+            else
+            {
+                foreach (var m in Messages)
+                {
+                    var readByCount = Participants.Count(p => p.LastReadMessageId.HasValue && p.LastReadMessageId.Value >= m.Id);
+                    <div style="margin-bottom:8px;">
+                        <strong>@(m.SenderType == "ai" ? "AI" : m.SenderName ?? m.SenderEmail):</strong>
+                        <span>@m.Content</span><br />
+                        <small>@m.CreatedAt.ToString("HH:mm:ss")</small>
+                        @if (readByCount > 0)
+                        {
+                            <small> • Read by @readByCount</small>
+                        }
+                    </div>
+                }
+            }
+        </div>
+        <div style="width:250px; border:1px solid #ccc; padding:6px; max-height:60vh; overflow:auto;">
+            <h3>Participants</h3>
+            @if (Participants.Count == 0)
+            {
+                <p>None</p>
+            }
+            else
+            {
+                foreach (var p in Participants)
+                {
+                    <div style="margin-bottom:4px;">
+                        <span>@(p.UserName ?? p.UserEmail)</span>
+                        @if (p.IsCurrentlyConnected)
+                        {
+                            <span style="color:green"> (online)</span>
+                        }
+                        else
+                        {
+                            <span style="color:gray"> (offline)</span>
+                        }
+                    </div>
+                }
+            }
+            <button @onclick="LeaveRoomAsync">Leave Room</button>
+        </div>
+    </div>
+
+    <div style="margin-top:10px; border:1px solid #ccc; padding:6px;">
+        <textarea style="width:100%; height:80px;" @bind="OutgoingText"></textarea>
+        <div style="margin-top:6px; display:flex; gap:10px; align-items:center;">
+            <button @onclick="SendMessageAsync" disabled="@Sending">@(Sending ? "Sending..." : "Send to Group")</button>
+            <button @onclick="SendAiAsync" disabled="@SendingAi">@(SendingAi ? "Thinking..." : "Ask AI")</button>
+            <label><input type="checkbox" @bind="UseRag" /> Use RAG</label>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public long RoomId { get; set; }
+
+    private HubConnection? hub;
+    private bool Connected = false;
+    private string? InitError;
+    private List<ChatMessageResponse> Messages = new();
+    private List<ChatParticipantResponse> Participants = new();
+    private ChatRoomResponse? Room;
+    private string OutgoingText = string.Empty;
+    private bool Sending = false;
+    private bool SendingAi = false;
+    private bool UseRag = false;
+    private string? UserEmail;
+    // Debounce state for read marking
+    private DateTime _lastReadMarkUtc = DateTime.MinValue;
+    private static readonly TimeSpan ReadDebounce = TimeSpan.FromSeconds(2);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        UserEmail = user.FindFirstValue(ClaimTypes.Email)
+                    ?? user.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email)
+                    ?? user.FindFirstValue("email");
+        await SetupHubAsync();
+    }
+
+    private async Task SetupHubAsync()
+    {
+        try
+        {
+            var accessToken = await GetTokenAsync();
+            hub = new HubConnectionBuilder()
+                .WithUrl(Nav.ToAbsoluteUri("/ailabchat"), options =>
+                {
+                    options.AccessTokenProvider = () => Task.FromResult(accessToken);
+                })
+                .WithAutomaticReconnect()
+                .Build();
+
+            RegisterHandlers();
+            await hub.StartAsync();
+            Connected = true;
+            await InitRoomAsync();
+            // Initialize JS scroll listener
+            try { await Js.InvokeVoidAsync("AILabChat.init", "chatMessages"); } catch { }
+        }
+        catch (Exception ex)
+        {
+            InitError = $"Failed to connect: {ex.Message}";
+        }
+    }
+
+    private void RegisterHandlers()
+    {
+        if (hub == null) return;
+
+        hub.On<string>("ParticipantJoined", email =>
+        {
+            var existing = Participants.FirstOrDefault(p => p.UserEmail == email);
+            if (existing != null)
+            {
+                existing.IsCurrentlyConnected = true;
+            }
+            else
+            {
+                Participants.Add(new ChatParticipantResponse
+                {
+                    UserEmail = email,
+                    UserName = email,
+                    IsCurrentlyConnected = true,
+                    JoinedAt = DateTime.UtcNow
+                });
+            }
+            InvokeAsync(StateHasChanged);
+        });
+
+        hub.On<string>("ParticipantLeft", email =>
+        {
+            var existing = Participants.FirstOrDefault(p => p.UserEmail == email);
+            if (existing != null)
+            {
+                existing.LeftAt = DateTime.UtcNow;
+                existing.IsCurrentlyConnected = false;
+            }
+            InvokeAsync(StateHasChanged);
+        });
+
+        hub.On<string>("ParticipantDisconnected", email =>
+        {
+            var existing = Participants.FirstOrDefault(p => p.UserEmail == email);
+            if (existing != null)
+            {
+                existing.IsCurrentlyConnected = false;
+            }
+            InvokeAsync(StateHasChanged);
+        });
+
+        hub.On<ChatMessageResponse>("ReceiveMessage", async message =>
+        {
+            Messages.Add(message);
+            await InvokeAsync(StateHasChanged);
+            // No immediate mark; rely on scroll near bottom to trigger debounced read update
+        });
+
+        hub.On<long, string, long>("ReadReceiptUpdated", (roomId, email, lastReadId) =>
+        {
+            if (roomId != RoomId) return;
+            var participant = Participants.FirstOrDefault(p => p.UserEmail == email);
+            if (participant != null)
+            {
+                participant.LastReadMessageId = lastReadId;
+            }
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private async Task InitRoomAsync()
+    {
+        if (hub == null) return;
+        try
+        {
+            var snapshot = await hub.InvokeAsync<ChatRoomInitResponse>("JoinChatRoom", RoomId);
+            if (snapshot == null || snapshot.Room == null)
+            {
+                InitError = "Unable to join room (maybe full or inactive).";
+                return;
+            }
+            Room = snapshot.Room;
+            Participants = snapshot.Participants;
+            Messages = snapshot.Messages;
+        }
+        catch (Exception ex)
+        {
+            InitError = $"Failed to initialize room: {ex.Message}";
+        }
+    }
+
+    private async Task SendMessageAsync()
+    {
+        if (hub == null || string.IsNullOrWhiteSpace(OutgoingText)) return;
+        try
+        {
+            Sending = true;
+            var text = OutgoingText.Trim();
+            OutgoingText = string.Empty;
+            await hub.InvokeAsync("SendMessage", RoomId, text);
+        }
+        catch { }
+        finally { Sending = false; }
+    }
+
+    private async Task SendAiAsync()
+    {
+        if (hub == null || string.IsNullOrWhiteSpace(OutgoingText)) return;
+        try
+        {
+            SendingAi = true;
+            var text = OutgoingText.Trim();
+            OutgoingText = string.Empty;
+            await hub.InvokeAsync("AskAi", RoomId, text, UseRag);
+        }
+        catch { }
+        finally { SendingAi = false; }
+    }
+
+    private async Task LeaveRoomAsync()
+    {
+        if (hub == null) return;
+        try
+        {
+            await hub.InvokeAsync("LeaveChatRoom", RoomId);
+            Nav.NavigateTo("/dashboard");
+        }
+        catch { }
+    }
+
+    private async Task<string?> GetTokenAsync()
+    {
+        var token = await JwtProvider.GetCurrentTokenAsync();
+        return token;
+    }
+
+    private async Task MarkLastMessageAsReadAsync()
+    {
+        if (hub == null || Messages.Count == 0 || string.IsNullOrWhiteSpace(UserEmail)) return;
+        // Debounce: only mark if sufficient time elapsed or first time
+        if (DateTime.UtcNow - _lastReadMarkUtc < ReadDebounce) return;
+        try
+        {
+            var lastMessageId = Messages.Last().Id;
+            await hub.InvokeAsync("MarkRead", RoomId, lastMessageId);
+            _lastReadMarkUtc = DateTime.UtcNow;
+        }
+        catch
+        {
+            // Silently fail - read receipt is non-critical
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnChatScrolledNearBottom()
+    {
+        await MarkLastMessageAsReadAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hub != null)
+        {
+            try
+            {
+                await hub.StopAsync();
+                await hub.DisposeAsync();
+            }
+            catch { }
+        }
+    }
+
+}

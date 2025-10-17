@@ -71,7 +71,9 @@ public class AuthService(ILogger<AuthService> logger, IOptionsMonitor<JwtOptions
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                // Standard email claim as both registered name and ClaimTypes.Email for broader compatibility
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(ClaimTypes.Email, user.Email),
                 new Claim("name", user.Name ?? string.Empty),
                 new Claim("is_admin", user.IsAdmin.ToString().ToLowerInvariant()),
                 new Claim("avatar_uri", user.AvatarUri ?? string.Empty)
