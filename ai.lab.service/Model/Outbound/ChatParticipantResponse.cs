@@ -49,4 +49,9 @@ public class ChatParticipantResponse
     /// Indicates whether this participant is the requesting user.
     /// </summary>
     public bool IsCurrentUser { get; set; }
+
+    /// <summary>
+    /// The last message ID this participant has marked as read (NULL if none).
+    /// </summary>
+    public long? LastReadMessageId { get; set; }
 }

@@ -98,7 +98,11 @@ public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAISer
 	public async Task SendMessage(long roomId, string content)
 	{
 		var email = GetUserEmail();
-		if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(content)) return;
+		if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(content))
+		{
+			return;
+		}
+
 		try
 		{
 			var message = await chatService.AddUserMessageAsync(roomId, email, content);
@@ -120,9 +124,15 @@ public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAISer
 
 		try
 		{
-			var aiResponse = await aIService.GenerateResponseFromApiAsync("llama3:latest", prompt, email);
-            var message = await chatService.AddAiMessageAsync(roomId, aiResponse.Response ?? "[[AI-Unavailable]]");
-			await Clients.Group(RoomGroup(roomId)).SendAsync("ReceiveMessage", message);
+
+			var userQuestionMessage = await chatService.AddUserMessageAsync(roomId, email, prompt);
+			await Clients.Group(RoomGroup(roomId)).SendAsync("ReceiveMessage", userQuestionMessage);
+
+			var room = await chatService.GetChatRoomByIdAsync(roomId, email);
+			var modelToUse = room?.AiModel ?? "llama3:latest";
+			var aiResponse = await aIService.GenerateResponseFromApiAsync(modelToUse!, prompt, email);
+			var aiMessage = await chatService.AddAiMessageAsync(roomId, aiResponse.Response ?? "[[AI-Unavailable]]");
+			await Clients.Group(RoomGroup(roomId)).SendAsync("ReceiveMessage", aiMessage);
 		}
 		catch (Exception ex)
 		{
@@ -137,7 +147,8 @@ public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAISer
 		try
 		{
 			await chatService.UpdateReadReceiptAsync(roomId, email, lastReadMessageId);
-			await Clients.Caller.SendAsync("ReadReceiptUpdated", roomId, lastReadMessageId);
+			// Broadcast to group so others can update read-by indicators
+			await Clients.Group(RoomGroup(roomId)).SendAsync("ReadReceiptUpdated", roomId, email, lastReadMessageId);
 		}
 		catch (Exception ex)
 		{

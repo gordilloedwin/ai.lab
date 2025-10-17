@@ -52,7 +52,6 @@
                 else if (AvailableModels?.Count > 0)
                 {
                     <select @onchange="OnModelChanged">
-                        <option value="">-- None --</option>
                         @foreach (var model in AvailableModels)
                         {
                             <option value="@model" selected="@(model == NewRoomAiModel)">@model</option>

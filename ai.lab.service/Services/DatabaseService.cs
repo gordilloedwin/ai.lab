@@ -565,9 +565,11 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                     cp.left_at AS LeftAt,
                     cp.is_currently_connected AS IsCurrentlyConnected,
                     cp.last_seen_at AS LastSeenAt,
-                    TIMESTAMPDIFF(SECOND, cp.joined_at, COALESCE(cp.left_at, NOW())) AS TimeInRoomSeconds
+                    TIMESTAMPDIFF(SECOND, cp.joined_at, COALESCE(cp.left_at, NOW())) AS TimeInRoomSeconds,
+                    crr.last_read_message_id AS LastReadMessageId
                 FROM chat_participants cp
                 JOIN users u ON cp.user_email = u.email COLLATE utf8mb4_unicode_ci
+                LEFT JOIN chat_read_receipts crr ON crr.chat_room_id = cp.chat_room_id AND crr.user_email = cp.user_email
                 WHERE cp.chat_room_id = @ChatRoomId";
 
             if (activeOnly)

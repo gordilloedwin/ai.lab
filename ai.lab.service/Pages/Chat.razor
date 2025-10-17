@@ -35,10 +35,15 @@ else
             {
                 foreach (var m in Messages)
                 {
+                    var readByCount = Participants.Count(p => p.LastReadMessageId.HasValue && p.LastReadMessageId.Value >= m.Id);
                     <div style="margin-bottom:8px;">
                         <strong>@(m.SenderType == "ai" ? "AI" : m.SenderName ?? m.SenderEmail):</strong>
                         <span>@m.Content</span><br />
                         <small>@m.CreatedAt.ToString("HH:mm:ss")</small>
+                        @if (readByCount > 0)
+                        {
+                            <small> • Read by @readByCount</small>
+                        }
                     </div>
                 }
             }
@@ -174,15 +179,23 @@ else
             InvokeAsync(StateHasChanged);
         });
 
-        hub.On<ChatMessageResponse>("ReceiveMessage", message =>
+        hub.On<ChatMessageResponse>("ReceiveMessage", async message =>
         {
             Messages.Add(message);
-            InvokeAsync(StateHasChanged);
+            await InvokeAsync(StateHasChanged);
+            // Auto-mark as read when viewing chat
+            await MarkLastMessageAsReadAsync();
         });
 
-        hub.On<long, long>("ReadReceiptUpdated", (roomId, lastReadId) =>
+        hub.On<long, string, long>("ReadReceiptUpdated", (roomId, email, lastReadId) =>
         {
-            // Placeholder - could update UI badge counts later
+            if (roomId != RoomId) return;
+            var participant = Participants.FirstOrDefault(p => p.UserEmail == email);
+            if (participant != null)
+            {
+                participant.LastReadMessageId = lastReadId;
+            }
+            InvokeAsync(StateHasChanged);
         });
     }
 
@@ -250,6 +263,20 @@ else
     {
         var token = await JwtProvider.GetCurrentTokenAsync();
         return token;
+    }
+
+    private async Task MarkLastMessageAsReadAsync()
+    {
+        if (hub == null || Messages.Count == 0 || string.IsNullOrWhiteSpace(UserEmail)) return;
+        try
+        {
+            var lastMessageId = Messages.Last().Id;
+            await hub.InvokeAsync("MarkRead", RoomId, lastMessageId);
+        }
+        catch
+        {
+            // Silently fail - read receipt is non-critical
+        }
     }
 
     public async ValueTask DisposeAsync()
