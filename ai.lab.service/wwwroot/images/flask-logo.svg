@@ -1,21 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
-  <title id="title">AI Lab Flask Logo</title>
-  <desc id="desc">Erlenmeyer flask icon with AI text</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">AI Lab Logo</title>
+  <desc id="desc">Unified AI Lab circular logo with gradient outline and particle nodes</desc>
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#f0f2f5"/>
-      <stop offset="100%" stop-color="#c9ced3"/>
+    <linearGradient id="g1" x1="20" y1="20" x2="140" y2="140" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366F1" />
+      <stop offset="1" stop-color="#14B8A6" />
     </linearGradient>
-    <clipPath id="liquidClip">
-      <path d="M44 20h40l-18 44v0c0 2 1 4 3 6 7 7 21 9 29 9 0 6-2 12-6 16-9 9-22 13-34 13s-25-4-34-13c-4-4-6-10-6-16 8 0 22-2 29-9 2-2 3-4 3-6v0L44 20z"/>
-    </clipPath>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(80 80) rotate(90) scale(72)">
+      <stop stop-color="#6366F1" stop-opacity="0.35" />
+      <stop offset="1" stop-color="#6366F1" stop-opacity="0" />
+    </radialGradient>
   </defs>
-  <rect width="128" height="128" fill="none"/>
-  <path d="M48 16h32c2 0 4 2 4 4l-16 46c0 3 1 5 2 7 6 6 18 8 26 8 2 0 4 2 4 4 0 8-3 16-10 22-10 10-24 15-38 15s-28-5-38-15c-7-6-10-14-10-22 0-2 2-4 4-4 8 0 20-2 26-8 1-2 2-4 2-7L44 20c0-2 2-4 4-4z" fill="#3a3f44" stroke="#272b2f" stroke-width="2"/>
-  <g clip-path="url(#liquidClip)">
-    <rect x="30" y="60" width="68" height="50" fill="url(#g)"/>
-    <circle cx="54" cy="78" r="5" fill="#e2e6ea" opacity="0.7"/>
-    <circle cx="74" cy="92" r="4" fill="#e2e6ea" opacity="0.5"/>
-  </g>
-  <text x="64" y="50" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#2e3338">AI</text>
+  <circle cx="80" cy="80" r="72" fill="url(#glow)" />
+  <path d="M56 22h48l-10 22 23 46c4.2 8.4.62 18.5-7.78 22.4-5.64 2.7-12.2 2.3-17.4-1.1L80 96l-11.8 15.3c-5.2 3.4-11.8 3.8-17.4 1.1-8.4-3.9-12-14-7.78-22.4L66 44 56 22Z" stroke="url(#g1)" stroke-width="6" stroke-linejoin="round" fill="none" />
+  <circle cx="80" cy="60" r="6" fill="#818CF8" />
+  <circle cx="95" cy="74" r="5" fill="#5EEAD4" />
+  <circle cx="65" cy="74" r="5" fill="#5EEAD4" />
+  <circle cx="80" cy="90" r="5" fill="#818CF8" />
+  <path d="M80 66v18M86 74l-12 0M74 90h12" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" />
+  <text x="80" y="140" font-size="22" font-family="Inter, Arial" fill="#E2E8F0" text-anchor="middle" font-weight="600">AI LAB</text>
 </svg>
