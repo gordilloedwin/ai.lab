@@ -7,8 +7,11 @@ namespace ai.lab.service.Services;
 /// <summary>
 /// Service implementation for managing multi-user chat rooms with AI participant.
 /// </summary>
-public class ChatService(ILogger<ChatService> logger, IDatabaseService databaseService) : IChatService
+public class ChatService(ILogger<ChatService> logger, IOllamaClient ollamaClient, IDatabaseService databaseService) : IChatService
 {
+    public async Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default) => 
+        await ollamaClient.GetAvailableAiModels(cancellationToken);
+
     public async Task<ChatMessageResponse> AddAiMessageAsync(long chatRoomId, string content, CancellationToken cancellationToken = default)
     {
         try

@@ -8,6 +8,8 @@ namespace ai.lab.service.Services.Common;
 /// </summary>
 public interface IChatService
 {
+    Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default);
+
     #region Room Management
 
     /// <summary>
