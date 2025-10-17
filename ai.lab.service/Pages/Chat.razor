@@ -14,7 +14,9 @@
 @inject IJSRuntime Js
 
 
-<h2>Chat Room @RoomId</h2>
+<div class="page-header">
+    <h2 class="page-title">Chat Room @RoomId</h2>
+</div>
 
 @if (InitError != null)
 {
@@ -26,63 +28,80 @@ else if (!Connected)
 }
 else
 {
-    <div style="display:flex; gap:10px; align-items:stretch;">
-    <div id="chatMessages" style="flex:1; border:1px solid #ccc; padding:6px; max-height:60vh; overflow:auto;">
-            <h3>Messages</h3>
-            @if (Messages.Count == 0)
-            {
-                <p>No messages yet.</p>
-            }
-            else
-            {
-                foreach (var m in Messages)
+    <div class="chat-layout" style="display:flex; gap:var(--space-5); align-items:stretch;">
+        <div id="chatMessages" class="card" style="flex:1; max-height:65vh; overflow:auto;">
+            <div class="card-header" style="position:sticky; top:0; background:var(--color-surface); z-index:2;">
+                <h3 style="margin:0; font-size:var(--font-size-md);">Messages</h3>
+            </div>
+            <div class="card-content messages" style="display:flex; flex-direction:column; gap:var(--space-3);">
+                @if (Messages.Count == 0)
                 {
-                    var readByCount = Participants.Count(p => p.LastReadMessageId.HasValue && p.LastReadMessageId.Value >= m.Id);
-                    <div style="margin-bottom:8px;">
-                        <strong>@(m.SenderType == "ai" ? "AI" : m.SenderName ?? m.SenderEmail):</strong>
-                        <span>@m.Content</span><br />
-                        <small>@m.CreatedAt.ToString("HH:mm:ss")</small>
-                        @if (readByCount > 0)
-                        {
-                            <small> • Read by @readByCount</small>
-                        }
-                    </div>
+                    <p class="text-muted" style="margin:0;">No messages yet.</p>
                 }
-            }
+                else
+                {
+                    foreach (var m in Messages)
+                    {
+                        var readByCount = Participants.Count(p => p.LastReadMessageId.HasValue && p.LastReadMessageId.Value >= m.Id);
+                        var isAi = m.SenderType == "ai";
+                        <div class="message @(isAi ? "message-ai" : "message-user")">
+                            <div class="message-meta">
+                                <span class="message-sender">@(isAi ? "AI" : m.SenderName ?? m.SenderEmail)</span>
+                                <span class="message-time">@m.CreatedAt.ToString("HH:mm:ss")</span>
+                                @if (readByCount > 0)
+                                {
+                                    <span class="message-read" title="Read by participants">Read @readByCount</span>
+                                }
+                            </div>
+                            <div class="message-content">@m.Content</div>
+                        </div>
+                    }
+                }
+            </div>
         </div>
-        <div style="width:250px; border:1px solid #ccc; padding:6px; max-height:60vh; overflow:auto;">
-            <h3>Participants</h3>
-            @if (Participants.Count == 0)
-            {
-                <p>None</p>
-            }
-            else
-            {
-                foreach (var p in Participants)
+        <div class="card" style="width:280px; max-height:65vh; overflow:auto;">
+            <div class="card-header" style="position:sticky; top:0; background:var(--color-surface); z-index:2;">
+                <h3 style="margin:0; font-size:var(--font-size-md);">Participants</h3>
+            </div>
+            <div class="card-content" style="display:flex; flex-direction:column; gap:var(--space-2);">
+                @if (Participants.Count == 0)
                 {
-                    <div style="margin-bottom:4px;">
-                        <span>@(p.UserName ?? p.UserEmail)</span>
-                        @if (p.IsCurrentlyConnected)
-                        {
-                            <span style="color:green"> (online)</span>
-                        }
-                        else
-                        {
-                            <span style="color:gray"> (offline)</span>
-                        }
-                    </div>
+                    <p class="text-muted" style="margin:0;">None</p>
                 }
-            }
-            <button @onclick="LeaveRoomAsync">Leave Room</button>
+                else
+                {
+                    foreach (var p in Participants)
+                    {
+                        <div class="participant-row" style="display:flex; justify-content:space-between; align-items:center; font-size:var(--font-size-sm);">
+                            <span>@(p.UserName ?? p.UserEmail)</span>
+                            @if (p.IsCurrentlyConnected)
+                            {
+                                <span class="badge badge-success" style="font-size:var(--font-size-xs);">online</span>
+                            }
+                            else
+                            {
+                                <span class="badge" style="font-size:var(--font-size-xs); opacity:.7;">offline</span>
+                            }
+                        </div>
+                    }
+                }
+                <div style="margin-top:var(--space-3);">
+                    <button class="btn btn-danger-outline" @onclick="LeaveRoomAsync">Leave Room</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div style="margin-top:10px; border:1px solid #ccc; padding:6px;">
-        <textarea style="width:100%; height:80px;" @bind="OutgoingText"></textarea>
-        <div style="margin-top:6px; display:flex; gap:10px; align-items:center;">
-            <button @onclick="SendMessageAsync" disabled="@Sending">@(Sending ? "Sending..." : "Send to Group")</button>
-            <button @onclick="SendAiAsync" disabled="@SendingAi">@(SendingAi ? "Thinking..." : "Ask AI")</button>
-            <label><input type="checkbox" @bind="UseRag" /> Use RAG</label>
+    <div class="card" style="margin-top:var(--space-5);">
+        <div class="card-content" style="display:flex; flex-direction:column; gap:var(--space-3);">
+            <textarea class="input" style="min-height:100px;" @bind="OutgoingText" placeholder="Type your message or AI prompt..."></textarea>
+            <div style="display:flex; gap:var(--space-3); flex-wrap:wrap; align-items:center;">
+                <button class="btn btn-primary" @onclick="SendMessageAsync" disabled="@Sending">@(Sending ? "Sending..." : "Send to Group")</button>
+                <button class="btn btn-secondary" @onclick="SendAiAsync" disabled="@SendingAi">@(SendingAi ? "Thinking..." : "Ask AI")</button>
+                <label style="display:flex; align-items:center; gap:var(--space-1); font-size:var(--font-size-sm);">
+                    <input type="checkbox" @bind="UseRag" /> Use RAG
+                </label>
+            </div>
         </div>
     </div>
 }
