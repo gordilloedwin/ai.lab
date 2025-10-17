@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">AI Lab Flask Logo</title>
+  <desc id="desc">Erlenmeyer flask icon with AI text</desc>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0f2f5"/>
+      <stop offset="100%" stop-color="#c9ced3"/>
+    </linearGradient>
+    <clipPath id="liquidClip">
+      <path d="M44 20h40l-18 44v0c0 2 1 4 3 6 7 7 21 9 29 9 0 6-2 12-6 16-9 9-22 13-34 13s-25-4-34-13c-4-4-6-10-6-16 8 0 22-2 29-9 2-2 3-4 3-6v0L44 20z"/>
+    </clipPath>
+  </defs>
+  <rect width="128" height="128" fill="none"/>
+  <path d="M48 16h32c2 0 4 2 4 4l-16 46c0 3 1 5 2 7 6 6 18 8 26 8 2 0 4 2 4 4 0 8-3 16-10 22-10 10-24 15-38 15s-28-5-38-15c-7-6-10-14-10-22 0-2 2-4 4-4 8 0 20-2 26-8 1-2 2-4 2-7L44 20c0-2 2-4 4-4z" fill="#3a3f44" stroke="#272b2f" stroke-width="2"/>
+  <g clip-path="url(#liquidClip)">
+    <rect x="30" y="60" width="68" height="50" fill="url(#g)"/>
+    <circle cx="54" cy="78" r="5" fill="#e2e6ea" opacity="0.7"/>
+    <circle cx="74" cy="92" r="4" fill="#e2e6ea" opacity="0.5"/>
+  </g>
+  <text x="64" y="50" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#2e3338">AI</text>
+</svg>

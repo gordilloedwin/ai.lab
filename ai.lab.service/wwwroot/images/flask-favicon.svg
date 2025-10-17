@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 128 128" role="img" aria-label="AI Lab">
+  <defs>
+    <linearGradient id="gf" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f4f5f7"/>
+      <stop offset="100%" stop-color="#ccd1d6"/>
+    </linearGradient>
+  </defs>
+  <path d="M48 16h32l-16 46c0 4 2 6 6 9 6 6 16 8 24 8-1 16-8 26-18 34-8 6-18 9-28 9s-20-3-28-9c-10-8-17-18-18-34 8 0 18-2 24-8 4-3 6-5 6-9L48 16z" fill="#3a3f44" stroke="#2c3034" stroke-width="3"/>
+  <path d="M44 72c0 4 2 7 5 10 7 7 17 10 27 10v0c0 12-10 22-22 22s-22-10-22-22c10 0 20-3 27-10 3-3 5-6 5-10" fill="url(#gf)"/>
+  <text x="64" y="60" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="700" fill="#eceff2">AI</text>
+</svg>

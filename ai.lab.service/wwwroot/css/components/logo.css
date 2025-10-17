@@ -1,0 +1,7 @@
+/* Logo component styles */
+.logo-wrapper { display:flex; flex-direction:column; align-items:center; gap:var(--space-3); margin-bottom:var(--space-6); }
+.logo-main { width:160px; max-width:60vw; filter: drop-shadow(0 4px 12px rgba(0,0,0,.35)); transition: transform var(--transition-medium); }
+.logo-main:hover { transform: translateY(-4px); }
+.logo-favicon { width:40px; height:40px; }
+.brand-heading { font-size: var(--font-size-xl); font-weight:700; letter-spacing:.5px; margin:0; }
+.brand-tagline { font-size: var(--font-size-sm); color: var(--color-text-muted); margin:0; }
