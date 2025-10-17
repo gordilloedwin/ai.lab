@@ -52,8 +52,10 @@ public class OllamaClientManager
         {
             var stream = false;
             HttpClient.Timeout = TimeSpan.FromHours(1);
-            var requestBody = new { model, prompt, stream, context };
-            var content = new StringContent(JsonSerializer.Serialize(requestBody), System.Text.Encoding.UTF8, "application/json");
+            object requestBody = model.Contains("deepseek")
+                ? new { model, prompt, stream }
+                : (object)new { model, prompt, stream, context };
+            var content = new StringContent(JsonSerializer.Serialize(requestBody), System.Text.Encoding.UTF8, new System.Net.Http.Headers.MediaTypeHeaderValue("application/json"));
             var response = await HttpClient.PostAsync($"{options.CurrentValue.OllamaUrl}/api/generate", content, cancellationToken);
             response.EnsureSuccessStatusCode();
             var responseString = await response.Content.ReadAsStringAsync();

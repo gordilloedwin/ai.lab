@@ -114,6 +114,40 @@ public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAISer
 		}
 	}
 
+	// Static in-memory lock map; consider distributed cache if scaling out.
+	private static readonly Dictionary<long, string> _roomAiLocks = new(); // roomId -> lockingConnectionId
+	private static readonly object _lockSync = new();
+
+	private bool TryAcquireAiLock(long roomId)
+	{
+		lock (_lockSync)
+		{
+			if (_roomAiLocks.ContainsKey(roomId)) return false;
+			_roomAiLocks[roomId] = Context.ConnectionId;
+			return true;
+		}
+	}
+
+	private bool ReleaseAiLock(long roomId)
+	{
+		lock (_lockSync)
+		{
+			if (_roomAiLocks.TryGetValue(roomId, out var holder) && holder == Context.ConnectionId)
+			{
+				_roomAiLocks.Remove(roomId);
+				return true;
+			}
+			return false;
+		}
+	}
+	private static bool IsAiLocked(long roomId)
+	{
+		lock (_lockSync)
+		{
+			return _roomAiLocks.ContainsKey(roomId);
+		}
+	}
+
 	public async Task AskAi(long roomId, string prompt, bool useRag)
 	{
 		var email = GetUserEmail();
@@ -122,9 +156,16 @@ public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAISer
 			return;
 		}
 
+		// Attempt lock
+		if (!TryAcquireAiLock(roomId))
+		{
+			await Clients.Caller.SendAsync("AiBusyRejected", roomId, "AI is currently answering another question. Please wait.");
+			return;
+		}
+		await Clients.Group(RoomGroup(roomId)).SendAsync("AiBusyStateChanged", roomId, true);
+
 		try
 		{
-
 			var userQuestionMessage = await chatService.AddUserMessageAsync(roomId, email, prompt);
 			await Clients.Group(RoomGroup(roomId)).SendAsync("ReceiveMessage", userQuestionMessage);
 
@@ -138,6 +179,11 @@ public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAISer
 		{
 			logger.LogError(ex, "Failed AskAi for {Email} room {RoomId}", email, roomId);
 		}
+		finally
+		{
+			ReleaseAiLock(roomId);
+			await Clients.Group(RoomGroup(roomId)).SendAsync("AiBusyStateChanged", roomId, false);
+		}
 	}
 
 	/// <summary>
@@ -148,6 +194,14 @@ public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAISer
 	{
 		var email = GetUserEmail();
 		if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(prompt)) return;
+
+		// Attempt lock
+		if (!TryAcquireAiLock(roomId))
+		{
+			await Clients.Caller.SendAsync("AiBusyRejected", roomId, "AI is currently answering another question. Please wait.");
+			return;
+		}
+		await Clients.Group(RoomGroup(roomId)).SendAsync("AiBusyStateChanged", roomId, true);
 
 		var streamId = Guid.NewGuid().ToString("N");
 		try
@@ -185,6 +239,11 @@ public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAISer
 		{
 			logger.LogError(ex, "Failed AskAiStream for {Email} room {RoomId}", email, roomId);
 			await Clients.Group(RoomGroup(roomId)).SendAsync("AiTypingError", roomId, streamId, "AI stream failed.");
+		}
+		finally
+		{
+			ReleaseAiLock(roomId);
+			await Clients.Group(RoomGroup(roomId)).SendAsync("AiBusyStateChanged", roomId, false);
 		}
 	}
 

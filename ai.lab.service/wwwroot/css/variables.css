@@ -1,12 +1,13 @@
 /* Modern Design System Tokens – AI Lab Redesign */
 :root {
   /* Core Backgrounds (Dark glass theme) */
-  --color-bg: #06090d;
-  --color-bg-alt: #0b1118;
-  --color-surface: rgba(18,24,32,0.72); /* glass layer */
-  --color-surface-solid: #121820;
-  --color-surface-hover: rgba(30,40,52,0.85);
-  --color-overlay: rgba(0,0,0,0.55);
+  /* Lightened base tones (slightly higher luminance) */
+  --color-bg: #0a1016; /* was #06090d */
+  --color-bg-alt: #121a22; /* was #0b1118 */
+  --color-surface: rgba(28,36,46,0.72); /* was rgba(18,24,32,0.72) */
+  --color-surface-solid: #1a242e; /* was #121820 */
+  --color-surface-hover: rgba(42,54,66,0.86); /* was rgba(30,40,52,0.85) */
+  --color-overlay: rgba(0,0,0,0.48); /* slightly less heavy */
 
   /* Accent Palette (Cool tech + energetic highlight) */
   --accent-cyan-300: #5eead4;
@@ -32,19 +33,19 @@
   --color-focus: var(--accent-fuchsia-500);
 
   /* Text */
-  --color-text: #e2e8f0; /* slate-200 */
-  --color-text-muted: #94a3b8;
-  --color-text-faint: #64748b;
+  --color-text: #eef2f6; /* a bit brighter */
+  --color-text-muted: #a5b4c4; /* lighten muted */
+  --color-text-faint: #6f8191; /* slightly brighter */
   --color-text-invert: #ffffff;
   --color-text-danger: #fecaca;
 
   /* Borders & Dividers */
-  --color-border: #1e293b; /* slate-800 */
-  --color-border-muted: #14202c;
+  --color-border: #253246; /* lighten borders */
+  --color-border-muted: #1b2834; /* was #14202c */
   --color-border-glow: var(--accent-indigo-500);
 
   /* Gradients */
-  --gradient-primary: radial-gradient(circle at 30% 30%, rgba(99,102,241,0.35), transparent 70%), radial-gradient(circle at 70% 70%, rgba(45,212,191,0.25), transparent 75%);
+  --gradient-primary: radial-gradient(circle at 30% 30%, rgba(99,102,241,0.42), transparent 72%), radial-gradient(circle at 70% 70%, rgba(45,212,191,0.30), transparent 77%);
   --gradient-accent: linear-gradient(135deg, var(--accent-indigo-500), var(--accent-cyan-500));
   --gradient-danger: linear-gradient(135deg, #ef4444, #b91c1c);
 

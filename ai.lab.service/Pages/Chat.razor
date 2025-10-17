@@ -138,9 +138,18 @@ else
         <div style="display:flex; flex-direction:column; gap:var(--space-3);">
             <textarea class="input" style="min-height:110px; resize:vertical;" @bind="OutgoingText" placeholder="Type message or AI prompt..." @onkeydown="HandleComposerKey"></textarea>
             <div style="display:flex; gap:var(--space-3); flex-wrap:wrap; align-items:center;">
+                @* Status / notice for AI busy or rejection *@
+                @if (RoomAiBusy)
+                {
+                    <span class="badge" style="background:var(--color-warning); color:#000;">AI busy...</span>
+                }
+                else if (!string.IsNullOrWhiteSpace(AiBusyMessage))
+                {
+                    <span class="badge" style="background:var(--color-danger);">@AiBusyMessage</span>
+                }
                 <button class="btn btn-primary" @onclick="SendMessageAsync" disabled="@Sending">@(Sending ? "Sending..." : "Send to Group")</button>
-                <button class="btn btn-secondary" @onclick="SendAiAsync" disabled="@SendingAi">@(SendingAi ? "Thinking..." : "Ask AI (legacy)")</button>
-                <button class="btn btn-secondary-outline" @onclick="SendAiStreamAsync" disabled="@SendingAi">Stream AI</button>
+                <button class="btn btn-secondary" @onclick="SendAiAsync" disabled="@(SendingAi || RoomAiBusy)">@(SendingAi ? "Thinking..." : RoomAiBusy ? "AI Busy" : "Ask AI (legacy)")</button>
+                <button class="btn btn-secondary-outline" @onclick="SendAiStreamAsync" disabled="@(SendingAi || RoomAiBusy)">@(SendingAi ? "Thinking..." : RoomAiBusy ? "AI Busy" : "Stream AI")</button>
                 <label style="display:flex; align-items:center; gap:var(--space-1); font-size:var(--font-size-sm); cursor:pointer;">
                     <input type="checkbox" @bind="UseRag" /> Use RAG
                 </label>
@@ -169,9 +178,13 @@ else
     private long? HoverMessageId;
     private long? EditingMessageId;
     private string EditBuffer = string.Empty;
+    private bool RoomAiBusy = false;
+    private string? AiBusyMessage;
     // Debounce state for read marking
     private DateTime _lastReadMarkUtc = DateTime.MinValue;
     private static readonly TimeSpan ReadDebounce = TimeSpan.FromSeconds(2);
+    // Auto-scroll trigger flag
+    private bool _shouldScrollAfterRender = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -181,6 +194,36 @@ else
                     ?? user.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email)
                     ?? user.FindFirstValue("email");
         await SetupHubAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Initialize JS scroll module on first render
+            try 
+            { 
+                await Js.InvokeVoidAsync("AILabChat.init", "chatMessages"); 
+            } 
+            catch 
+            { 
+                // Silently ignore if module not loaded yet
+            }
+        }
+        
+        // Trigger auto-scroll after render if flag is set
+        if (_shouldScrollAfterRender)
+        {
+            _shouldScrollAfterRender = false;
+            try
+            {
+                await Js.InvokeVoidAsync("AILabChat.notifyNewMessage");
+            }
+            catch
+            {
+                // Silently handle JS interop errors (e.g., disconnect during render)
+            }
+        }
     }
 
     private async Task SetupHubAsync()
@@ -200,8 +243,6 @@ else
             await hub.StartAsync();
             Connected = true;
             await InitRoomAsync();
-            // Initialize JS scroll listener
-            try { await Js.InvokeVoidAsync("AILabChat.init", "chatMessages"); } catch { }
         }
         catch (Exception ex)
         {
@@ -254,11 +295,11 @@ else
             InvokeAsync(StateHasChanged);
         });
 
-        hub.On<ChatMessageResponse>("ReceiveMessage", async message =>
+        hub.On<ChatMessageResponse>("ReceiveMessage", message =>
         {
             Messages.Add(message);
-            await InvokeAsync(StateHasChanged);
-            // No immediate mark; rely on scroll near bottom to trigger debounced read update
+            _shouldScrollAfterRender = true;
+            InvokeAsync(StateHasChanged);
         });
 
         hub.On<long, string>("AiTypingStarted", (roomId, streamId) =>
@@ -274,6 +315,7 @@ else
         {
             if (roomId != RoomId || streamId != CurrentStreamId) return;
             AiStreamBuffer += chunk;
+            _shouldScrollAfterRender = true;
             InvokeAsync(StateHasChanged);
         });
 
@@ -284,6 +326,7 @@ else
             AiStreamBuffer = string.Empty;
             CurrentStreamId = null;
             Messages.Add(finalMessage);
+            _shouldScrollAfterRender = true;
             InvokeAsync(StateHasChanged);
         });
 
@@ -325,6 +368,34 @@ else
                 participant.LastReadMessageId = lastReadId;
             }
             InvokeAsync(StateHasChanged);
+        });
+
+        // AI busy state broadcast (per-room lock)
+        hub.On<long, bool>("AiBusyStateChanged", (roomId, isBusy) =>
+        {
+            if (roomId != RoomId) return;
+            RoomAiBusy = isBusy;
+            if (!isBusy)
+            {
+                // Clear transient message after unlock
+                AiBusyMessage = null;
+            }
+            InvokeAsync(StateHasChanged);
+        });
+
+        // Rejection when attempting to ask while busy
+        hub.On<long, string>("AiBusyRejected", (roomId, reason) =>
+        {
+            if (roomId != RoomId) return;
+            AiBusyMessage = reason;
+            InvokeAsync(StateHasChanged);
+            // Auto-clear after short delay
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(4000);
+                AiBusyMessage = null;
+                await InvokeAsync(StateHasChanged);
+            });
         });
     }
 
