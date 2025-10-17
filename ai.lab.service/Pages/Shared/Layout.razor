@@ -5,29 +5,39 @@
 
 @inherits LayoutComponentBase
 
-<header>
-    <h2>AI Lab</h2>
-    <nav>
-        <AuthorizeView>
-            <Authorized>
-                <span>Welcome, @context.User.Identity?.Name</span> |
-                <a href="/dashboard">Dashboard</a> |
-                <button @onclick="HandleLogoutAsync" style="border: none; background: none; color: blue; text-decoration: underline; cursor: pointer;">Logout</button>
-            </Authorized>
-            <NotAuthorized>
-                <a href="/">Login</a>
-            </NotAuthorized>
-        </AuthorizeView>
-    </nav>
-</header>
-
-<main>
-    @Body
-</main>
-
-<footer>
-    <small>&copy; 2025 AI Lab</small>
-</footer>
+<div class="app-shell">
+    <aside class="sidebar glass">
+        <div class="sidebar-brand">AI LAB</div>
+        <div class="sidebar-section">
+            <AuthorizeView>
+                <Authorized>
+                    <div class="user-block" style="font-size:var(--font-size-xs); color:var(--color-text-muted); margin-bottom:var(--space-2);">
+                        <span>Signed in</span>
+                        <div style="font-size:var(--font-size-sm); color:var(--color-text); font-weight:600;">@context.User.Identity?.Name</div>
+                    </div>
+                    <nav class="sidebar-nav">
+                        <a href="/dashboard">Dashboard</a>
+                        <a href="/">Login</a>
+                    </nav>
+                    <div style="margin-top:auto;">
+                        <button class="btn btn-outline" @onclick="HandleLogoutAsync">Logout</button>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <nav class="sidebar-nav">
+                        <a href="/">Login</a>
+                    </nav>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+        <div style="margin-top:auto; font-size:10px; opacity:.55;">&copy; 2025 AI Lab</div>
+    </aside>
+    <div class="content-area">
+        <div class="content-frame">
+            @Body
+        </div>
+    </div>
+</div>
 
 @code {
     private async Task HandleLogoutAsync()

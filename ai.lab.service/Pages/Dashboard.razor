@@ -14,9 +14,32 @@
 
 @attribute [Authorize]
 
-<div class="page-header">
-    <h1 class="page-title">Dashboard</h1>
-    <p class="page-subtitle">Welcome to your AI Lab dashboard.</p>
+<div class="page-header" style="margin-bottom:var(--space-6);">
+    <h1 class="page-title" style="font-size:var(--font-size-display); margin:0; background:var(--gradient-accent); -webkit-background-clip:text; background-clip:text; color:transparent;">Dashboard</h1>
+    <p class="page-subtitle" style="margin:8px 0 0; color:var(--color-text-muted);">Explore active rooms and AI activity.</p>
+    <div style="margin-top:var(--space-5); display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:var(--space-4);">
+        <div class="card" style="position:relative;">
+            <div class="card-content" style="display:flex; flex-direction:column; gap:4px;">
+                <span style="font-size:var(--font-size-xs); text-transform:uppercase; letter-spacing:.5px; color:var(--color-text-faint);">Rooms</span>
+                <strong style="font-size:var(--font-size-xl);">@Rooms?.Count ?? 0</strong>
+                <span class="badge badge-accent" style="width:fit-content;">Active</span>
+            </div>
+        </div>
+        <div class="card" style="position:relative;">
+            <div class="card-content" style="display:flex; flex-direction:column; gap:4px;">
+                <span style="font-size:var(--font-size-xs); text-transform:uppercase; letter-spacing:.5px; color:var(--color-text-faint);">Messages</span>
+                <strong style="font-size:var(--font-size-xl);">@(Rooms?.Sum(r => r.TotalMessageCount) ?? 0)</strong>
+                <span class="badge" style="width:fit-content;">Cumulative</span>
+            </div>
+        </div>
+        <div class="card" style="position:relative;">
+            <div class="card-content" style="display:flex; flex-direction:column; gap:4px;">
+                <span style="font-size:var(--font-size-xs); text-transform:uppercase; letter-spacing:.5px; color:var(--color-text-faint);">Unread</span>
+                <strong style="font-size:var(--font-size-xl);">@(Rooms?.Sum(r => r.UnreadMessageCount) ?? 0)</strong>
+                <span class="badge badge-danger" style="width:fit-content;">Needs attention</span>
+            </div>
+        </div>
+    </div>
 </div>
 
 <AuthorizeView>
@@ -30,10 +53,13 @@
     </Authorized>
 </AuthorizeView>
 
-<section class="section-block">
+<section class="section-block" style="margin-top:var(--space-6);">
     <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; gap:var(--space-4);">
-        <h2 class="section-title">Chat Rooms</h2>
-        <button class="btn btn-primary" @onclick="ToggleCreateRoom" disabled="@IsSubmittingRoom">@(ShowCreateRoom ? "Close" : "Create Room")</button>
+        <h2 class="section-title" style="margin:0; font-size:var(--font-size-lg);">Chat Rooms</h2>
+        <div style="display:flex; gap:var(--space-3);">
+            <button class="btn btn-primary" @onclick="ToggleCreateRoom" disabled="@IsSubmittingRoom">@(ShowCreateRoom ? "Close" : "Create Room")</button>
+            <button class="btn btn-secondary" @onclick="LoadRoomsAsync" disabled="@IsLoadingRooms">Refresh</button>
+        </div>
     </div>
     @if (ShowCreateRoom)
     {
