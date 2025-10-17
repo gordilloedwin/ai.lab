@@ -14,8 +14,9 @@
 @inject IJSRuntime Js
 
 
-<div class="page-header">
-    <h2 class="page-title">Chat Room @RoomId</h2>
+<div class="page-header" style="margin-bottom:var(--space-5);">
+    <h2 class="page-title" style="margin:0; font-size:var(--font-size-xl); font-weight:600; letter-spacing:.5px;">Chat Room @RoomId</h2>
+    <p class="text-muted" style="margin-top:4px; font-size:var(--font-size-sm);">Real-time collaboration & AI responses.</p>
 </div>
 
 @if (InitError != null)
@@ -29,7 +30,7 @@ else if (!Connected)
 else
 {
     <div class="chat-layout" style="display:flex; gap:var(--space-5); align-items:stretch;">
-        <div id="chatMessages" class="card" style="flex:1; max-height:65vh; overflow:auto;">
+        <div id="chatMessages" class="card" style="flex:1; max-height:65vh; overflow:auto; scroll-behavior:smooth;">
             <div class="card-header" style="position:sticky; top:0; background:var(--color-surface); z-index:2;">
                 <h3 style="margin:0; font-size:var(--font-size-md);">Messages</h3>
             </div>
@@ -59,7 +60,7 @@ else
                 }
             </div>
         </div>
-        <div class="card" style="width:280px; max-height:65vh; overflow:auto;">
+        <div class="card" style="width:300px; max-height:65vh; overflow:auto;">
             <div class="card-header" style="position:sticky; top:0; background:var(--color-surface); z-index:2;">
                 <h3 style="margin:0; font-size:var(--font-size-md);">Participants</h3>
             </div>
@@ -92,13 +93,13 @@ else
         </div>
     </div>
 
-    <div class="card" style="margin-top:var(--space-5);">
-        <div class="card-content" style="display:flex; flex-direction:column; gap:var(--space-3);">
-            <textarea class="input" style="min-height:100px;" @bind="OutgoingText" placeholder="Type your message or AI prompt..."></textarea>
+    <div class="composer" style="margin-top:var(--space-5);">
+        <div style="display:flex; flex-direction:column; gap:var(--space-3);">
+            <textarea class="input" style="min-height:110px; resize:vertical;" @bind="OutgoingText" placeholder="Type message or AI prompt..."></textarea>
             <div style="display:flex; gap:var(--space-3); flex-wrap:wrap; align-items:center;">
                 <button class="btn btn-primary" @onclick="SendMessageAsync" disabled="@Sending">@(Sending ? "Sending..." : "Send to Group")</button>
                 <button class="btn btn-secondary" @onclick="SendAiAsync" disabled="@SendingAi">@(SendingAi ? "Thinking..." : "Ask AI")</button>
-                <label style="display:flex; align-items:center; gap:var(--space-1); font-size:var(--font-size-sm);">
+                <label style="display:flex; align-items:center; gap:var(--space-1); font-size:var(--font-size-sm); cursor:pointer;">
                     <input type="checkbox" @bind="UseRag" /> Use RAG
                 </label>
             </div>
