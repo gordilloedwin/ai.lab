@@ -2,23 +2,46 @@
    Usage: Define semantic palette + scales. Override in themes/dark.css
 */
 :root {
-  /* Color palette */
-  --color-bg: #0f1115;
-  --color-surface: #181c22;
-  --color-surface-alt: #20252d;
-  --color-border: #2a313b;
-  --color-border-subtle: #1d232b;
-  --color-primary: #3d82f3;
-  --color-primary-accent: #5ca0ff;
-  --color-primary-faded: #2b5fb0;
-  --color-secondary: #8b5cf6;
-  --color-secondary-accent: #b38cff;
+  /* Color palette (Neutral grey focus) */
+  /* Grey scale tokens */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-150: #ebedf0; /* custom mid */
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-650: #414b57; /* custom */
+  --gray-700: #374151;
+  --gray-750: #2f3843; /* custom */
+  --gray-800: #1f2937;
+  --gray-850: #181c22; /* custom tie-in */
+  --gray-900: #111827;
+  --gray-950: #0d1115; /* near-black */
+
+  /* Semantic mappings */
+  --color-bg: var(--gray-950);
+  --color-surface: var(--gray-850);
+  --color-surface-alt: var(--gray-800);
+  --color-border: var(--gray-750);
+  --color-border-subtle: var(--gray-800);
+
+  /* Primary / accent now subtle neutral or reserved accent blues/purples */
+  --color-primary: var(--gray-300); /* neutral primary */
+  --color-primary-accent: var(--gray-200);
+  --color-primary-faded: var(--gray-500);
+  --color-secondary: var(--gray-400);
+  --color-secondary-accent: var(--gray-300);
+
+  /* Legacy accent colors retained for status only */
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
   --color-success: #10b981;
-  --color-info: #0ea5e9;
-  --color-text: #e5e7eb;
-  --color-text-muted: #94a3b8;
+  --color-info: #3d82f3; /* moved info to a blue accent */
+
+  --color-text: var(--gray-150);
+  --color-text-muted: var(--gray-500);
   --color-text-invert: #ffffff;
   --color-highlight: #fde68a;
 
