@@ -49,6 +49,23 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
         }
     }
 
+    /// <summary>
+    /// Attempts to return the currently cached JWT token if the user is authenticated.
+    /// </summary>
+    public string? TryGetCachedToken()
+    {
+        if (_user.Identity?.IsAuthenticated == true)
+        {
+            // Original token was stored only in localStorage; we can reconstruct by encoding claims again if needed.
+            // For simplicity we re-fetch from localStorage via JS if not already restored.
+            // Prefer GetCurrentTokenAsync for async retrieval.
+            return _cachedToken;
+        }
+        return null;
+    }
+
+    private string? _cachedToken;
+
     private void SetToken(string token)
     {
         if (string.IsNullOrWhiteSpace(token)) return;
@@ -63,6 +80,7 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
             var identity = new ClaimsIdentity(claims, "Bearer", "name", ClaimTypes.Role);
             _user = new ClaimsPrincipal(identity);
             
+            _cachedToken = token;
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_user)));
 
             // Schedule auto-logout based on exp claim if present
@@ -108,6 +126,31 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
         }
         
         return new AuthenticationState(_user);
+    }
+
+    /// <summary>
+    /// Retrieves the current JWT token. If not already cached, attempts localStorage retrieval.
+    /// </summary>
+    public async Task<string?> GetCurrentTokenAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(_cachedToken)) return _cachedToken;
+        try
+        {
+            var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                if (_user.Identity?.IsAuthenticated != true)
+                {
+                    SetToken(token); // Ensure claims are populated
+                }
+                return token;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed retrieving token via GetCurrentTokenAsync");
+        }
+        return null;
     }
 
     private void PerformLogout()

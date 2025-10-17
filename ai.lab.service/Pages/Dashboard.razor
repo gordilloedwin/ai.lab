@@ -93,17 +93,13 @@
                         <td>@room.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                         <td>@(room.IsActive ? (room.IsFull ? "Full" : "Open") : "Inactive")</td>
                         <td>
-                            @if (!room.IsUserInRoom && !room.IsFull && room.IsActive)
-                            {
-                                <button @onclick="() => JoinRoomAsync(room.Id)" disabled="@JoiningRoomIds.Contains(room.Id)">@(JoiningRoomIds.Contains(room.Id) ? "Joining..." : "Join")</button>
-                            }
-                            else if (room.IsUserInRoom)
-                            {
-                                <span>Joined</span>
-                            }
-                            else if (room.IsFull)
+                            @if (room.IsFull && !room.IsUserInRoom)
                             {
                                 <span>Full</span>
+                            }
+                            else
+                            {
+                                <button @onclick="() => HandleEnterRoomAsync(room)" disabled="@JoiningRoomIds.Contains(room.Id)">@(room.IsUserInRoom ? "Open" : (JoiningRoomIds.Contains(room.Id) ? "Joining..." : "Join"))</button>
                             }
                             <button disabled title="Delete (admin only later)">Delete</button>
                         </td>
@@ -221,30 +217,37 @@
         }
     }
 
-    private async Task JoinRoomAsync(long roomId)
+    private async Task HandleEnterRoomAsync(ChatRoomResponse room)
     {
-        if (JoiningRoomIds.Contains(roomId)) return;
         if (string.IsNullOrWhiteSpace(UserEmail)) return;
-        try
+        // If not in room, attempt join first
+        if (!room.IsUserInRoom && !room.IsFull && room.IsActive)
         {
-            JoiningRoomIds.Add(roomId);
-            // For now we pass a dummy connection id, later SignalR will handle
-            var success = await ChatService.JoinChatRoomAsync(roomId, UserEmail!, $"ui-{Guid.NewGuid()}");
-            if (!success)
+            if (JoiningRoomIds.Contains(room.Id)) return;
+            try
             {
-                // naive error feedback
-                RoomsError = "Failed to join room (might be full or inactive).";
+                JoiningRoomIds.Add(room.Id);
+                var success = await ChatService.JoinChatRoomAsync(room.Id, UserEmail!, $"ui-{Guid.NewGuid()}");
+                if (!success)
+                {
+                    RoomsError = "Failed to join room (might be full or inactive).";
+                    return;
+                }
+                // Refresh state so IsUserInRoom updates
+                await LoadRoomsAsync();
             }
-            await LoadRoomsAsync();
+            catch (Exception ex)
+            {
+                RoomsError = $"Join failed: {ex.Message}";
+                return;
+            }
+            finally
+            {
+                JoiningRoomIds.Remove(room.Id);
+            }
         }
-        catch (Exception ex)
-        {
-            RoomsError = $"Join failed: {ex.Message}";
-        }
-        finally
-        {
-            JoiningRoomIds.Remove(roomId);
-        }
+        // Navigate to chat page
+        Nav.NavigateTo($"/chat/{room.Id}");
     }
 
     private async Task HandleLogoutAsync()
