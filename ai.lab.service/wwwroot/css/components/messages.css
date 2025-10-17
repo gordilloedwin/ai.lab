@@ -1,0 +1,17 @@
+/* Component: Chat messages */
+.chat-wrapper { display:flex; flex-direction:column; gap:var(--space-3); }
+.message-list { display:flex; flex-direction:column; gap:var(--space-3); padding:var(--space-4); background:var(--color-surface); border:1px solid var(--color-border-subtle); border-radius:var(--radius-md); overflow-y:auto; max-height:65vh; }
+.message { display:flex; gap:var(--space-3); position:relative; }
+.message-avatar { width:40px; height:40px; border-radius:50%; background:var(--color-surface-alt); display:flex; align-items:center; justify-content:center; font-size:var(--font-size-sm); font-weight:600; color:var(--color-text-muted); }
+.message-bubble { flex:1; padding:var(--space-3) var(--space-4); background:var(--color-surface-alt); border:1px solid var(--color-border-subtle); border-radius:var(--radius-md); position:relative; box-shadow:var(--shadow-sm); }
+.message-bubble.user { background:linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-accent) 100%); color:var(--color-text-invert); border-color: var(--color-primary-faded); }
+.message-bubble.ai { background:linear-gradient(135deg, #384152 0%, #2a313b 100%); }
+.message-meta { font-size: var(--font-size-xs); margin-top:var(--space-2); color:var(--color-text-muted); display:flex; justify-content:space-between; }
+.read-receipt { font-size: var(--font-size-xs); color: var(--color-text-muted); opacity:.8; }
+.message-new { animation: msgIn .35s ease; }
+@keyframes msgIn { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:translateY(0);} }
+.typing-indicator { width:36px; display:flex; gap:4px; padding:8px 12px; background:var(--color-surface-alt); border:1px solid var(--color-border-subtle); border-radius:var(--radius-pill); }
+.typing-indicator span { width:6px; height:6px; background:var(--color-primary); border-radius:50%; animation: bounce 1s infinite; }
+.typing-indicator span:nth-child(2){ animation-delay:.2s; }
+.typing-indicator span:nth-child(3){ animation-delay:.4s; }
+@keyframes bounce { 0%,80%,100% { transform:scale(.7); opacity:.5;} 40% { transform:scale(1); opacity:1;} }

@@ -1,0 +1,14 @@
+/* Dark theme overrides - apply via body.theme-dark or [data-theme="dark"] selector */
+body.theme-dark, [data-theme="dark"] {
+  --color-bg: #050607;
+  --color-surface: #101317;
+  --color-surface-alt: #171b21;
+  --color-border: #232a33;
+  --color-border-subtle: #161c23;
+  --color-primary: #3d82f3;
+  --color-primary-accent: #5ca0ff;
+  --color-primary-faded: #2b5fb0;
+  --color-text: #e2e8f0;
+  --color-text-muted: #6b7280;
+  --color-danger: #f97068;
+}

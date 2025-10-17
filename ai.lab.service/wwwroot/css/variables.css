@@ -1,0 +1,78 @@
+/* CSS Design Tokens & Variables
+   Usage: Define semantic palette + scales. Override in themes/dark.css
+*/
+:root {
+  /* Color palette */
+  --color-bg: #0f1115;
+  --color-surface: #181c22;
+  --color-surface-alt: #20252d;
+  --color-border: #2a313b;
+  --color-border-subtle: #1d232b;
+  --color-primary: #3d82f3;
+  --color-primary-accent: #5ca0ff;
+  --color-primary-faded: #2b5fb0;
+  --color-secondary: #8b5cf6;
+  --color-secondary-accent: #b38cff;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  --color-success: #10b981;
+  --color-info: #0ea5e9;
+  --color-text: #e5e7eb;
+  --color-text-muted: #94a3b8;
+  --color-text-invert: #ffffff;
+  --color-highlight: #fde68a;
+
+  /* Elevation / Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.35);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.4);
+
+  /* Radii */
+  --radius-xs: 3px;
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* Spacing scale (4pt system) */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+  --space-10: 64px;
+
+  /* Typography */
+  --font-family-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  --font-size-xs: 11px;
+  --font-size-sm: 13px;
+  --font-size-base: 15px;
+  --font-size-md: 17px;
+  --font-size-lg: 20px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 30px;
+  --font-line-height: 1.5;
+
+  /* Transitions */
+  --transition-fast: 120ms ease;
+  --transition-medium: 240ms ease;
+  --transition-slow: 400ms ease;
+
+  /* Layout */
+  --layout-max-width: 1280px;
+  --layout-gutter: var(--space-6);
+  --navbar-height: 60px;
+
+  /* Z-index */
+  --z-overlay: 1000;
+  --z-popover: 900;
+  --z-dropdown: 800;
+  --z-sticky: 700;
+  --z-base: 1;
+}

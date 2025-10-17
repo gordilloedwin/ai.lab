@@ -1,0 +1,40 @@
+/* Component: Buttons */
+.button, button.primary, .btn-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-accent) 100%);
+  color: var(--color-text-invert);
+  border: 1px solid var(--color-primary-faded);
+  padding: var(--space-2) var(--space-4);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  line-height: 1.2;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.button:hover, button.primary:hover, .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.button:active, button.primary:active, .btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+.button.outline, .btn-outline {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+}
+.button.outline:hover, .btn-outline:hover {
+  border-color: var(--color-primary-accent);
+  color: var(--color-primary-accent);
+}
+.button.danger, .btn-danger {
+  background: linear-gradient(135deg, var(--color-danger) 0%, #ff735e 100%);
+  border-color: #d92f2f;
+}
+.button.small, .btn-sm { padding: var(--space-1) var(--space-3); font-size: var(--font-size-sm); }
+.button.large, .btn-lg { padding: var(--space-3) var(--space-5); font-size: var(--font-size-md); }
+
+.button[disabled], .btn-primary[disabled] { opacity:.5; cursor: not-allowed; }
