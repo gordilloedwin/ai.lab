@@ -65,7 +65,7 @@ else
                                     <span class="message-read" title="Read by participants">Read @readByCount</span>
                                 }
                             </div>
-                            <div class="message-content">
+                            <div class="message-content" id="msg-@m.Id">
                                 @if (EditingMessageId == m.Id)
                                 {
                                     <textarea class="input" style="min-height:80px;" @bind="EditBuffer"></textarea>
@@ -76,7 +76,7 @@ else
                                 }
                                 else
                                 {
-                                    @m.Content
+                                    @* Content will be rendered as markdown via JavaScript *@
                                 }
                             </div>
                             @if (m.SenderType == "user" && m.IsOwnMessage && HoverMessageId == m.Id && EditingMessageId != m.Id)
@@ -95,7 +95,9 @@ else
                                 <span class="message-sender">AI</span>
                                 <span class="message-time">Streaming...</span>
                             </div>
-                            <div class="message-content" aria-live="polite">@AiStreamBuffer</div>
+                            <div class="message-content" id="msg-streaming" aria-live="polite">
+                                @* Streaming content will be rendered as markdown via JavaScript *@
+                            </div>
                         </div>
                     }
                 }
@@ -224,6 +226,32 @@ else
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ JS init error: {ex.Message}");
+            }
+        }
+
+        // Render markdown for all visible messages
+        if (_initJsDone && Connected)
+        {
+            try
+            {
+                // Render all regular messages
+                foreach (var m in Messages)
+                {
+                    if (EditingMessageId != m.Id)
+                    {
+                        await Js.InvokeVoidAsync("AILabMarkdown.updateElement", $"msg-{m.Id}", m.Content);
+                    }
+                }
+
+                // Render streaming AI message if active
+                if (AiStreaming && !string.IsNullOrWhiteSpace(AiStreamBuffer))
+                {
+                    await Js.InvokeVoidAsync("AILabMarkdown.updateElement", "msg-streaming", AiStreamBuffer);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Markdown render error: {ex.Message}");
             }
         }
 

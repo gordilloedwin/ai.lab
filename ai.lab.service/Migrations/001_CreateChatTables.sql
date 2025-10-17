@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 INSERT INTO ai_lab_db.users
 (id, email, name, password_hash, avatar_uri, is_admin, last_seen, created_at, context_json)
-VALUES(1, 'admin@ai.lab', 'Administrator', 'ZcvcRoV++eiyOthbZy9lEhxAOs+kjc0kVJs1Yt8RHV+4m4C0AbAblcNPl9wwlIYt', NULL, 1, NULL, '2025-10-08 20:54:49.000', NULL);
+VALUES
+(1, 'admin@ai.lab', 'Administrator', 'ZcvcRoV++eiyOthbZy9lEhxAOs+kjc0kVJs1Yt8RHV+4m4C0AbAblcNPl9wwlIYt', NULL, 1, NULL, '2025-10-08 20:54:49.000', NULL);
 
 INSERT INTO ai_lab_db.users
 (id, email, name, password_hash, avatar_uri, is_admin, last_seen, created_at, context_json)

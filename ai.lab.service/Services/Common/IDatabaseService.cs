@@ -49,7 +49,7 @@ public interface IDatabaseService
     /// <param name="context">A list of context identifiers to associate with the user's last seen update. Cannot be null.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous update operation.</returns>
-    Task UpdateUserLastSeenAsync(string email, DateTime lastSeen, List<int> context, CancellationToken cancellationToken);
+    Task UpdateUserLastSeenAsync(string email, DateTime lastSeen, List<UserChatContext> context, CancellationToken cancellationToken);
 
     #region Room Management
 

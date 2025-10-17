@@ -168,7 +168,7 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
         }
     }
 
-    public async Task UpdateUserLastSeenAsync(string email, DateTime lastSeen, List<int> context, CancellationToken cancellationToken)
+    public async Task UpdateUserLastSeenAsync(string email, DateTime lastSeen, List<UserChatContext> context, CancellationToken cancellationToken)
     {
         try
         {

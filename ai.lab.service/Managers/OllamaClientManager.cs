@@ -51,10 +51,8 @@ public class OllamaClientManager
         try
         {
             var stream = false;
-            HttpClient.Timeout = TimeSpan.FromHours(1);
-            object requestBody = model.Contains("deepseek")
-                ? new { model, prompt, stream }
-                : (object)new { model, prompt, stream, context };
+            HttpClient.Timeout = TimeSpan.FromMinutes(10);
+            var requestBody = new { model, prompt, stream, context = context ?? Array.Empty<int>() };
             var content = new StringContent(JsonSerializer.Serialize(requestBody), System.Text.Encoding.UTF8, new System.Net.Http.Headers.MediaTypeHeaderValue("application/json"));
             var response = await HttpClient.PostAsync($"{options.CurrentValue.OllamaUrl}/api/generate", content, cancellationToken);
             response.EnsureSuccessStatusCode();
@@ -95,7 +93,7 @@ public class OllamaClientManager
                 prompt = chunkText
             };
             
-            HttpClient.Timeout = TimeSpan.FromHours(1);
+            HttpClient.Timeout = TimeSpan.FromMinutes(10);
             var ollamaResponse = await HttpClient.PostAsJsonAsync($"{options.CurrentValue.OllamaUrl}/api/embeddings", embeddingRequest, cancellationToken);
             ollamaResponse.EnsureSuccessStatusCode();
             var embeddingResult = await ollamaResponse.Content.ReadFromJsonAsync<EmbeddingResponse>(cancellationToken: cancellationToken);

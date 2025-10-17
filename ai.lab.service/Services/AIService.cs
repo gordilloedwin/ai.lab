@@ -27,7 +27,7 @@ public sealed class AIService
     {
         try
         {
-            var context = sessionManager != null ? (await sessionManager.GetContextAsync(email, cancellationToken))?.ToArray() ?? [] : [];
+            var context = sessionManager != null ? (await sessionManager.GetContextAsync(email, model, cancellationToken))?.ToArray() ?? [] : [];
             var responseString = await ollamaClient.CallOllamaApiAsync(model, prompt, context, cancellationToken);
 
             if (string.IsNullOrWhiteSpace(responseString))
@@ -56,7 +56,7 @@ public sealed class AIService
             aiServiceResponse.Response = doc.RootElement.TryGetProperty("response", out var message) ? (message.GetString() ?? string.Empty) : string.Empty;
             if (sessionManager != null)
             {
-                await sessionManager.StoreContextAsync(email, aiServiceResponse?.Context?.ToList() ?? [], cancellationToken);
+                await sessionManager.StoreContextAsync(email, model, aiServiceResponse?.Context?.ToList() ?? [], cancellationToken);
             }
 
             return aiServiceResponse ?? new AiGenerateResponse();
@@ -131,7 +131,7 @@ public sealed class AIService
         };
 
         using var process = Process.Start(psi)!;
-        var context = sessionManager != null ? (await sessionManager.GetContextAsync(email, cancellationToken))?.ToArray() ?? [] : [];
+        var context = sessionManager != null ? (await sessionManager.GetContextAsync(email, model, cancellationToken))?.ToArray() ?? [] : [];
         await process.StandardInput.WriteLineAsync(JsonSerializer.Serialize(new
         {
             model,
@@ -182,7 +182,7 @@ public sealed class AIService
             {
                 if (sessionManager != null)
                 {
-                    await sessionManager.StoreContextAsync(email, chunkContext, cancellationToken);
+                    await sessionManager.StoreContextAsync(email, model, chunkContext, cancellationToken);
                 }
 
                 await Task.Delay(30, cancellationToken);
