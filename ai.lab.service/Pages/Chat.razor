@@ -187,6 +187,7 @@ else
     private bool _shouldScrollAfterRender = false;
     // DotNet reference for JS interop callbacks
     private DotNetObjectReference<Chat>? _dotNetRef;
+    private bool _initJsDone = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -200,24 +201,34 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        // Initialize JS only after Connected AND chatMessages element rendered
+        if (!_initJsDone && Connected)
         {
-            // Create DotNet reference for JS callbacks
-            _dotNetRef = DotNetObjectReference.Create(this);
-            
-            // Initialize JS scroll module with component reference
-            try 
-            { 
-                await Js.InvokeVoidAsync("AILabChat.init", "chatMessages", _dotNetRef); 
-            } 
+            try
+            {
+                // Probe for element existence via JS before init (returns true/false)
+                var exists = await Js.InvokeAsync<bool>("eval", "!!document.getElementById('chatMessages')");
+                if (exists)
+                {
+                    Console.WriteLine("� Initializing AILabChat (element found)");
+                    _dotNetRef = DotNetObjectReference.Create(this);
+                    await Js.InvokeVoidAsync("AILabChat.init", "chatMessages", _dotNetRef);
+                    _initJsDone = true;
+                    Console.WriteLine("✅ AILabChat.init completed");
+                }
+                else
+                {
+                    Console.WriteLine("⏳ chatMessages element not yet present; will retry next render");
+                }
+            }
             catch (Exception ex)
-            { 
-                Console.WriteLine($"Failed to init chat scroll: {ex.Message}");
+            {
+                Console.WriteLine($"❌ JS init error: {ex.Message}");
             }
         }
-        
-        // Trigger auto-scroll after render if flag is set
-        if (_shouldScrollAfterRender)
+
+        // Trigger auto-scroll after render if flag is set and JS initialized
+        if (_shouldScrollAfterRender && _initJsDone)
         {
             _shouldScrollAfterRender = false;
             try
@@ -226,7 +237,7 @@ else
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Auto-scroll failed: {ex.Message}");
+                Console.WriteLine($"❌ notifyNewMessage error: {ex.Message}");
             }
         }
     }
@@ -302,8 +313,10 @@ else
 
         hub.On<ChatMessageResponse>("ReceiveMessage", message =>
         {
+               Console.WriteLine($"📨 ReceiveMessage: {message.Content?.Substring(0, Math.Min(50, message.Content?.Length ?? 0))}...");
             Messages.Add(message);
             _shouldScrollAfterRender = true;
+               Console.WriteLine($"✅ Message added, scroll flag set. Total messages: {Messages.Count}");
             InvokeAsync(StateHasChanged);
         });
 
@@ -504,7 +517,9 @@ else
     [JSInvokable]
     public async Task OnScrolledNearBottom()
     {
+           Console.WriteLine("📨 OnScrolledNearBottom called from JavaScript");
         await MarkLastMessageAsReadAsync();
+           Console.WriteLine("✅ MarkLastMessageAsReadAsync completed");
     }
 
     public async ValueTask DisposeAsync()
