@@ -9,8 +9,42 @@ namespace ai.lab.service.Services;
 /// </summary>
 public class ChatService(ILogger<ChatService> logger, IOllamaClient ollamaClient, IDatabaseService databaseService) : IChatService
 {
-    public async Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default) => 
-        await ollamaClient.GetAvailableAiModels(cancellationToken);
+    // Simple in-memory cache for AI models with TTL
+    private static List<string>? _cachedModels;
+    private static DateTime _cachedModelsExpiresUtc = DateTime.MinValue;
+    private static readonly TimeSpan _modelsTtl = TimeSpan.FromMinutes(5);
+    private static readonly object _modelsLock = new();
+
+    public async Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default)
+    {
+        // Fast path if cache valid
+        if (_cachedModels is not null && DateTime.UtcNow < _cachedModelsExpiresUtc)
+        {
+            return _cachedModels;
+        }
+
+        // Fetch + update cache (single thread populates)
+        try
+        {
+            var models = await ollamaClient.GetAvailableAiModels(cancellationToken);
+            lock (_modelsLock)
+            {
+                _cachedModels = models;
+                _cachedModelsExpiresUtc = DateTime.UtcNow.Add(_modelsTtl);
+            }
+            return models;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to refresh AI models list; serving stale cache if available.");
+            if (_cachedModels is not null)
+            {
+                return _cachedModels; // stale fallback
+            }
+            // If no cache at all, rethrow to surface error
+            throw;
+        }
+    }
 
     public async Task<ChatMessageResponse> AddAiMessageAsync(long chatRoomId, string content, CancellationToken cancellationToken = default)
     {

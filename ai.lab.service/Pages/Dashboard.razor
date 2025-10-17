@@ -41,7 +41,28 @@
             </div>
             <div>
                 <label>AI Model (optional):</label>
-                <input @bind="NewRoomAiModel" />
+                @if (IsLoadingModels)
+                {
+                    <span>Loading models...</span>
+                }
+                else if (!string.IsNullOrWhiteSpace(ModelsError))
+                {
+                    <span style="color:red">@ModelsError</span>
+                }
+                else if (AvailableModels?.Count > 0)
+                {
+                    <select @onchange="OnModelChanged">
+                        <option value="">-- None --</option>
+                        @foreach (var model in AvailableModels)
+                        {
+                            <option value="@model" selected="@(model == NewRoomAiModel)">@model</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    <span>No models found.</span>
+                }
             </div>
             <div>
                 <label>Max Participants (optional, 2-30):</label>
@@ -124,6 +145,10 @@
     private string? NewRoomAiModel;
     private int? NewRoomMaxParticipants;
     private string? CreateError;
+    // AI models state
+    private List<string>? AvailableModels;
+    private bool IsLoadingModels = false;
+    private string? ModelsError;
 
     private HashSet<long> JoiningRoomIds = new();
 
@@ -131,6 +156,7 @@
     {
         await LoadUserAsync();
         await LoadRoomsAsync();
+        await LoadModelsAsync();
     }
 
     private async Task LoadUserAsync()
@@ -214,6 +240,38 @@
         finally
         {
             IsSubmittingRoom = false;
+        }
+    }
+
+    private async Task LoadModelsAsync()
+    {
+        ModelsError = null;
+        IsLoadingModels = true;
+        try
+        {
+            AvailableModels = await ChatService.GetAvailableAiModels();
+        }
+        catch (Exception ex)
+        {
+            ModelsError = $"Failed to load models: {ex.Message}";
+        }
+        finally
+        {
+            IsLoadingModels = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnModelChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            NewRoomAiModel = null;
+        }
+        else
+        {
+            NewRoomAiModel = value;
         }
     }
 
