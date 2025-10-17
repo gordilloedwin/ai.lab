@@ -1,96 +1,112 @@
-/* CSS Design Tokens & Variables
-   Usage: Define semantic palette + scales. Override in themes/dark.css
-*/
+/* Modern Design System Tokens – AI Lab Redesign */
 :root {
-  /* Color palette (Neutral grey focus) */
-  /* Grey scale tokens */
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-150: #ebedf0; /* custom mid */
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-650: #414b57; /* custom */
-  --gray-700: #374151;
-  --gray-750: #2f3843; /* custom */
-  --gray-800: #1f2937;
-  --gray-850: #181c22; /* custom tie-in */
-  --gray-900: #111827;
-  --gray-950: #0d1115; /* near-black */
+  /* Core Backgrounds (Dark glass theme) */
+  --color-bg: #06090d;
+  --color-bg-alt: #0b1118;
+  --color-surface: rgba(18,24,32,0.72); /* glass layer */
+  --color-surface-solid: #121820;
+  --color-surface-hover: rgba(30,40,52,0.85);
+  --color-overlay: rgba(0,0,0,0.55);
 
-  /* Semantic mappings */
-  --color-bg: var(--gray-950);
-  --color-surface: var(--gray-850);
-  --color-surface-alt: var(--gray-800);
-  --color-border: var(--gray-750);
-  --color-border-subtle: var(--gray-800);
+  /* Accent Palette (Cool tech + energetic highlight) */
+  --accent-cyan-300: #5eead4;
+  --accent-cyan-400: #2dd4bf;
+  --accent-cyan-500: #14b8a6;
+  --accent-indigo-400: #818cf8;
+  --accent-indigo-500: #6366f1;
+  --accent-indigo-600: #4f46e5;
+  --accent-purple-500: #a855f7;
+  --accent-fuchsia-500: #d946ef;
+  --accent-amber-400: #fbbf24;
+  --accent-amber-500: #f59e0b;
 
-  /* Primary / accent now subtle neutral or reserved accent blues/purples */
-  --color-primary: var(--gray-300); /* neutral primary */
-  --color-primary-accent: var(--gray-200);
-  --color-primary-faded: var(--gray-500);
-  --color-secondary: var(--gray-400);
-  --color-secondary-accent: var(--gray-300);
-
-  /* Legacy accent colors retained for status only */
+  /* Semantic Colors */
+  --color-primary: var(--accent-indigo-500);
+  --color-primary-glow: var(--accent-indigo-400);
+  --color-secondary: var(--accent-cyan-400);
+  --color-secondary-glow: var(--accent-cyan-300);
   --color-danger: #ef4444;
-  --color-warning: #f59e0b;
+  --color-warning: var(--accent-amber-500);
   --color-success: #10b981;
-  --color-info: #3d82f3; /* moved info to a blue accent */
+  --color-info: var(--accent-cyan-400);
+  --color-focus: var(--accent-fuchsia-500);
 
-  --color-text: var(--gray-150);
-  --color-text-muted: var(--gray-500);
+  /* Text */
+  --color-text: #e2e8f0; /* slate-200 */
+  --color-text-muted: #94a3b8;
+  --color-text-faint: #64748b;
   --color-text-invert: #ffffff;
-  --color-highlight: #fde68a;
+  --color-text-danger: #fecaca;
 
-  /* Elevation / Shadows */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.35);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,.4);
+  /* Borders & Dividers */
+  --color-border: #1e293b; /* slate-800 */
+  --color-border-muted: #14202c;
+  --color-border-glow: var(--accent-indigo-500);
+
+  /* Gradients */
+  --gradient-primary: radial-gradient(circle at 30% 30%, rgba(99,102,241,0.35), transparent 70%), radial-gradient(circle at 70% 70%, rgba(45,212,191,0.25), transparent 75%);
+  --gradient-accent: linear-gradient(135deg, var(--accent-indigo-500), var(--accent-cyan-500));
+  --gradient-danger: linear-gradient(135deg, #ef4444, #b91c1c);
+
+  /* Glass & Backdrop */
+  --backdrop-blur-sm: blur(6px);
+  --backdrop-blur-md: blur(14px);
+  --backdrop-blur-lg: blur(26px);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03) inset;
+  --shadow-md: 0 4px 14px -2px rgba(0,0,0,0.55), 0 2px 4px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px -6px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.5);
+  --shadow-glow-primary: 0 0 0 2px rgba(99,102,241,0.5), 0 0 24px -4px rgba(99,102,241,0.6);
 
   /* Radii */
-  --radius-xs: 3px;
-  --radius-sm: 5px;
-  --radius-md: 8px;
-  --radius-lg: 14px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 18px;
+  --radius-xl: 28px;
   --radius-pill: 999px;
 
-  /* Spacing scale (4pt system) */
-  --space-0: 0px;
+  /* Spacing (Optimized modular scale ~1.25) */
+  --space-0: 0;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-7: 32px;
-  --space-8: 40px;
-  --space-9: 48px;
-  --space-10: 64px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+  --space-8: 56px;
+  --space-9: 72px;
+  --space-10: 96px;
 
   /* Typography */
-  --font-family-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-family-sans: 'Inter', 'SF Pro Display', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
   --font-family-mono: 'JetBrains Mono', 'Fira Mono', SFMono-Regular, Menlo, Consolas, monospace;
   --font-size-xs: 11px;
   --font-size-sm: 13px;
   --font-size-base: 15px;
   --font-size-md: 17px;
-  --font-size-lg: 20px;
-  --font-size-xl: 24px;
-  --font-size-2xl: 30px;
+  --font-size-lg: 21px;
+  --font-size-xl: 28px;
+  --font-size-2xl: 36px;
+  --font-size-display: clamp(2.4rem, 4vw, 3.4rem);
   --font-line-height: 1.5;
+  --letter-spacing-wide: 0.5px;
 
-  /* Transitions */
-  --transition-fast: 120ms ease;
-  --transition-medium: 240ms ease;
-  --transition-slow: 400ms ease;
+  /* Motion & Easing */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.83, 0, 0.17, 1);
+  --transition-fast: 120ms var(--ease-out);
+  --transition-medium: 260ms var(--ease-out);
+  --transition-slow: 520ms var(--ease-in-out);
 
   /* Layout */
-  --layout-max-width: 1280px;
+  --layout-max-width: 1400px;
   --layout-gutter: var(--space-6);
-  --navbar-height: 60px;
+  --navbar-height: 64px;
+  --sidebar-width: 260px;
 
   /* Z-index */
   --z-overlay: 1000;
