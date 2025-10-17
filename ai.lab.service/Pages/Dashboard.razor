@@ -2,9 +2,15 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using ai.lab.service.Services.Auth
+@using ai.lab.service.Services.Common
+@using ai.lab.service.Model.Outbound
+@using ai.lab.service.Model.Inbound
+@using System.Security.Claims
 
 @inject JwtAuthStateProvider AuthStateProvider
 @inject NavigationManager Nav
+@inject IChatService ChatService
+@inject AuthenticationStateProvider AuthProvider
 
 @attribute [Authorize]
 
@@ -13,26 +19,237 @@
 
 <AuthorizeView>
     <Authorized>
-        <p>Hello, @context.User.Identity?.Name!</p>
+        <p>Hello, @UserDisplayName!</p>
         <button @onclick="HandleLogoutAsync">Logout</button>
     </Authorized>
 </AuthorizeView>
 
-<div>
-    <h2>Quick Stats</h2>
-    <ul>
-        <li>Models: 0</li>
-        <li>Sessions: 0</li>
-        <li>Requests: 0</li>
-    </ul>
-</div>
+<section>
+    <h2>Chat Rooms</h2>
+    <button @onclick="ToggleCreateRoom" disabled="@IsSubmittingRoom">Create Room</button>
+    @if (ShowCreateRoom)
+    {
+        <div>
+            <h3>New Room</h3>
+            @if (!string.IsNullOrWhiteSpace(CreateError))
+            {
+                <p style="color:red">@CreateError</p>
+            }
+            <div>
+                <label>Title:</label>
+                <input @bind="NewRoomTitle" />
+            </div>
+            <div>
+                <label>AI Model (optional):</label>
+                <input @bind="NewRoomAiModel" />
+            </div>
+            <div>
+                <label>Max Participants (optional, 2-30):</label>
+                <input type="number" @bind="NewRoomMaxParticipants" />
+            </div>
+            <div>
+                <button @onclick="CreateRoomAsync" disabled="@IsSubmittingRoom">@(IsSubmittingRoom ? "Creating..." : "Submit")</button>
+                <button @onclick="ToggleCreateRoom" disabled="@IsSubmittingRoom">Cancel</button>
+            </div>
+        </div>
+    }
 
-<div>
-    <h2>Recent Activity</h2>
-    <p>No recent activity.</p>
-</div>
+    @if (IsLoadingRooms)
+    {
+        <p>Loading rooms...</p>
+    }
+    else if (!string.IsNullOrWhiteSpace(RoomsError))
+    {
+        <p style="color:red">@RoomsError</p>
+    }
+    else if (Rooms == null || Rooms.Count == 0)
+    {
+        <p>No rooms available.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Participants</th>
+                    <th>Messages</th>
+                    <th>Unread</th>
+                    <th>AI Model</th>
+                    <th>Created</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var room in Rooms)
+                {
+                    <tr>
+                        <td>@room.Title</td>
+                        <td>@room.CurrentParticipantCount / @room.MaxParticipants</td>
+                        <td>@room.TotalMessageCount</td>
+                        <td>@room.UnreadMessageCount</td>
+                        <td>@room.AiModel</td>
+                        <td>@room.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@(room.IsActive ? (room.IsFull ? "Full" : "Open") : "Inactive")</td>
+                        <td>
+                            @if (!room.IsUserInRoom && !room.IsFull && room.IsActive)
+                            {
+                                <button @onclick="() => JoinRoomAsync(room.Id)" disabled="@JoiningRoomIds.Contains(room.Id)">@(JoiningRoomIds.Contains(room.Id) ? "Joining..." : "Join")</button>
+                            }
+                            else if (room.IsUserInRoom)
+                            {
+                                <span>Joined</span>
+                            }
+                            else if (room.IsFull)
+                            {
+                                <span>Full</span>
+                            }
+                            <button disabled title="Delete (admin only later)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</section>
 
 @code {
+    private List<ChatRoomResponse>? Rooms;
+    private bool IsLoadingRooms = true;
+    private string? RoomsError;
+    private string? UserEmail;
+    private string? UserDisplayName;
+
+    // Create room state
+    private bool ShowCreateRoom = false;
+    private bool IsSubmittingRoom = false;
+    private string NewRoomTitle = string.Empty;
+    private string? NewRoomAiModel;
+    private int? NewRoomMaxParticipants;
+    private string? CreateError;
+
+    private HashSet<long> JoiningRoomIds = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserAsync();
+        await LoadRoomsAsync();
+    }
+
+    private async Task LoadUserAsync()
+    {
+        var state = await AuthProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        // Attempt multiple possible claim keys for email.
+        UserEmail = user.FindFirstValue(ClaimTypes.Email)
+                ?? user.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email)
+                ?? user.FindFirstValue("email")
+                ?? user.FindFirstValue("upn")
+                ?? user.FindFirstValue("preferred_username");
+        UserDisplayName = user.Identity?.Name ?? UserEmail ?? "Unknown";
+    }
+
+    private async Task LoadRoomsAsync()
+    {
+        RoomsError = null;
+        IsLoadingRooms = true;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(UserEmail))
+            {
+                RoomsError = "User email missing.";
+                return;
+            }
+            Rooms = await ChatService.GetAllActiveChatRoomsAsync(UserEmail);
+        }
+        catch (Exception ex)
+        {
+            RoomsError = $"Failed to load rooms: {ex.Message}";
+        }
+        finally
+        {
+            IsLoadingRooms = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleCreateRoom()
+    {
+        ShowCreateRoom = !ShowCreateRoom;
+        if (!ShowCreateRoom)
+        {
+            // reset form
+            NewRoomTitle = string.Empty;
+            NewRoomAiModel = null;
+            NewRoomMaxParticipants = null;
+            CreateError = null;
+        }
+    }
+
+    private async Task CreateRoomAsync()
+    {
+        if (IsSubmittingRoom) return;
+        CreateError = null;
+        if (string.IsNullOrWhiteSpace(UserEmail))
+        {
+            CreateError = "User not authenticated.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(NewRoomTitle) || NewRoomTitle.Length < 3)
+        {
+            CreateError = "Title must be at least 3 characters.";
+            return;
+        }
+        if (NewRoomMaxParticipants.HasValue && (NewRoomMaxParticipants < 2 || NewRoomMaxParticipants > 30))
+        {
+            CreateError = "Max participants must be between 2 and 30.";
+            return;
+        }
+        try
+        {
+            IsSubmittingRoom = true;
+            var created = await ChatService.CreateChatRoomAsync(UserEmail!, NewRoomTitle, NewRoomAiModel, NewRoomMaxParticipants);
+            // Refresh list
+            await LoadRoomsAsync();
+            ShowCreateRoom = false;
+        }
+        catch (Exception ex)
+        {
+            CreateError = $"Failed to create room: {ex.Message}";
+        }
+        finally
+        {
+            IsSubmittingRoom = false;
+        }
+    }
+
+    private async Task JoinRoomAsync(long roomId)
+    {
+        if (JoiningRoomIds.Contains(roomId)) return;
+        if (string.IsNullOrWhiteSpace(UserEmail)) return;
+        try
+        {
+            JoiningRoomIds.Add(roomId);
+            // For now we pass a dummy connection id, later SignalR will handle
+            var success = await ChatService.JoinChatRoomAsync(roomId, UserEmail!, $"ui-{Guid.NewGuid()}");
+            if (!success)
+            {
+                // naive error feedback
+                RoomsError = "Failed to join room (might be full or inactive).";
+            }
+            await LoadRoomsAsync();
+        }
+        catch (Exception ex)
+        {
+            RoomsError = $"Join failed: {ex.Message}";
+        }
+        finally
+        {
+            JoiningRoomIds.Remove(roomId);
+        }
+    }
+
     private async Task HandleLogoutAsync()
     {
         await AuthStateProvider.LogoutAsync();
