@@ -2,37 +2,52 @@
 // Calls DotNet.invokeMethodAsync to notify the Blazor component when user is near bottom.
 // Debounce is handled in .NET side; here we just fire rapidly when near bottom threshold.
 
-// AILabChat smart auto-scroll module
-// Behavior:
-// - Automatically scrolls to bottom when new messages arrive IF user is near bottom.
-// - If user scrolls up beyond a threshold, auto-scroll pauses until user returns near bottom.
-// - Provides API: init(containerId), notifyNewMessage(), forceScroll()
-// - Calls .NET method OnChatScrolledNearBottom when near bottom (read receipts debounce handled in .NET).
+// AILabChat smart auto-scroll module with read receipt integration
+// Uses DotNetObjectReference pattern for reliable Blazor Server interop
 
 window.AILabChat = (function() {
-    const nearBottomThresholdPx = 120; // distance from bottom considered 'near bottom'
-    const userScrollAwayThresholdPx = 240; // beyond this user considered reading history
+    const nearBottomThresholdPx = 120;
+    const userScrollAwayThresholdPx = 240;
     let el = null;
     let userScrolledAway = false;
-    let initialized = false;
-    let pendingNotify = 0;
+    let dotNetHelper = null;
     let lastScrollAt = 0;
-    const minInterval = 75; // ms throttle between auto-scroll attempts
+    let lastReadNotifyAt = 0;
+    const minScrollInterval = 75;
+    const minReadNotifyInterval = 500; // Throttle read receipt calls
 
-    function init(containerId) {
+    function init(containerId, dotNetRef) {
         el = document.getElementById(containerId);
-        if (!el || initialized) return;
+        if (!el) {
+            console.warn('Chat container not found:', containerId);
+            return;
+        }
+        
+        dotNetHelper = dotNetRef;
+        
+        // Remove existing listener if re-initializing
+        el.removeEventListener('scroll', handleScroll);
         el.addEventListener('scroll', handleScroll, { passive: true });
-        initialized = true;
+        
         // Initial snap to bottom
         scrollToBottom(true);
     }
 
     function handleScroll() {
+        if (!el) return;
+        
         const distance = distanceFromBottom();
-        // User considered reading history if far from bottom
         userScrolledAway = distance > userScrollAwayThresholdPx;
-        // Note: Read receipt handling is done through hub events, not JS interop
+        
+        // Notify .NET when near bottom for read receipts
+        if (distance <= nearBottomThresholdPx && dotNetHelper) {
+            const now = performance.now();
+            if (now - lastReadNotifyAt > minReadNotifyInterval) {
+                lastReadNotifyAt = now;
+                dotNetHelper.invokeMethodAsync('OnScrolledNearBottom')
+                    .catch(err => console.warn('Read receipt notify failed:', err));
+            }
+        }
     }
 
     function distanceFromBottom() {
@@ -43,22 +58,26 @@ window.AILabChat = (function() {
     function scrollToBottom(immediate = false) {
         if (!el) return;
         const now = performance.now();
-        if (!immediate && (now - lastScrollAt) < minInterval) return; // throttle
-        el.scrollTo({ top: el.scrollHeight, behavior: immediate ? 'auto' : 'smooth' });
+        if (!immediate && (now - lastScrollAt) < minScrollInterval) return;
+        
+        el.scrollTo({ 
+            top: el.scrollHeight, 
+            behavior: immediate ? 'auto' : 'smooth' 
+        });
         lastScrollAt = now;
     }
 
     function notifyNewMessage() {
-        // Called when a new message element is rendered.
-        pendingNotify++;
-        // If user is near bottom OR not scrolledAway, auto scroll.
+        if (!el) return;
+        
         const distance = distanceFromBottom();
         const nearBottom = distance <= nearBottomThresholdPx;
+        
+        // Auto-scroll if near bottom or not scrolled away
         if (nearBottom || !userScrolledAway) {
             scrollToBottom(false);
-            userScrolledAway = false; // reset if we snap
+            userScrolledAway = false;
         }
-        // If userScrolledAway remains true, we do nothing (respect reading state).
     }
 
     function forceScroll() {
@@ -66,5 +85,13 @@ window.AILabChat = (function() {
         userScrolledAway = false;
     }
 
-    return { init, notifyNewMessage, forceScroll };
+    function dispose() {
+        if (el) {
+            el.removeEventListener('scroll', handleScroll);
+        }
+        dotNetHelper = null;
+        el = null;
+    }
+
+    return { init, notifyNewMessage, forceScroll, dispose };
 })();

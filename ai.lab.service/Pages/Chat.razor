@@ -185,6 +185,8 @@ else
     private static readonly TimeSpan ReadDebounce = TimeSpan.FromSeconds(2);
     // Auto-scroll trigger flag
     private bool _shouldScrollAfterRender = false;
+    // DotNet reference for JS interop callbacks
+    private DotNetObjectReference<Chat>? _dotNetRef;
 
     protected override async Task OnInitializedAsync()
     {
@@ -200,14 +202,17 @@ else
     {
         if (firstRender)
         {
-            // Initialize JS scroll module on first render
+            // Create DotNet reference for JS callbacks
+            _dotNetRef = DotNetObjectReference.Create(this);
+            
+            // Initialize JS scroll module with component reference
             try 
             { 
-                await Js.InvokeVoidAsync("AILabChat.init", "chatMessages"); 
+                await Js.InvokeVoidAsync("AILabChat.init", "chatMessages", _dotNetRef); 
             } 
-            catch 
+            catch (Exception ex)
             { 
-                // Silently ignore if module not loaded yet
+                Console.WriteLine($"Failed to init chat scroll: {ex.Message}");
             }
         }
         
@@ -219,9 +224,9 @@ else
             {
                 await Js.InvokeVoidAsync("AILabChat.notifyNewMessage");
             }
-            catch
+            catch (Exception ex)
             {
-                // Silently handle JS interop errors (e.g., disconnect during render)
+                Console.WriteLine($"Auto-scroll failed: {ex.Message}");
             }
         }
     }
@@ -497,13 +502,26 @@ else
     }
 
     [JSInvokable]
-    public async Task OnChatScrolledNearBottom()
+    public async Task OnScrolledNearBottom()
     {
         await MarkLastMessageAsReadAsync();
     }
 
     public async ValueTask DisposeAsync()
     {
+        // Clean up JS interop
+        if (_dotNetRef != null)
+        {
+            try
+            {
+                await Js.InvokeVoidAsync("AILabChat.dispose");
+            }
+            catch { }
+            _dotNetRef.Dispose();
+            _dotNetRef = null;
+        }
+        
+        // Clean up hub connection
         if (hub != null)
         {
             try
