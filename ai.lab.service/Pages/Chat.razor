@@ -4,12 +4,14 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using ai.lab.service.Model.Outbound
 @using System.Security.Claims
+@using Microsoft.JSInterop
 
 @attribute [Authorize]
 
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthProvider
 @inject ai.lab.service.Services.Auth.JwtAuthStateProvider JwtProvider
+@inject IJSRuntime Js
 
 
 <h2>Chat Room @RoomId</h2>
@@ -25,7 +27,7 @@ else if (!Connected)
 else
 {
     <div style="display:flex; gap:10px; align-items:stretch;">
-        <div style="flex:1; border:1px solid #ccc; padding:6px; max-height:60vh; overflow:auto;">
+    <div id="chatMessages" style="flex:1; border:1px solid #ccc; padding:6px; max-height:60vh; overflow:auto;">
             <h3>Messages</h3>
             @if (Messages.Count == 0)
             {
@@ -99,6 +101,9 @@ else
     private bool SendingAi = false;
     private bool UseRag = false;
     private string? UserEmail;
+    // Debounce state for read marking
+    private DateTime _lastReadMarkUtc = DateTime.MinValue;
+    private static readonly TimeSpan ReadDebounce = TimeSpan.FromSeconds(2);
 
     protected override async Task OnInitializedAsync()
     {
@@ -127,6 +132,8 @@ else
             await hub.StartAsync();
             Connected = true;
             await InitRoomAsync();
+            // Initialize JS scroll listener
+            try { await Js.InvokeVoidAsync("AILabChat.init", "chatMessages"); } catch { }
         }
         catch (Exception ex)
         {
@@ -183,8 +190,7 @@ else
         {
             Messages.Add(message);
             await InvokeAsync(StateHasChanged);
-            // Auto-mark as read when viewing chat
-            await MarkLastMessageAsReadAsync();
+            // No immediate mark; rely on scroll near bottom to trigger debounced read update
         });
 
         hub.On<long, string, long>("ReadReceiptUpdated", (roomId, email, lastReadId) =>
@@ -268,15 +274,24 @@ else
     private async Task MarkLastMessageAsReadAsync()
     {
         if (hub == null || Messages.Count == 0 || string.IsNullOrWhiteSpace(UserEmail)) return;
+        // Debounce: only mark if sufficient time elapsed or first time
+        if (DateTime.UtcNow - _lastReadMarkUtc < ReadDebounce) return;
         try
         {
             var lastMessageId = Messages.Last().Id;
             await hub.InvokeAsync("MarkRead", RoomId, lastMessageId);
+            _lastReadMarkUtc = DateTime.UtcNow;
         }
         catch
         {
             // Silently fail - read receipt is non-critical
         }
+    }
+
+    [JSInvokable]
+    public async Task OnChatScrolledNearBottom()
+    {
+        await MarkLastMessageAsReadAsync();
     }
 
     public async ValueTask DisposeAsync()
