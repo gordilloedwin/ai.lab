@@ -268,6 +268,46 @@ public class ChatController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Edit a user message (owner or admin only).
+    /// </summary>
+    [HttpPut("rooms/{roomId}/messages/{messageId}")]
+    public async Task<IActionResult> EditMessage(long roomId, long messageId, [FromBody] SendChatMessageRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var userEmail = GetUserEmail();
+            var updated = await _chatService.UpdateMessageContentAsync(roomId, messageId, userEmail, request.Content, cancellationToken);
+            if (updated == null) return Forbid();
+            return Ok(updated);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to edit message {MessageId} in room {RoomId}", messageId, roomId);
+            return StatusCode(500, new { error = "Failed to edit message" });
+        }
+    }
+
+    /// <summary>
+    /// Soft delete a user message (owner or admin only).
+    /// </summary>
+    [HttpDelete("rooms/{roomId}/messages/{messageId}")]
+    public async Task<IActionResult> DeleteMessage(long roomId, long messageId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var userEmail = GetUserEmail();
+            var deleted = await _chatService.SoftDeleteMessageAsync(roomId, messageId, userEmail, cancellationToken);
+            if (deleted == null) return Forbid();
+            return Ok(deleted);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to delete message {MessageId} in room {RoomId}", messageId, roomId);
+            return StatusCode(500, new { error = "Failed to delete message" });
+        }
+    }
+
     #endregion
 
     #region Read Receipts

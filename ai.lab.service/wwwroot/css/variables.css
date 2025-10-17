@@ -115,3 +115,10 @@
   --z-sticky: 700;
   --z-base: 1;
 }
+
+/* Light Theme Variant Overrides */
+
+@keyframes blink {
+  0%, 80%, 100% { opacity: .2; }
+  40% { opacity: 1; }
+}

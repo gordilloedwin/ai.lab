@@ -207,6 +207,16 @@ public interface IDatabaseService
     /// <returns>The created AI message with details.</returns>
     Task<ChatMessageResponse> AddAiMessageAsync(long chatRoomId, string content, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Updates existing user message content if user owns the message or is admin.
+    /// </summary>
+    Task<ChatMessageResponse?> UpdateUserMessageAsync(long chatRoomId, long messageId, string userEmail, string newContent, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Soft deletes an existing user message (replace content) if user owns message or is admin.
+    /// </summary>
+    Task<ChatMessageResponse?> SoftDeleteUserMessageAsync(long chatRoomId, long messageId, string userEmail, CancellationToken cancellationToken = default);
+
     #endregion
 
     #region Read Receipts

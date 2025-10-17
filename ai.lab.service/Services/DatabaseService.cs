@@ -869,6 +869,94 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
         }
     }
 
+    public async Task<ChatMessageResponse?> UpdateUserMessageAsync(long chatRoomId, long messageId, string userEmail, string newContent, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Verify ownership or admin
+            const string ownershipSql = @"
+                SELECT cm.id AS Id, cm.chat_room_id AS ChatRoomId, cm.sender_email AS SenderEmail, u.name AS SenderName, u.avatar_uri AS SenderAvatarUri,
+                       cm.sender_type AS SenderType, cm.content AS Content, cm.created_at AS CreatedAt,
+                       (SELECT is_admin FROM users WHERE email = @UserEmail) AS IsAdmin
+                FROM chat_messages cm
+                LEFT JOIN users u ON cm.sender_email = u.email COLLATE utf8mb4_unicode_ci
+                WHERE cm.id = @MessageId AND cm.chat_room_id = @ChatRoomId LIMIT 1;";
+
+            var connectionString = options.CurrentValue.MariaDbConnectionString;
+            using var connection = new MySqlConnection(connectionString);
+            await connection.OpenAsync(cancellationToken);
+            var record = await connection.QuerySingleOrDefaultAsync<dynamic>(new CommandDefinition(ownershipSql, new { MessageId = messageId, ChatRoomId = chatRoomId, UserEmail = userEmail }, cancellationToken: cancellationToken));
+            if (record == null) return null;
+            bool isAdmin = (record.IsAdmin ?? 0) == 1;
+            string senderEmail = record.SenderEmail;
+            string senderType = record.SenderType;
+            if (senderType != "user") return null; // only user messages editable
+            if (!isAdmin && !string.Equals(senderEmail, userEmail, StringComparison.OrdinalIgnoreCase)) return null;
+
+            const string updateSql = @"UPDATE chat_messages SET content = @NewContent WHERE id = @MessageId AND chat_room_id = @ChatRoomId LIMIT 1;";
+            await connection.ExecuteAsync(new CommandDefinition(updateSql, new { NewContent = newContent, MessageId = messageId, ChatRoomId = chatRoomId }, cancellationToken: cancellationToken));
+
+            // Re-select updated row
+            const string selectSql = @"
+                SELECT cm.id AS Id, cm.chat_room_id AS ChatRoomId, cm.sender_email AS SenderEmail, u.name AS SenderName, u.avatar_uri AS SenderAvatarUri,
+                       cm.sender_type AS SenderType, cm.content AS Content, cm.created_at AS CreatedAt
+                FROM chat_messages cm
+                LEFT JOIN users u ON cm.sender_email = u.email COLLATE utf8mb4_unicode_ci
+                WHERE cm.id = @MessageId;";
+            var updated = await connection.QuerySingleAsync<ChatMessageResponse>(new CommandDefinition(selectSql, new { MessageId = messageId }, cancellationToken: cancellationToken));
+            updated.IsOwnMessage = true;
+            return updated;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to update user message {MessageId} in chat room {RoomId} by {UserEmail}", messageId, chatRoomId, userEmail);
+            return null;
+        }
+    }
+
+    public async Task<ChatMessageResponse?> SoftDeleteUserMessageAsync(long chatRoomId, long messageId, string userEmail, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            const string ownershipSql = @"
+                SELECT cm.id AS Id, cm.chat_room_id AS ChatRoomId, cm.sender_email AS SenderEmail, u.name AS SenderName, u.avatar_uri AS SenderAvatarUri,
+                       cm.sender_type AS SenderType, cm.content AS Content, cm.created_at AS CreatedAt,
+                       (SELECT is_admin FROM users WHERE email = @UserEmail) AS IsAdmin
+                FROM chat_messages cm
+                LEFT JOIN users u ON cm.sender_email = u.email COLLATE utf8mb4_unicode_ci
+                WHERE cm.id = @MessageId AND cm.chat_room_id = @ChatRoomId LIMIT 1;";
+
+            var connectionString = options.CurrentValue.MariaDbConnectionString;
+            using var connection = new MySqlConnection(connectionString);
+            await connection.OpenAsync(cancellationToken);
+            var record = await connection.QuerySingleOrDefaultAsync<dynamic>(new CommandDefinition(ownershipSql, new { MessageId = messageId, ChatRoomId = chatRoomId, UserEmail = userEmail }, cancellationToken: cancellationToken));
+            if (record == null) return null;
+            bool isAdmin = (record.IsAdmin ?? 0) == 1;
+            string senderEmail = record.SenderEmail;
+            string senderType = record.SenderType;
+            if (senderType != "user") return null; // only user messages deletable by user
+            if (!isAdmin && !string.Equals(senderEmail, userEmail, StringComparison.OrdinalIgnoreCase)) return null;
+
+            const string updateSql = @"UPDATE chat_messages SET content = '[[deleted]]' WHERE id = @MessageId AND chat_room_id = @ChatRoomId LIMIT 1;";
+            await connection.ExecuteAsync(new CommandDefinition(updateSql, new { MessageId = messageId, ChatRoomId = chatRoomId }, cancellationToken: cancellationToken));
+
+            const string selectSql = @"
+                SELECT cm.id AS Id, cm.chat_room_id AS ChatRoomId, cm.sender_email AS SenderEmail, u.name AS SenderName, u.avatar_uri AS SenderAvatarUri,
+                       cm.sender_type AS SenderType, cm.content AS Content, cm.created_at AS CreatedAt
+                FROM chat_messages cm
+                LEFT JOIN users u ON cm.sender_email = u.email COLLATE utf8mb4_unicode_ci
+                WHERE cm.id = @MessageId;";
+            var deleted = await connection.QuerySingleAsync<ChatMessageResponse>(new CommandDefinition(selectSql, new { MessageId = messageId }, cancellationToken: cancellationToken));
+            deleted.IsOwnMessage = true;
+            return deleted;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to soft delete user message {MessageId} in chat room {RoomId} by {UserEmail}", messageId, chatRoomId, userEmail);
+            return null;
+        }
+    }
+
     #endregion
 
     #region Read Receipts

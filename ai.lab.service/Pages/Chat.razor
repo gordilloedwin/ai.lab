@@ -29,10 +29,21 @@ else if (!Connected)
 }
 else
 {
-    <div class="chat-layout" style="display:flex; gap:var(--space-5); align-items:stretch;">
+    <div class="chat-layout" style="display:flex; gap:var(--space-5); align-items:stretch;" role="main" aria-label="Chat conversation area">
         <div id="chatMessages" class="card" style="flex:1; max-height:65vh; overflow:auto; scroll-behavior:smooth;">
             <div class="card-header" style="position:sticky; top:0; background:var(--color-surface); z-index:2;">
                 <h3 style="margin:0; font-size:var(--font-size-md);">Messages</h3>
+                @if (AiStreaming)
+                {
+                    <div class="typing-indicator" aria-live="polite" style="font-size:var(--font-size-xs); color:var(--color-text-muted); display:flex; align-items:center; gap:4px;">
+                        <span>AI typing</span>
+                        <span class="dots" style="display:inline-flex; gap:2px;">
+                            <span class="dot" style="width:6px; height:6px; background:var(--color-primary); border-radius:50%; animation:blink 1s infinite .0s;"></span>
+                            <span class="dot" style="width:6px; height:6px; background:var(--color-primary); border-radius:50%; animation:blink 1s infinite .2s;"></span>
+                            <span class="dot" style="width:6px; height:6px; background:var(--color-primary); border-radius:50%; animation:blink 1s infinite .4s;"></span>
+                        </span>
+                    </div>
+                }
             </div>
             <div class="card-content messages" style="display:flex; flex-direction:column; gap:var(--space-3);">
                 @if (Messages.Count == 0)
@@ -45,7 +56,7 @@ else
                     {
                         var readByCount = Participants.Count(p => p.LastReadMessageId.HasValue && p.LastReadMessageId.Value >= m.Id);
                         var isAi = m.SenderType == "ai";
-                        <div class="message @(isAi ? "message-ai" : "message-user")">
+                        <div class="message @(isAi ? "message-ai" : "message-user")" data-message-id="@m.Id" @onmouseenter="() => HoverMessageId = m.Id" @onmouseleave="() => HoverMessageId = null" style="position:relative;">
                             <div class="message-meta">
                                 <span class="message-sender">@(isAi ? "AI" : m.SenderName ?? m.SenderEmail)</span>
                                 <span class="message-time">@m.CreatedAt.ToString("HH:mm:ss")</span>
@@ -54,13 +65,43 @@ else
                                     <span class="message-read" title="Read by participants">Read @readByCount</span>
                                 }
                             </div>
-                            <div class="message-content">@m.Content</div>
+                            <div class="message-content">
+                                @if (EditingMessageId == m.Id)
+                                {
+                                    <textarea class="input" style="min-height:80px;" @bind="EditBuffer"></textarea>
+                                    <div style="display:flex; gap:var(--space-2); margin-top:4px;">
+                                        <button class="btn btn-success btn-xs" @onclick="() => SaveEditAsync(m)">Save</button>
+                                        <button class="btn btn-secondary btn-xs" @onclick="CancelEdit">Cancel</button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    @m.Content
+                                }
+                            </div>
+                            @if (m.SenderType == "user" && m.IsOwnMessage && HoverMessageId == m.Id && EditingMessageId != m.Id)
+                            {
+                                <div class="message-actions" style="position:absolute; top:4px; right:4px; display:flex; gap:4px;">
+                                    <button class="btn btn-secondary btn-xs" title="Edit" @onclick="() => BeginEdit(m)">Edit</button>
+                                    <button class="btn btn-danger btn-xs" title="Delete" @onclick="() => DeleteMessageAsync(m)">Del</button>
+                                </div>
+                            }
+                        </div>
+                    }
+                    @if (AiStreaming && !string.IsNullOrWhiteSpace(AiStreamBuffer))
+                    {
+                        <div class="message message-ai" style="opacity:.85;">
+                            <div class="message-meta">
+                                <span class="message-sender">AI</span>
+                                <span class="message-time">Streaming...</span>
+                            </div>
+                            <div class="message-content" aria-live="polite">@AiStreamBuffer</div>
                         </div>
                     }
                 }
             </div>
         </div>
-        <div class="card" style="width:300px; max-height:65vh; overflow:auto;">
+        <div class="card" style="width:300px; max-height:65vh; overflow:auto;" role="complementary" aria-label="Participants list">
             <div class="card-header" style="position:sticky; top:0; background:var(--color-surface); z-index:2;">
                 <h3 style="margin:0; font-size:var(--font-size-md);">Participants</h3>
             </div>
@@ -93,12 +134,13 @@ else
         </div>
     </div>
 
-    <div class="composer" style="margin-top:var(--space-5);">
+    <div class="composer" style="margin-top:var(--space-5);" aria-label="Message composer" role="form">
         <div style="display:flex; flex-direction:column; gap:var(--space-3);">
-            <textarea class="input" style="min-height:110px; resize:vertical;" @bind="OutgoingText" placeholder="Type message or AI prompt..."></textarea>
+            <textarea class="input" style="min-height:110px; resize:vertical;" @bind="OutgoingText" placeholder="Type message or AI prompt..." @onkeydown="HandleComposerKey"></textarea>
             <div style="display:flex; gap:var(--space-3); flex-wrap:wrap; align-items:center;">
                 <button class="btn btn-primary" @onclick="SendMessageAsync" disabled="@Sending">@(Sending ? "Sending..." : "Send to Group")</button>
-                <button class="btn btn-secondary" @onclick="SendAiAsync" disabled="@SendingAi">@(SendingAi ? "Thinking..." : "Ask AI")</button>
+                <button class="btn btn-secondary" @onclick="SendAiAsync" disabled="@SendingAi">@(SendingAi ? "Thinking..." : "Ask AI (legacy)")</button>
+                <button class="btn btn-secondary-outline" @onclick="SendAiStreamAsync" disabled="@SendingAi">Stream AI</button>
                 <label style="display:flex; align-items:center; gap:var(--space-1); font-size:var(--font-size-sm); cursor:pointer;">
                     <input type="checkbox" @bind="UseRag" /> Use RAG
                 </label>
@@ -121,6 +163,12 @@ else
     private bool SendingAi = false;
     private bool UseRag = false;
     private string? UserEmail;
+    private bool AiStreaming = false;
+    private string AiStreamBuffer = string.Empty;
+    private string? CurrentStreamId;
+    private long? HoverMessageId;
+    private long? EditingMessageId;
+    private string EditBuffer = string.Empty;
     // Debounce state for read marking
     private DateTime _lastReadMarkUtc = DateTime.MinValue;
     private static readonly TimeSpan ReadDebounce = TimeSpan.FromSeconds(2);
@@ -213,6 +261,61 @@ else
             // No immediate mark; rely on scroll near bottom to trigger debounced read update
         });
 
+        hub.On<long, string>("AiTypingStarted", (roomId, streamId) =>
+        {
+            if (roomId != RoomId) return;
+            AiStreaming = true;
+            AiStreamBuffer = string.Empty;
+            CurrentStreamId = streamId;
+            InvokeAsync(StateHasChanged);
+        });
+
+        hub.On<long, string, string>("AiTypingChunk", (roomId, streamId, chunk) =>
+        {
+            if (roomId != RoomId || streamId != CurrentStreamId) return;
+            AiStreamBuffer += chunk;
+            InvokeAsync(StateHasChanged);
+        });
+
+        hub.On<long, string, ChatMessageResponse>("AiTypingCompleted", (roomId, streamId, finalMessage) =>
+        {
+            if (roomId != RoomId || streamId != CurrentStreamId) return;
+            AiStreaming = false;
+            AiStreamBuffer = string.Empty;
+            CurrentStreamId = null;
+            Messages.Add(finalMessage);
+            InvokeAsync(StateHasChanged);
+        });
+
+        hub.On<long, string, string>("AiTypingError", (roomId, streamId, error) =>
+        {
+            if (roomId != RoomId || streamId != CurrentStreamId) return;
+            AiStreaming = false;
+            AiStreamBuffer = $"[[Error: {error}]]";
+            CurrentStreamId = null;
+            InvokeAsync(StateHasChanged);
+        });
+
+        hub.On<ChatMessageResponse>("MessageUpdated", updated =>
+        {
+            var existing = Messages.FirstOrDefault(m => m.Id == updated.Id);
+            if (existing != null)
+            {
+                existing.Content = updated.Content;
+            }
+            InvokeAsync(StateHasChanged);
+        });
+
+        hub.On<ChatMessageResponse>("MessageDeleted", deleted =>
+        {
+            var existing = Messages.FirstOrDefault(m => m.Id == deleted.Id);
+            if (existing != null)
+            {
+                existing.Content = deleted.Content;
+            }
+            InvokeAsync(StateHasChanged);
+        });
+
         hub.On<long, string, long>("ReadReceiptUpdated", (roomId, email, lastReadId) =>
         {
             if (roomId != RoomId) return;
@@ -274,6 +377,20 @@ else
         finally { SendingAi = false; }
     }
 
+    private async Task SendAiStreamAsync()
+    {
+        if (hub == null || string.IsNullOrWhiteSpace(OutgoingText)) return;
+        try
+        {
+            SendingAi = true;
+            var text = OutgoingText.Trim();
+            OutgoingText = string.Empty;
+            await hub.InvokeAsync("AskAiStream", RoomId, text, UseRag);
+        }
+        catch { }
+        finally { SendingAi = false; }
+    }
+
     private async Task LeaveRoomAsync()
     {
         if (hub == null) return;
@@ -326,5 +443,53 @@ else
             catch { }
         }
     }
+
+    private void BeginEdit(ChatMessageResponse message)
+    {
+        EditingMessageId = message.Id;
+        EditBuffer = message.Content;
+    }
+
+    private void CancelEdit()
+    {
+        EditingMessageId = null;
+        EditBuffer = string.Empty;
+    }
+
+    private async Task SaveEditAsync(ChatMessageResponse message)
+    {
+        if (hub == null || EditingMessageId != message.Id) return;
+        var newContent = EditBuffer.Trim();
+        if (string.IsNullOrWhiteSpace(newContent)) return; // do not allow blank
+        try
+        {
+            await hub.InvokeAsync("EditMessage", RoomId, message.Id, newContent);
+        }
+        catch { }
+        finally
+        {
+            EditingMessageId = null;
+            EditBuffer = string.Empty;
+        }
+    }
+
+    private async Task DeleteMessageAsync(ChatMessageResponse message)
+    {
+        if (hub == null) return;
+        try
+        {
+            await hub.InvokeAsync("DeleteMessage", RoomId, message.Id);
+        }
+        catch { }
+    }
+
+    private void HandleComposerKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            _ = SendMessageAsync();
+        }
+    }
+
 
 }

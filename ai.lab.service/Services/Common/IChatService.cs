@@ -166,6 +166,27 @@ public interface IChatService
     /// <returns>The created AI message with details.</returns>
     Task<ChatMessageResponse> AddAiMessageAsync(long chatRoomId, string content, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Updates the content of an existing user message (only owner can edit, AI messages excluded).
+    /// </summary>
+    /// <param name="chatRoomId">Room ID for validation.</param>
+    /// <param name="messageId">Message ID to update.</param>
+    /// <param name="userEmail">Email of requesting user (must own message or be admin).</param>
+    /// <param name="newContent">New message content.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Updated message response or null if not permitted.</returns>
+    Task<ChatMessageResponse?> UpdateMessageContentAsync(long chatRoomId, long messageId, string userEmail, string newContent, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Soft delete a user message (replace content with marker) if owner or admin.
+    /// </summary>
+    /// <param name="chatRoomId">Room ID.</param>
+    /// <param name="messageId">Message ID.</param>
+    /// <param name="userEmail">Requesting user email.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Deleted (masked) message or null if not permitted.</returns>
+    Task<ChatMessageResponse?> SoftDeleteMessageAsync(long chatRoomId, long messageId, string userEmail, CancellationToken cancellationToken = default);
+
     #endregion
 
     #region Read Receipts

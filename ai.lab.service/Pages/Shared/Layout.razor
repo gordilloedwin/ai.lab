@@ -5,8 +5,9 @@
 
 @inherits LayoutComponentBase
 
-<div class="app-shell">
-    <aside class="sidebar glass">
+<a href="#mainContent" class="skip-link" style="position:absolute;left:-999px;top:-999px;background:var(--color-primary);color:#fff;padding:8px 12px;border-radius:4px;z-index:var(--z-overlay);" onfocus="this.style.left='8px';this.style.top='8px'" onblur="this.style.left='-999px';this.style.top='-999px'">Skip to content</a>
+<div class="app-shell" role="application">
+    <aside class="sidebar glass" role="navigation" aria-label="Primary">
         <div class="sidebar-brand">AI LAB</div>
         <div class="sidebar-section">
             <AuthorizeView>
@@ -17,7 +18,6 @@
                     </div>
                     <nav class="sidebar-nav">
                         <a href="/dashboard">Dashboard</a>
-                        <a href="/">Login</a>
                     </nav>
                     <div style="margin-top:auto;">
                         <button class="btn btn-outline" @onclick="HandleLogoutAsync">Logout</button>
@@ -32,8 +32,8 @@
         </div>
         <div style="margin-top:auto; font-size:10px; opacity:.55;">&copy; 2025 AI Lab</div>
     </aside>
-    <div class="content-area">
-        <div class="content-frame">
+    <div class="content-area" id="mainContent" role="main" tabindex="-1">
+        <div class="content-frame" aria-live="polite">
             @Body
         </div>
     </div>

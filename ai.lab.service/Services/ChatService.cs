@@ -59,6 +59,32 @@ public class ChatService(ILogger<ChatService> logger, IOllamaClient ollamaClient
         }
     }
 
+    public async Task<ChatMessageResponse?> UpdateMessageContentAsync(long chatRoomId, long messageId, string userEmail, string newContent, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await databaseService.UpdateUserMessageAsync(chatRoomId, messageId, userEmail, newContent, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to update message {MessageId} in chat room {ChatRoomId} by {UserEmail}", messageId, chatRoomId, userEmail);
+            return null;
+        }
+    }
+
+    public async Task<ChatMessageResponse?> SoftDeleteMessageAsync(long chatRoomId, long messageId, string userEmail, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await databaseService.SoftDeleteUserMessageAsync(chatRoomId, messageId, userEmail, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to delete message {MessageId} in chat room {ChatRoomId} by {UserEmail}", messageId, chatRoomId, userEmail);
+            return null;
+        }
+    }
+
     public async Task<ChatMessageResponse> AddUserMessageAsync(long chatRoomId, string userEmail, string content, CancellationToken cancellationToken = default) =>
         await databaseService.AddUserMessageAsync(chatRoomId, userEmail, content, cancellationToken);
 

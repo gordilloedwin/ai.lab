@@ -140,6 +140,96 @@ public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAISer
 		}
 	}
 
+	/// <summary>
+	/// Streams an AI response token-by-token to the room providing a typing indicator UX.
+	/// Emits events: AiTypingStarted(roomId, streamId), AiTypingChunk(roomId, streamId, chunk), AiTypingCompleted(roomId, streamId, finalMessage), AiTypingError(roomId, streamId, errorMessage)
+	/// </summary>
+	public async Task AskAiStream(long roomId, string prompt, bool useRag)
+	{
+		var email = GetUserEmail();
+		if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(prompt)) return;
+
+		var streamId = Guid.NewGuid().ToString("N");
+		try
+		{
+			// Echo user's prompt first (same as AskAi)
+			var userQuestionMessage = await chatService.AddUserMessageAsync(roomId, email, prompt);
+			await Clients.Group(RoomGroup(roomId)).SendAsync("ReceiveMessage", userQuestionMessage);
+
+			await Clients.Group(RoomGroup(roomId)).SendAsync("AiTypingStarted", roomId, streamId);
+
+			var room = await chatService.GetChatRoomByIdAsync(roomId, email);
+			var modelToUse = room?.AiModel ?? "llama3:latest";
+
+			// Choose API or RAG prompt path before streaming
+			string finalPrompt = prompt;
+			if (useRag)
+			{
+				// For streaming, we currently reuse non-stream RAG builder by asking AI service to build context first
+				// Simpler approach: prepend instruction; in future call embedding manager directly.
+				finalPrompt = $"Use any provided context to answer. Question: {prompt}"; // Minimal placeholder
+			}
+
+			var accumulated = new System.Text.StringBuilder();
+			await foreach (var chunk in aIService.StreamResponseAsync(email, modelToUse!, finalPrompt))
+			{
+				if (chunk == "\n\n[[DONE]]") break;
+				accumulated.Append(chunk);
+				await Clients.Group(RoomGroup(roomId)).SendAsync("AiTypingChunk", roomId, streamId, chunk);
+			}
+
+			var aiMessage = await chatService.AddAiMessageAsync(roomId, accumulated.ToString());
+			await Clients.Group(RoomGroup(roomId)).SendAsync("AiTypingCompleted", roomId, streamId, aiMessage);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Failed AskAiStream for {Email} room {RoomId}", email, roomId);
+			await Clients.Group(RoomGroup(roomId)).SendAsync("AiTypingError", roomId, streamId, "AI stream failed.");
+		}
+	}
+
+	/// <summary>
+	/// Updates a user message content and broadcasts update.
+	/// </summary>
+	public async Task EditMessage(long roomId, long messageId, string newContent)
+	{
+		var email = GetUserEmail();
+		if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(newContent)) return;
+		try
+		{
+			var updated = await chatService.UpdateMessageContentAsync(roomId, messageId, email, newContent);
+			if (updated != null)
+			{
+				await Clients.Group(RoomGroup(roomId)).SendAsync("MessageUpdated", updated);
+			}
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Failed EditMessage for {Email} room {RoomId} msg {MessageId}", email, roomId, messageId);
+		}
+	}
+
+	/// <summary>
+	/// Soft deletes a user message (marks content as [[deleted]]) and broadcasts deletion.
+	/// </summary>
+	public async Task DeleteMessage(long roomId, long messageId)
+	{
+		var email = GetUserEmail();
+		if (string.IsNullOrWhiteSpace(email)) return;
+		try
+		{
+			var deleted = await chatService.SoftDeleteMessageAsync(roomId, messageId, email);
+			if (deleted != null)
+			{
+				await Clients.Group(RoomGroup(roomId)).SendAsync("MessageDeleted", deleted);
+			}
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Failed DeleteMessage for {Email} room {RoomId} msg {MessageId}", email, roomId, messageId);
+		}
+	}
+
 	public async Task MarkRead(long roomId, long lastReadMessageId)
 	{
 		var email = GetUserEmail();
