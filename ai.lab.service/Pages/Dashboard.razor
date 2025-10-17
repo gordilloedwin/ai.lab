@@ -143,10 +143,7 @@
         var user = state.User;
         // Attempt multiple possible claim keys for email.
         UserEmail = user.FindFirstValue(ClaimTypes.Email)
-                ?? user.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email)
-                ?? user.FindFirstValue("email")
-                ?? user.FindFirstValue("upn")
-                ?? user.FindFirstValue("preferred_username");
+                ?? user.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email);
         UserDisplayName = user.Identity?.Name ?? UserEmail ?? "Unknown";
     }
 

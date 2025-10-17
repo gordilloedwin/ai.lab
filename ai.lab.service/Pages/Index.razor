@@ -4,6 +4,7 @@
 @using ai.lab.service.Services.Common
 @using ai.lab.service.Services.Auth
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 
 @inject IAuthService AuthService
 @inject NavigationManager Nav
@@ -11,27 +12,66 @@
 
 @attribute [LayoutAttribute(typeof(NoLayout))]
 
-<div>
-    <h3>Login</h3>
-    <p>Enter credentials:</p>
+@if (checkingAuth)
+{
+    <p>Checking session...</p>
+}
+else if (isAuthenticated)
+{
+    <p>Redirecting to dashboard...</p>
+}
+else
+{
+    <div>
+        <h3>Login</h3>
+        <p>Enter credentials:</p>
 
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div style="color: red; margin-bottom: 10px;">@errorMessage</div>
-    }
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div style="color: red; margin-bottom: 10px;">@errorMessage</div>
+        }
 
-    <form @onsubmit="HandleLoginAsync">
-        <label>Email <input type="email" @bind="email" required /></label><br />
-        <label>Password <input type="password" @bind="password" required /></label><br />
-        <button type="submit" disabled="@isLoading">@(isLoading ? "Signing in..." : "Sign In")</button>
-    </form>
-</div>
+        <form @onsubmit="HandleLoginAsync">
+            <label>Email <input type="email" @bind="email" required /></label><br />
+            <label>Password <input type="password" @bind="password" required /></label><br />
+            <button type="submit" disabled="@isLoading">@(isLoading ? "Signing in..." : "Sign In")</button>
+        </form>
+    </div>
+}
 
 @code {
     private string email = string.Empty;
     private string password = string.Empty;
     private string errorMessage = string.Empty;
     private bool isLoading = false;
+    private bool checkingAuth = true;
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check existing authentication state; if valid, redirect.
+        try
+        {
+            var state = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = state.User;
+            if (user.Identity?.IsAuthenticated == true && !string.IsNullOrWhiteSpace(user.FindFirstValue(ClaimTypes.Email)))
+            {
+                isAuthenticated = true;
+                // Slight delay to allow UI to render message
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(100);
+                    Nav.NavigateTo("/dashboard", forceLoad: true);
+                });
+            }
+        }
+        catch { }
+        finally
+        {
+            checkingAuth = false;
+            StateHasChanged();
+        }
+    }
 
     private async Task HandleLoginAsync()
     {
