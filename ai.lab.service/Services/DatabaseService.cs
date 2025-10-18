@@ -47,7 +47,7 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
         try
         {
             const string sql = @"
-            INSERT INTO chunk_embeddings 
+            INSERT INTO chat_chunk_embeddings 
             (
                 chunk_id,
                 chunk_text,
@@ -417,7 +417,11 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
             const string sql = @"
                 UPDATE chat_rooms 
                 SET is_active = FALSE 
-                WHERE id = @ChatRoomId AND created_by_email = @UserEmail;";
+                WHERE id = @ChatRoomId 
+                  AND (
+                        created_by_email = @UserEmail 
+                        OR (SELECT is_admin FROM users WHERE email = @UserEmail) = 1
+                  );";
             var connectionString = options.CurrentValue.MariaDbConnectionString;
             using var connection = new MySqlConnection(connectionString);
             await connection.OpenAsync(cancellationToken);
@@ -427,14 +431,16 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                 new { ChatRoomId = chatRoomId, UserEmail = userEmail },
                 cancellationToken: cancellationToken));
 
-            if (rowsAffected > 0)
+            var success = rowsAffected > 0;
+            if (success)
             {
-                logger.LogInformation("Deleted chat room {RoomId} by user {UserEmail}", chatRoomId, userEmail);
-                return true;
+                logger.LogInformation("Deleted chat room {RoomId} by user {UserEmail} (creator or admin)", chatRoomId, userEmail);
             }
-
-            logger.LogWarning("Failed to delete chat room {RoomId} - user {UserEmail} not authorized or room not found", chatRoomId, userEmail);
-            return false;
+            else
+            {
+                logger.LogWarning("Failed to delete chat room {RoomId} - user {UserEmail} not authorized or room not found", chatRoomId, userEmail);
+            }
+            return success;
         }
         catch (Exception ex)
         {

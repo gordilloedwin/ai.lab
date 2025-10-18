@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `is_admin` tinyint(1) DEFAULT 0,
   `last_seen` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
-  `context_json` text DEFAULT NULL,
+  `context_json` longtext DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;

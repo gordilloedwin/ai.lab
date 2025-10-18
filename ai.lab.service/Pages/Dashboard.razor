@@ -21,7 +21,7 @@
         <div class="card" style="position:relative;">
             <div class="card-content" style="display:flex; flex-direction:column; gap:4px;">
                 <span style="font-size:var(--font-size-xs); text-transform:uppercase; letter-spacing:.5px; color:var(--color-text-faint);">Rooms</span>
-                <strong style="font-size:var(--font-size-xl);">@Rooms?.Count ?? 0</strong>
+                <strong style="font-size:var(--font-size-xl);">@(Rooms?.Count ?? 0)</strong>
                 <span class="badge badge-accent" style="width:fit-content;">Active</span>
             </div>
         </div>
@@ -108,6 +108,30 @@
                     <button class="btn btn-success" @onclick="CreateRoomAsync" disabled="@IsSubmittingRoom">@(IsSubmittingRoom ? "Creating..." : "Submit")</button>
                     <button class="btn btn-secondary" @onclick="ToggleCreateRoom" disabled="@IsSubmittingRoom">Cancel</button>
                 </div>
+                    if (!IsAdmin || string.IsNullOrWhiteSpace(UserEmail)) return;
+                    if (DeletingRoomIds.Contains(room.Id)) return;
+                    try
+                    {
+                        DeletingRoomIds.Add(room.Id);
+                        var success = await ChatService.DeleteChatRoomAsync(room.Id, UserEmail!, CancellationToken.None);
+                        if (!success)
+                        {
+                            RoomsError = "Failed to delete room (not authorized or already inactive).";
+                        }
+                        else
+                        {
+                            await LoadRoomsAsync();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        RoomsError = $"Delete failed: {ex.Message}";
+                    }
+                    finally
+                    {
+                        DeletingRoomIds.Remove(room.Id);
+                        StateHasChanged();
+                    }
             </div>
         </div>
     }
@@ -159,7 +183,14 @@
                                 {
                                     <button class="btn btn-primary" @onclick="() => HandleEnterRoomAsync(room)" disabled="@JoiningRoomIds.Contains(room.Id)">@(room.IsUserInRoom ? "Open" : (JoiningRoomIds.Contains(room.Id) ? "Joining..." : "Join"))</button>
                                 }
-                                <button class="btn btn-secondary" disabled title="Delete (admin only later)">Delete</button>
+                                @if (IsAdmin)
+                                {
+                                    <button class="btn btn-danger" @onclick="() => HandleDeleteRoomAsync(room)" disabled="@DeletingRoomIds.Contains(room.Id) || !room.IsActive" title="Delete room">@(DeletingRoomIds.Contains(room.Id) ? "Deleting..." : "Delete")</button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-secondary" disabled title="Delete (admin only)">Delete</button>
+                                }
                             </div>
                         </div>
                     </div>
@@ -175,6 +206,7 @@
     private string? RoomsError;
     private string? UserEmail;
     private string? UserDisplayName;
+    private bool IsAdmin; // Determines if current user can delete rooms
 
     // Create room state
     private bool ShowCreateRoom = false;
@@ -189,6 +221,7 @@
     private string? ModelsError;
 
     private HashSet<long> JoiningRoomIds = new();
+    private HashSet<long> DeletingRoomIds = new(); // Track rooms being deleted
 
     protected override async Task OnInitializedAsync()
     {
@@ -205,6 +238,13 @@
         UserEmail = user.FindFirstValue(ClaimTypes.Email)
                 ?? user.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email);
         UserDisplayName = user.Identity?.Name ?? UserEmail ?? "Unknown";
+        // Detect admin via claim (support both "is_admin" and legacy "isAdmin")
+        var adminClaim = user.Claims.FirstOrDefault(c => c.Type == "is_admin")?.Value
+            ?? user.Claims.FirstOrDefault(c => c.Type == "isAdmin")?.Value;
+        if (!string.IsNullOrWhiteSpace(adminClaim))
+        {
+            IsAdmin = adminClaim.Equals("true", StringComparison.OrdinalIgnoreCase) || adminClaim.Equals("True", StringComparison.OrdinalIgnoreCase) || adminClaim == "1";
+        }
     }
 
     private async Task LoadRoomsAsync()
@@ -350,5 +390,33 @@
     {
         await AuthStateProvider.LogoutAsync();
         Nav.NavigateTo("/", forceLoad: true);
+    }
+
+    private async Task HandleDeleteRoomAsync(ChatRoomResponse room)
+    {
+        if (!IsAdmin || string.IsNullOrWhiteSpace(UserEmail)) return;
+        if (DeletingRoomIds.Contains(room.Id)) return;
+        try
+        {
+            DeletingRoomIds.Add(room.Id);
+            var success = await ChatService.DeleteChatRoomAsync(room.Id, UserEmail!, CancellationToken.None);
+            if (!success)
+            {
+                RoomsError = "Failed to delete room (not authorized or already inactive).";
+            }
+            else
+            {
+                await LoadRoomsAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            RoomsError = $"Delete failed: {ex.Message}";
+        }
+        finally
+        {
+            DeletingRoomIds.Remove(room.Id);
+            StateHasChanged();
+        }
     }
 }
