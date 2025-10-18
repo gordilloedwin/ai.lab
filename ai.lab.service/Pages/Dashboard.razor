@@ -156,7 +156,7 @@
                 {
                     var status = room.IsActive ? (room.IsFull ? "Full" : "Open") : "Inactive";
                     var unread = room.UnreadMessageCount;
-                    <div class="card room-card" style="position:relative;">
+                    <div class="card room-card">
                         <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; gap:var(--space-2);">
                             <h3 style="margin:0; font-size:var(--font-size-md);">@room.Title</h3>
                             @if (unread > 0)
@@ -183,14 +183,7 @@
                                 {
                                     <button class="btn btn-primary" @onclick="() => HandleEnterRoomAsync(room)" disabled="@JoiningRoomIds.Contains(room.Id)">@(room.IsUserInRoom ? "Open" : (JoiningRoomIds.Contains(room.Id) ? "Joining..." : "Join"))</button>
                                 }
-                                @if (IsAdmin)
-                                {
-                                    <button class="btn btn-danger" @onclick="() => HandleDeleteRoomAsync(room)" disabled="@DeletingRoomIds.Contains(room.Id) || !room.IsActive" title="Delete room">@(DeletingRoomIds.Contains(room.Id) ? "Deleting..." : "Delete")</button>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-secondary" disabled title="Delete (admin only)">Delete</button>
-                                }
+                                <button class="btn btn-danger" @onclick="() => HandleDeleteRoomAsync(room)" disabled="@DeletingRoomIds.Contains(room.Id) || !room.IsActive" title="Delete room">@(DeletingRoomIds.Contains(room.Id) ? "Deleting..." : "Delete")</button>
                             </div>
                         </div>
                     </div>
@@ -206,7 +199,7 @@
     private string? RoomsError;
     private string? UserEmail;
     private string? UserDisplayName;
-    private bool IsAdmin; // Determines if current user can delete rooms
+    private bool IsAdmin; // Retained for future use (currently not gating delete)
 
     // Create room state
     private bool ShowCreateRoom = false;
@@ -394,7 +387,7 @@
 
     private async Task HandleDeleteRoomAsync(ChatRoomResponse room)
     {
-        if (!IsAdmin || string.IsNullOrWhiteSpace(UserEmail)) return;
+    if (string.IsNullOrWhiteSpace(UserEmail)) return; // Only require authenticated user now
         if (DeletingRoomIds.Contains(room.Id)) return;
         try
         {

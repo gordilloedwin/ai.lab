@@ -75,7 +75,8 @@ public class AuthService(ILogger<AuthService> logger, IOptionsMonitor<JwtOptions
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim("name", user.Name ?? string.Empty),
-                new Claim("is_admin", user.IsAdmin.ToString().ToLowerInvariant()),
+                new Claim("is_admin", user.IsAdmin.ToString().ToLowerInvariant()), // canonical
+                new Claim("isAdmin", user.IsAdmin ? "True" : "False"), // legacy compatibility (some parts of code check capitalized True)
                 new Claim("avatar_uri", user.AvatarUri ?? string.Empty)
             };
 
