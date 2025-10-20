@@ -132,13 +132,7 @@ public sealed class AIService
 
         using var process = Process.Start(psi)!;
         var context = sessionManager != null ? (await sessionManager.GetContextAsync(email, model, cancellationToken))?.ToArray() ?? [] : [];
-        await process.StandardInput.WriteLineAsync(JsonSerializer.Serialize(new
-        {
-            model,
-            prompt,
-            stream = true,
-            context
-        }));
+        await process.StandardInput.WriteLineAsync(prompt);
 
         process.StandardInput.Close();
 
@@ -146,7 +140,6 @@ public sealed class AIService
         {
             var line = await process.StandardOutput.ReadLineAsync();
             if (line is null) continue;
-
 
             if (cancellationToken.IsCancellationRequested)
             {
@@ -185,8 +178,12 @@ public sealed class AIService
                     await sessionManager.StoreContextAsync(email, model, chunkContext, cancellationToken);
                 }
 
-                await Task.Delay(30, cancellationToken);
+                //await Task.Delay(30, cancellationToken);
                 yield return chunk;
+            }
+            else
+            {
+                yield return line;
             }
         }
 
