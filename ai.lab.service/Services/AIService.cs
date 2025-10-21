@@ -92,7 +92,7 @@ public sealed class AIService
     {
         try
         {
-            var embeddings = await embeddingManager.SearchChunksAsync(model, prompt, options.CurrentValue.MaxRagChunksPerPrompt, cancellationToken);
+            var embeddings = await embeddingManager.SearchChunksInQdrantAsync(model, prompt, options.CurrentValue.MaxRagChunksPerPrompt, cancellationToken);
             var qdrantContextWindow = new QdrantContextBuilder(embeddings).BuildContextWindow();
             string finalPrompt = $"Use the following context to answer the question.\n\nContext:\n{qdrantContextWindow}\n\nQuestion:\n{prompt}\n\nAnswer:";
             return await GenerateResponseFromApiAsync(model, finalPrompt, email, cancellationToken);

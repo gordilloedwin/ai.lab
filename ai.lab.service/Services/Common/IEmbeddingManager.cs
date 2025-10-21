@@ -5,6 +5,23 @@ namespace ai.lab.service.Services.Common;
 public interface IEmbeddingManager
 {
     /// <summary>
+    /// Generates a unique identifier for a specific chunk of text within a file.
+    /// </summary>
+    /// <param name="filePath">The path to the file containing the chunk. Must not be null or empty.</param>
+    /// <param name="chunkText">The text content of the chunk for which to generate an identifier. Must not be null.</param>
+    /// <returns>A string representing the unique identifier for the specified chunk of text.</returns>
+    string GenerateChunkId(string filePath, string chunkText);
+
+    /// <summary>
+    /// Deletes old data chunks associated with the specified file from the MariaDB database asynchronously.
+    /// </summary>
+    /// <param name="filePath">The full path of the file whose old data chunks should be deleted. Cannot be null or empty.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if any old chunks
+    /// were deleted; otherwise, <see langword="false"/>.</returns>
+    Task<bool> DeleteOldChunksFromMariaDb(string filePath, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Performs a semantic search for relevant chunks using the specified model and prompt.
     /// </summary>
     /// <param name="model">The name of the model to use for the semantic search. Cannot be null or empty.</param>
@@ -13,22 +30,18 @@ public interface IEmbeddingManager
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="QdrantSearchResponse"/>
     /// with the search results.</returns>
-    Task<QdrantSearchResponse> SearchChunksAsync(string model, string prompt, int topK = 5, CancellationToken cancellationToken = default);
+    Task<QdrantSearchResponse> SearchChunksInQdrantAsync(string model, string prompt, int topK = 5, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Asynchronously uploads a text chunk to the specified model, associating it with a unique chunk identifier, file
-    /// name, and optional tags.
+    /// Asynchronously saves a text chunk associated with a specific model and chunk identifier to the specified file
+    /// path, applying the provided tags.
     /// </summary>
-    /// <remarks>If the upload is cancelled via the cancellation token, the operation will terminate without
-    /// uploading the chunk. The chunkId must be unique within the context of the specified model to avoid
-    /// conflicts.</remarks>
-    /// <param name="model">The name of the model to which the chunk will be uploaded. Cannot be null or empty.</param>
-    /// <param name="chunkId">A unique identifier for the chunk within the model. Cannot be null or empty.</param>
-    /// <param name="chunkText">The text content of the chunk to upload. Cannot be null.</param>
-    /// <param name="fileName">The name of the file associated with the chunk. Used for reference or grouping. Cannot be null or empty.</param>
-    /// <param name="tags">A list of tags to associate with the chunk for categorization or metadata. Can be null or empty if no tags are
-    /// required.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the upload operation.</param>
-    /// <returns>A task that represents the asynchronous upload operation.</returns>
-    Task UploadChunkAsync(string model, string chunkId, string chunkText, string fileName, List<string> tags, CancellationToken cancellationToken = default);
+    /// <param name="model">The name or identifier of the model to associate with the chunk. Cannot be null or empty.</param>
+    /// <param name="chunkId">A unique identifier for the chunk being saved. Cannot be null or empty.</param>
+    /// <param name="chunkText">The text content of the chunk to save. Cannot be null.</param>
+    /// <param name="filePath">The full file system path where the chunk will be saved. Cannot be null or empty.</param>
+    /// <param name="tags">A list of tags to associate with the chunk. Can be empty but cannot be null.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous save operation.</returns>
+    Task SaveChunkAsync(string model, string chunkId, string chunkText, string filePath, List<string> tags, CancellationToken cancellationToken = default);
 }

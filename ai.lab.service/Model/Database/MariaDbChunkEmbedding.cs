@@ -4,6 +4,8 @@ public class MariaDbChunkEmbedding
 {
     public long Id { get; set; }
 
+    public string Model { get; set; } = string.Empty;
+
     public string? ChunkId { get; set; }
 
     public string? ChunkText { get; set; }

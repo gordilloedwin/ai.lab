@@ -1,5 +1,10 @@
-﻿using ai.lab.service.Model.Embeddings;
+﻿using ai.lab.service.Model.Database;
+using ai.lab.service.Model.Embeddings;
+using ai.lab.service.Options;
 using ai.lab.service.Services.Common;
+using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace ai.lab.service.Managers;
 
@@ -7,10 +12,28 @@ public class EmbeddingManager
 (
     IOllamaClient ollamaClient,
     IQdrantClient qdrantClient,
+    IDatabaseService databaseService,
+    IOptionsMonitor<AILabOptions> optionsMonitor,
     ILogger<EmbeddingManager> logger
 ) : IEmbeddingManager
 {
-    public async Task<QdrantSearchResponse> SearchChunksAsync(string model, string prompt, int topK = 5, CancellationToken cancellationToken = default)
+    public string GenerateChunkId(string filePath, string chunkText)
+    {
+        string input = $"{filePath}:{chunkText}";
+        using (SHA256 sha256 = SHA256.Create())
+        {
+            byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in hashBytes)
+                sb.Append(b.ToString("x2")); // hex format
+            return sb.ToString();
+        }
+    }
+
+    public async Task<bool> DeleteOldChunksFromMariaDb(string filePath, CancellationToken cancellationToken) =>
+        await databaseService.DeleteOldChunksAsync(filePath, cancellationToken);
+
+    public async Task<QdrantSearchResponse> SearchChunksInQdrantAsync(string model, string prompt, int topK = 5, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -23,7 +46,7 @@ public class EmbeddingManager
                 return new QdrantSearchResponse();
             }
 
-            return await qdrantClient.QdrantSearchResponseAsync(queryVector, topK, cancellationToken);
+            return await qdrantClient.QdrantSearchResponseAsync(queryVector, topK, model, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -32,7 +55,7 @@ public class EmbeddingManager
         }
     }
 
-    public async Task UploadChunkAsync(string model, string chunkId, string chunkText, string fileName, List<string> tags, CancellationToken cancellationToken = default)
+    public async Task SaveChunkAsync(string model, string chunkId, string chunkText, string filePath, List<string> tags, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -45,7 +68,26 @@ public class EmbeddingManager
                 return;
             }
 
-            await qdrantClient.UploadChunkAsync(chunkId, vector, fileName, tags, CancellationToken.None);
+            if (optionsMonitor?.CurrentValue?.SaveChunksToQadrant ?? false)
+            {
+                await qdrantClient.UploadChunkAsync(chunkId, vector, filePath, tags, model, cancellationToken);
+            }
+
+            if (optionsMonitor?.CurrentValue?.SaveChunksToMariaDb ?? false)
+            {
+                var chunks = new MariaDbChunkEmbedding
+                {
+                    ChunkId = chunkId,
+                    ChunkText = chunkText,
+                    FileName = filePath,
+                    Tags = string.Join(",", tags),
+                    Model = model,
+                    Embedding = vector
+                };
+
+                await databaseService.InsertChunkAsync(chunks, cancellationToken);
+            }
+
             logger.LogInformation("Uploaded chunk {ChunkId} successfully", chunkId);
         }
         catch (Exception ex)

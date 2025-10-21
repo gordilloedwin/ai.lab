@@ -140,6 +140,7 @@ public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAISer
 			return false;
 		}
 	}
+
 	private static bool IsAiLocked(long roomId)
 	{
 		lock (_lockSync)

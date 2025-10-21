@@ -24,18 +24,15 @@ public class ContextSessionManager(IMemoryCache cache, IDatabaseService database
         }
         else
         {
-            // Check if context exists in database and merge if found
             var user = await databaseService.GetUserByEmailAsync(email, cancellationToken);
             List<UserChatContext> contextToStore;
 
             if (user?.ContextJson is not null)
             {
-                // Deserialize existing context from database
                 var dbAiContext = System.Text.Json.JsonSerializer.Deserialize<List<UserChatContext>>(user.ContextJson);
                 
                 if (dbAiContext is not null && dbAiContext.Any())
                 {
-                    // Merge: Remove existing context for this model and add new one
                     var merged = dbAiContext.Where(c => c.Model != model).ToList();
                     merged.Add(new UserChatContext
                     {
@@ -46,7 +43,6 @@ public class ContextSessionManager(IMemoryCache cache, IDatabaseService database
                 }
                 else
                 {
-                    // Database context was null or empty, create new
                     contextToStore = new List<UserChatContext>
                     {
                         new UserChatContext
@@ -59,7 +55,6 @@ public class ContextSessionManager(IMemoryCache cache, IDatabaseService database
             }
             else
             {
-                // No existing context in database, create new
                 contextToStore = new List<UserChatContext>
                 {
                     new UserChatContext

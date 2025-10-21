@@ -34,6 +34,7 @@ VALUES
 
 CREATE TABLE IF NOT EXISTS chat_chunk_embeddings (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `model` varchar(255) DEFAULT '',
   `chunk_id` varchar(255) DEFAULT NULL,
   `chunk_text` text DEFAULT NULL,
   `file_name` varchar(255) DEFAULT NULL,

@@ -16,11 +16,19 @@ public interface IDatabaseService
     /// Asynchronously inserts a chunk embedding into the MariaDB database.
     /// </summary>
     /// <param name="chunk">The chunk embedding to insert. Cannot be null.</param>
-    /// <param name="connectionString">The connection string used to connect to the MariaDB database. Cannot be null or empty.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the identifier of the newly inserted
     /// chunk.</returns>
-    Task<long> InsertChunkAsync(MariaDbChunkEmbedding chunk, string connectionString, CancellationToken cancellationToken);
+    Task<long> InsertChunkAsync(MariaDbChunkEmbedding chunk, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deletes old data chunks associated with the specified file from the MariaDB database asynchronously.
+    /// </summary>
+    /// <param name="filePath">The full path of the file whose old chunks should be deleted. Cannot be null or empty.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if any old chunks
+    /// were deleted; otherwise, <see langword="false"/>.</returns>
+    Task<bool> DeleteOldChunksAsync(string filePath, CancellationToken cancellationToken);
 
     /// <summary>
     /// Asynchronously retrieves a user by their email address.

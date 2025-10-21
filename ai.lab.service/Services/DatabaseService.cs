@@ -42,13 +42,14 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
         }
     }
 
-    public async Task<long> InsertChunkAsync(MariaDbChunkEmbedding chunk, string connectionString, CancellationToken cancellationToken)
+    public async Task<long> InsertChunkAsync(MariaDbChunkEmbedding chunk, CancellationToken cancellationToken)
     {
         try
         {
             const string sql = @"
             INSERT INTO chat_chunk_embeddings 
             (
+                model,
                 chunk_id,
                 chunk_text,
                 file_name,
@@ -57,6 +58,7 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
             )
             VALUES
             (
+                @Model,
                 @ChunkId,
                 @ChunkText,
                 @FileName,
@@ -66,6 +68,7 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
             SELECT LAST_INSERT_ID();";
 
             SqlMapper.AddTypeHandler(new VectorHandler());
+            var connectionString = options.CurrentValue.MariaDbConnectionString;
             using var connection = new MySqlConnection(connectionString);
             connection.OpenAsync(cancellationToken).Wait(cancellationToken);
             var id = await connection.ExecuteScalarAsync<long>(sql, chunk);
@@ -74,6 +77,26 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to insert chunk embedding into the database.");
+            throw;
+        }
+    }
+
+    public async Task<bool> DeleteOldChunksAsync(string filePath, CancellationToken cancellationToken)
+    {
+        try
+        {
+            const string sql = @"
+            DELETE FROM chat_chunk_embeddings 
+            WHERE file_name = @FileName;";
+            var connectionString = options.CurrentValue.MariaDbConnectionString;
+            using var connection = new MySqlConnection(connectionString);
+            connection.OpenAsync(cancellationToken).Wait(cancellationToken);
+            var rowsAffected = await connection.ExecuteAsync(sql, new { FileName = filePath });
+            return !string.IsNullOrEmpty(filePath) || rowsAffected > 0;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to delete old chunks from the database for file {FileName}.", filePath);
             throw;
         }
     }

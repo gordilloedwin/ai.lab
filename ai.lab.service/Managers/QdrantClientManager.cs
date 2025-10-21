@@ -3,6 +3,7 @@ using ai.lab.service.Model.Embeddings;
 using ai.lab.service.Options;
 using ai.lab.service.Services.Common;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 using System.Text.Json;
 
 namespace ai.lab.service.Managers;
@@ -16,12 +17,12 @@ public class QdrantClientManager
 {
     public static new string HttpClientName => "QdrantClient";
 
-    public async Task UploadChunkAsync(string chunkId, float[] vector, string fileName, List<string> tags, CancellationToken cancellationToken)
+    public async Task UploadChunkAsync(string chunkId, float[] vector, string fileName, List<string> tags, string model, CancellationToken cancellationToken)
     {
         try
         {
             var qdrantUrl = options.CurrentValue.QdrantUrl;
-            var collectionName = options.CurrentValue.QdrantCollectionName;
+            var collectionName = string.IsNullOrWhiteSpace(model) ? options.CurrentValue.QdrantCollectionName : model;
 
             var payload = new
             {
@@ -56,12 +57,12 @@ public class QdrantClientManager
         }
     }
 
-    public async Task<QdrantSearchResponse> QdrantSearchResponseAsync(float[] vector, int topK, CancellationToken cancellationToken)
+    public async Task<QdrantSearchResponse> QdrantSearchResponseAsync(float[] vector, int topK, string model, CancellationToken cancellationToken)
     {
         try
             {
             var qdrantUrl = options.CurrentValue.QdrantUrl;
-            var collectionName = options.CurrentValue.QdrantCollectionName;
+            var collectionName = string.IsNullOrWhiteSpace(model) ? options.CurrentValue.QdrantCollectionName : model;
 
             var searchRequest = new
             {
