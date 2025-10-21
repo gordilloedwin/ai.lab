@@ -1,4 +1,5 @@
-﻿using ai.lab.service.Model.Database;
+﻿using ai.lab.ragfeed.Output;
+using ai.lab.service.Model.Database;
 using ai.lab.service.Model.Embeddings;
 
 namespace ai.lab.service.Services.Common;
@@ -46,6 +47,14 @@ public interface IEmbeddingManager
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous save operation.</returns>
     Task SaveChunkAsync(string model, string chunkId, string chunkText, string filePath, List<string> tags, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously saves a collection of chunk embeddings to the underlying storage.
+    /// </summary>
+    /// <param name="chunkEmbeddings">The list of chunk embeddings to be saved. Cannot be null or contain null elements.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the save operation.</param>
+    /// <returns>A task that represents the asynchronous save operation.</returns>
+    Task SaveEmbeddingsAsync(List<ChunkEmbedding> chunkEmbeddings, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves relevant embeddings from the MariaDB database based on the provided model and prompt.

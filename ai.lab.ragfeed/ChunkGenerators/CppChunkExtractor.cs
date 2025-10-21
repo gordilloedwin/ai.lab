@@ -1,3 +1,4 @@
+using ai.lab.ragfeed.ChunkGenerators.Common;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -11,7 +12,7 @@ namespace ai.lab.ragfeed.ChunkGenerators;
 /// Metadata headers enrich each chunk for improved retrieval relevance.
 /// NOTE: Heuristic parser (not full AST); handles common C++ patterns and nested structures.
 /// </summary>
-public class CppChunkExtractor
+public class CppChunkExtractor : IFileChunkGenerator
 {
     private static readonly Regex PreprocessorRegex = new(@"^\s*#\s*(\w+)\s*(.*)", RegexOptions.Compiled);
     private static readonly Regex NamespaceRegex = new(@"^\s*namespace\s+([A-Za-z_][\w:]*)\s*\{?", RegexOptions.Compiled);
@@ -42,6 +43,8 @@ public class CppChunkExtractor
         public List<string> Typedefs { get; } = new();
         public int BraceDepth { get; set; }
     }
+
+    public List<string> GenerateChunks(string filepath) => ExtractCppChunks(filepath);
 
     public List<string> ExtractCppChunks(string filePath)
     {

@@ -1,10 +1,13 @@
+using ai.lab.ragfeed.ChunkGenerators.Common;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ai.lab.ragfeed.ChunkGenerators;
 
-public class PythonChunkExtractor
+public class PythonChunkExtractor : IFileChunkGenerator 
 {
+    public List<string> GenerateChunks(string filepath) => ExtractPythonChunks(filepath);
+
     public List<string> ExtractPythonChunks(string filePath)
     {
         var code = File.ReadAllText(filePath);

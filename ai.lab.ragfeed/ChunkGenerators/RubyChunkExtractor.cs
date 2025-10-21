@@ -1,3 +1,4 @@
+using ai.lab.ragfeed.ChunkGenerators.Common;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -11,7 +12,7 @@ namespace ai.lab.ragfeed.ChunkGenerators;
 /// Parsing strategy: single-pass line scanner with a block stack tracking starts and matching 'end'.
 /// NOTE: This is a heuristic parser (not an AST) but resilient to nested structures & common Ruby idioms.
 /// </summary>
-public class RubyChunkExtractor
+public class RubyChunkExtractor : IFileChunkGenerator
 {
     private static readonly Regex ClassRegex = new(@"^\s*class\s+([A-Z]\w*(?:::\w+)*)(?:\s*<\s*([A-Z]\w*(?:::\w+)*))?", RegexOptions.Compiled);
     private static readonly Regex ModuleRegex = new(@"^\s*module\s+([A-Z]\w*(?:::\w+)*)", RegexOptions.Compiled);
@@ -43,6 +44,9 @@ public class RubyChunkExtractor
         public string VisibilityAtStart { get; set; } = "public"; // Ruby default
         public string? ParamsSignature { get; set; }
     }
+
+
+    public List<string> GenerateChunks(string filepath) => ExtractRubyChunks(filepath);
 
     /// <summary>
     /// Extract enriched Ruby chunks from a file path.

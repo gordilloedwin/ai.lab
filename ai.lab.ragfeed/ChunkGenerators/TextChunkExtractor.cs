@@ -1,12 +1,16 @@
-﻿using System.Text;
+﻿using ai.lab.ragfeed.ChunkGenerators.Common;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ai.lab.ragfeed.ChunkGenerators;
 
-public class TextChunkExtractor
+public class TextChunkExtractor : IFileChunkGenerator
 {
-    private const int DefaultMaxCharsPerChunk = 1000;
     private const int DefaultOverlapChars = 200;
+
+    private const int DefaultMaxCharsPerChunk = 1000;    
+
+    public List<string> GenerateChunks(string filepath) => GenerateChunks(filepath);
 
     /// <summary>
     /// Generates semantic chunks from a text file using multiple strategies:
@@ -24,7 +28,7 @@ public class TextChunkExtractor
         {
             ".md" or ".markdown" => ExtractMarkdownChunks(content, maxCharsPerChunk, overlapChars),
             ".json" => ExtractJsonChunks(content, maxCharsPerChunk),
-            ".xml" => ExtractXmlChunks(content, maxCharsPerChunk),
+            ".xml" or ".jrxml" => ExtractXmlChunks(content, maxCharsPerChunk),
             ".txt" or ".log" => ExtractTextChunks(content, maxCharsPerChunk, overlapChars),
             _ => ExtractTextChunks(content, maxCharsPerChunk, overlapChars)
         };

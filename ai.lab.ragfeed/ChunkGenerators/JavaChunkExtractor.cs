@@ -1,10 +1,13 @@
+using ai.lab.ragfeed.ChunkGenerators.Common;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ai.lab.ragfeed.ChunkGenerators;
 
-public class JavaChunkExtractor
+public class JavaChunkExtractor : IFileChunkGenerator
 {
+    public List<string> GenerateChunks(string filepath) => ExtractJavaChunks(filepath);
+
     public List<string> ExtractJavaChunks(string filePath)
     {
         var code = File.ReadAllText(filePath);

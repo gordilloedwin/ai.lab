@@ -4,7 +4,7 @@ namespace ai.lab.ragfeed;
 
 public class FileChunkGenerator
 {
-    public List<ChunkEmbedding> GenerateChunks(string filePath, string model)
+    public List<ChunkEmbedding> GenerateChunks(string filePath)
     {
         string content = File.ReadAllText(filePath);
         string fileName = Path.GetFileName(filePath);

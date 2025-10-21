@@ -1,11 +1,14 @@
-﻿using System.Text;
+﻿using ai.lab.ragfeed.ChunkGenerators.Common;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ai.lab.ragfeed.ChunkGenerators;
 
-public class PostgresChunkExtractor
+public class PostgresChunkExtractor : IFileChunkGenerator
 {
-    public List<string> ExtractChunks(string filePath)
+    public List<string> GenerateChunks(string filepath) => ExtractSqlChunks(filepath);
+
+    public List<string> ExtractSqlChunks(string filePath)
     {
         var content = File.ReadAllText(filePath);
         

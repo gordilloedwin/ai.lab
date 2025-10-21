@@ -1,7 +1,10 @@
-﻿using ai.lab.service.Model.Database;
+﻿using ai.lab.ragfeed.Output;
+using ai.lab.service.Helpers;
+using ai.lab.service.Model.Database;
 using ai.lab.service.Model.Embeddings;
 using ai.lab.service.Options;
 using ai.lab.service.Services.Common;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
@@ -10,6 +13,7 @@ namespace ai.lab.service.Managers;
 
 public class EmbeddingManager
 (
+    IMemoryCache memoryCache,
     IOllamaClient ollamaClient,
     IQdrantClient qdrantClient,
     IDatabaseService databaseService,
@@ -74,6 +78,55 @@ public class EmbeddingManager
         {
             logger.LogError(ex, "Error retrieving relevant embeddings from MariaDB for prompt");
             throw;
+        }
+    }
+
+    public async Task SaveEmbeddingsAsync(List<ChunkEmbedding> chunkEmbeddings, CancellationToken cancellationToken = default)
+    {
+        if (!chunkEmbeddings.Any())
+        {
+            logger.LogWarning("No chunk embeddings provided to save.");
+            return;
+        }
+
+        if (!memoryCache.TryGetValue("models", out List<string>? models) || models == null)
+        {
+            models = await ollamaClient.GetAvailableAiModels(cancellationToken);
+            memoryCache.Set("models", models, TimeSpan.FromHours(1));
+        }
+
+        if (!memoryCache.TryGetValue("semantic-tags", out List<string>? tags) || tags == null)
+        {
+            if (!File.Exists("semantic-tags.txt"))
+            {
+                throw new FileNotFoundException("The semantic-tags.txt file was not found in the working directory.");
+            }
+
+            var semanticTags = File.ReadAllText("semantic-tags.txt");
+            var fileLines = semanticTags.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            memoryCache.Set("semantic-tags", tags, TimeSpan.FromHours(1));
+        }
+
+        var filePath = chunkEmbeddings.First().FileName;
+        await DeleteOldChunksFromMariaDb(filePath, cancellationToken);
+        var tagMatcher = new TagMatcher(tags?.Where(t => !t.StartsWith("#")) ?? []);                
+
+        foreach (var chunk in chunkEmbeddings)
+        {
+            if (models?.Count > 0)
+            {
+                foreach (var model in models)
+                {
+                    chunk.Model = model;
+                    chunk.Tags = tagMatcher.MatchTags(chunk.ChunkText);
+                    chunk.ChunkId = GenerateChunkId(chunk.Model, chunk.FileName, chunk.ChunkText);
+                    await SaveChunkAsync(chunk.Model, chunk.ChunkId, chunk.ChunkText, chunk.FileName, chunk.Tags, cancellationToken);
+                }                
+            }
+            else
+            {
+                logger.LogWarning("Model {Model} not available. Skipping chunk {ChunkId}", chunk?.Model ?? "no-model", chunk?.ChunkId ?? "no-chunk-id");
+            }
         }
     }
 

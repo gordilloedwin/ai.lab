@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Razor.Language;
+﻿using ai.lab.ragfeed.ChunkGenerators.Common;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -6,8 +7,11 @@ using System.Text;
 
 namespace ai.lab.ragfeed.ChunkGenerators;
 
-public class RoslynChunkExtractor
+public class RoslynChunkExtractor : IFileChunkGenerator
 {
+    public List<string> GenerateChunks(string filepath) => 
+        filepath.ToLowerInvariant().EndsWith("cshtml") ? ExtractRazorChunks(filepath) : ExtractCsChunks(filepath);
+
     public List<string> ExtractCsChunks(string filePath)
     {
         var code = File.ReadAllText(filePath);

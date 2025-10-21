@@ -1,0 +1,3 @@
+#semantic tags: csharp, .NET 9, C# 13, project configuration
+xrs
+hos
