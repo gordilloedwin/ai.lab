@@ -10,7 +10,6 @@ using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Logs;

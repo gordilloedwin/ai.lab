@@ -1,6 +1,3 @@
-using ai.lab.service.Model.Outbound;
-using System.Collections.Generic;
-
 namespace ai.lab.service.Model.Outbound;
 
 public class ChatRoomInitResponse

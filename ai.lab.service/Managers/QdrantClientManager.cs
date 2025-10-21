@@ -3,7 +3,6 @@ using ai.lab.service.Model.Embeddings;
 using ai.lab.service.Options;
 using ai.lab.service.Services.Common;
 using Microsoft.Extensions.Options;
-using System.Reflection;
 using System.Text.Json;
 
 namespace ai.lab.service.Managers;
