@@ -115,7 +115,7 @@ public class EmbeddingManager
         {
             if (models?.Count > 0)
             {
-                foreach (var model in models)
+                foreach (var model in models.Where(m => m.ToLowerInvariant().Contains(optionsMonitor.CurrentValue.EmbeddingsModel)))
                 {
                     chunk.Model = model;
                     chunk.Tags.AddRange(tagMatcher.MatchTags(chunk.ChunkText + " " + filePath));
