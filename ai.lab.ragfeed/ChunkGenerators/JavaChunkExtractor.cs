@@ -6,6 +6,8 @@ namespace ai.lab.ragfeed.ChunkGenerators;
 
 public class JavaChunkExtractor : IFileChunkGenerator
 {
+    public string Filetype => "Code Java";
+
     public List<string> GenerateChunks(string filepath) => ExtractJavaChunks(filepath);
 
     public List<string> ExtractJavaChunks(string filePath)

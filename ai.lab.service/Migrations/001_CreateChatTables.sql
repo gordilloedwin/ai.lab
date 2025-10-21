@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS chat_rooms (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     created_by_email VARCHAR(255) NOT NULL,
-    ai_model VARCHAR(100) NOT NULL DEFAULT 'deepseek-coder:6.7b',
+    ai_model VARCHAR(100) NOT NULL DEFAULT '',
     max_participants INT NOT NULL DEFAULT 30,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -200,7 +200,7 @@ HAVING unread_count > 0;
 
 -- Insert a sample chat room (uncomment if needed)
 -- INSERT INTO chat_rooms (title, created_by_email, ai_model) 
--- VALUES ('General Discussion', 'admin@ai.lab', 'deepseek-coder:6.7b');
+-- VALUES ('General Discussion', 'admin@ai.lab', 'llama3:latest');
 
 -- =====================================================
 -- Rollback Script (for testing)

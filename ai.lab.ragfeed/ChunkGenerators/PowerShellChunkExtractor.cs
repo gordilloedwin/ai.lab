@@ -6,6 +6,8 @@ namespace ai.lab.ragfeed.ChunkGenerators;
 
 public class PowerShellChunkExtractor : IFileChunkGenerator
 {
+    public string Filetype => "script powershell";
+
     public List<string> GenerateChunks(string filepath) => ExtractPs1Chunks(filepath);
 
     public List<string> ExtractPs1Chunks(string filePath)

@@ -8,7 +8,9 @@ public class TextChunkExtractor : IFileChunkGenerator
 {
     private const int DefaultOverlapChars = 200;
 
-    private const int DefaultMaxCharsPerChunk = 1000;    
+    private const int DefaultMaxCharsPerChunk = 1000;
+
+    public string Filetype => "general information text";
 
     public List<string> GenerateChunks(string filepath) => GenerateChunks(filepath);
 

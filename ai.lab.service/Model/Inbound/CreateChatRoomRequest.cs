@@ -15,7 +15,7 @@ public class CreateChatRoomRequest
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
-    /// Optional: AI model to use for this room (defaults to deepseek-coder:6.7b).
+    /// Optional: AI model to use for this room.
     /// </summary>
     [StringLength(100, ErrorMessage = "AI model name cannot exceed 100 characters")]
     public string? AiModel { get; set; }

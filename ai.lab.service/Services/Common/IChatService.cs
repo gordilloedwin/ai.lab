@@ -17,7 +17,7 @@ public interface IChatService
     /// </summary>
     /// <param name="userEmail">Email of the user creating the room.</param>
     /// <param name="title">Title of the chat room.</param>
-    /// <param name="aiModel">Optional AI model to use (defaults to deepseek-coder:6.7b).</param>
+    /// <param name="aiModel">Optional AI model to use.</param>
     /// <param name="maxParticipants">Optional max participants (defaults to 30).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The created chat room with statistics.</returns>

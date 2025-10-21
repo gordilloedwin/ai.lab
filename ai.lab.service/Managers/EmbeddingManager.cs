@@ -104,12 +104,12 @@ public class EmbeddingManager
 
             var semanticTags = File.ReadAllText("semantic-tags.txt");
             var fileLines = semanticTags.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            memoryCache.Set("semantic-tags", tags, TimeSpan.FromHours(1));
+            memoryCache.Set("semantic-tags", tags?.Where(t => !t.StartsWith("#"))?.Distinct() ?? [], TimeSpan.FromHours(1));
         }
 
         var filePath = chunkEmbeddings.First().FileName;
         await DeleteOldChunksFromMariaDb(filePath, cancellationToken);
-        var tagMatcher = new TagMatcher(tags?.Where(t => !t.StartsWith("#")) ?? []);                
+        var tagMatcher = new TagMatcher(tags ?? []);
 
         foreach (var chunk in chunkEmbeddings)
         {
@@ -118,7 +118,7 @@ public class EmbeddingManager
                 foreach (var model in models)
                 {
                     chunk.Model = model;
-                    chunk.Tags = tagMatcher.MatchTags(chunk.ChunkText);
+                    chunk.Tags.AddRange(tagMatcher.MatchTags(chunk.ChunkText + " " + filePath));
                     chunk.ChunkId = GenerateChunkId(chunk.Model, chunk.FileName, chunk.ChunkText);
                     await SaveChunkAsync(chunk.Model, chunk.ChunkId, chunk.ChunkText, chunk.FileName, chunk.Tags, cancellationToken);
                 }                

@@ -108,30 +108,6 @@
                     <button class="btn btn-success" @onclick="CreateRoomAsync" disabled="@IsSubmittingRoom">@(IsSubmittingRoom ? "Creating..." : "Submit")</button>
                     <button class="btn btn-secondary" @onclick="ToggleCreateRoom" disabled="@IsSubmittingRoom">Cancel</button>
                 </div>
-                    if (!IsAdmin || string.IsNullOrWhiteSpace(UserEmail)) return;
-                    if (DeletingRoomIds.Contains(room.Id)) return;
-                    try
-                    {
-                        DeletingRoomIds.Add(room.Id);
-                        var success = await ChatService.DeleteChatRoomAsync(room.Id, UserEmail!, CancellationToken.None);
-                        if (!success)
-                        {
-                            RoomsError = "Failed to delete room (not authorized or already inactive).";
-                        }
-                        else
-                        {
-                            await LoadRoomsAsync();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        RoomsError = $"Delete failed: {ex.Message}";
-                    }
-                    finally
-                    {
-                        DeletingRoomIds.Remove(room.Id);
-                        StateHasChanged();
-                    }
             </div>
         </div>
     }

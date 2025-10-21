@@ -23,7 +23,7 @@ public class ChatRoom
     /// <summary>
     /// The AI model used for generating responses in this chat room.
     /// </summary>
-    public string AiModel { get; set; } = "deepseek-coder:6.7b";
+    public string AiModel { get; set; } = string.Empty;
 
     /// <summary>
     /// Maximum number of participants allowed in this room (default: 30).

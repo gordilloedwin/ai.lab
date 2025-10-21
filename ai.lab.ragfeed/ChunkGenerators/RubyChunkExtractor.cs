@@ -45,6 +45,7 @@ public class RubyChunkExtractor : IFileChunkGenerator
         public string? ParamsSignature { get; set; }
     }
 
+    public string Filetype => "code ruby";
 
     public List<string> GenerateChunks(string filepath) => ExtractRubyChunks(filepath);
 

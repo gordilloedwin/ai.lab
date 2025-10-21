@@ -1,3 +1,102 @@
 #semantic tags: csharp, .NET 9, C# 13, project configuration
 xrs
 hos
+driverlog
+report
+driver
+vehicle
+maintenance
+certify
+inspection
+eld
+erods
+distance
+fuel
+route
+trip
+log
+location
+speed
+company
+organization
+user
+cev
+cer
+driverid
+device
+trailer
+vin
+odometer
+rna
+status
+event
+alert
+fault
+diagnostic
+sensor
+hos event
+hos alert
+resource group
+resourcegroup
+timezone
+site
+geofence
+midnight
+shift
+break
+violation
+uva
+permission
+role
+audit
+segment
+compliance
+hosrule
+exemption
+partman
+hos_hos
+hos_eld
+hos_eld_event
+mobile
+api
+wcf
+mvc
+portal
+xrs_customer
+xrs_master
+xrs_mobile
+xrs_activity_tracking
+xrs_maintenance
+fleet
+fleetview
+driverlog
+fleetmanager
+fleet_manager
+solera
+omnitracs
+gp2
+etl
+dw
+incremental
+driver log editor
+dle
+duty status
+driving
+on duty
+off duty
+sleeper berth
+personal conveyance
+yard move
+hard brake
+overspeed
+excessive overspeed
+downlink
+ifta
+security_base_account
+ods
+xata
+helper
+queue
+activemq
+aws
+roadnet

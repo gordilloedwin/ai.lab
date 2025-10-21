@@ -36,7 +36,7 @@ public class ChunkExtractor(ILogger<ChunkExtractor> logger) : IChunkExtractor
                 ".ps1" => new PowerShellChunkExtractor(),
                 ".cpp" or ".h" or ".c" or ".hpp" => new CppChunkExtractor(), 
                 ".cs" or ".cshtml" or ".vb" or ".fs" => new RoslynChunkExtractor(),
-                ".md" or ".markdown" or ".json" or ".xml" or ".jrxml" or ".txt" or ".config" or ".yml" => new TextChunkExtractor(),
+                ".md" or ".markdown" or ".json" or ".xml" or ".html" or ".jrxml" or ".txt" or ".config" or ".yml" => new TextChunkExtractor(),
                 _ => new NotSupportedFileChunkGenerator()
             };
 
@@ -47,7 +47,7 @@ public class ChunkExtractor(ILogger<ChunkExtractor> logger) : IChunkExtractor
                     ChunkId = Guid.NewGuid().ToString(),
                     ChunkText = chunk,
                     FileName = Path.GetFileName(filePath),
-                    Tags = new List<string> { extension },
+                    Tags = new List<string> { Path.GetFileNameWithoutExtension(filePath), extension, chunkGenerator.Filetype },
                     Model = "default-model"
                 };
 

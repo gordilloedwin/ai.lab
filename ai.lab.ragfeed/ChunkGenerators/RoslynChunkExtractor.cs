@@ -9,6 +9,8 @@ namespace ai.lab.ragfeed.ChunkGenerators;
 
 public class RoslynChunkExtractor : IFileChunkGenerator
 {
+    public string Filetype => "microsoft csharp c# code";
+
     public List<string> GenerateChunks(string filepath) => 
         filepath.ToLowerInvariant().EndsWith("cshtml") ? ExtractRazorChunks(filepath) : ExtractCsChunks(filepath);
 

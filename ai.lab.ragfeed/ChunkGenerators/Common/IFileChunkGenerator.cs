@@ -2,5 +2,7 @@
 
 internal interface IFileChunkGenerator
 {
+    string Filetype { get; }
+
     List<string> GenerateChunks(string filepath);
 }

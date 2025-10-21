@@ -6,6 +6,8 @@ namespace ai.lab.ragfeed.ChunkGenerators;
 
 public class PythonChunkExtractor : IFileChunkGenerator 
 {
+    public string Filetype => "code python";
+
     public List<string> GenerateChunks(string filepath) => ExtractPythonChunks(filepath);
 
     public List<string> ExtractPythonChunks(string filePath)

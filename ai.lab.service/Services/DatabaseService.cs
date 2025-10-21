@@ -282,8 +282,8 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                 new
                 {
                     Title = title,
+                    AiModel = aiModel,
                     CreatedByEmail = userEmail,
-                    AiModel = aiModel ?? "deepseek-coder:6.7b",
                     MaxParticipants = maxParticipants ?? 30
                 },
                 cancellationToken: cancellationToken));

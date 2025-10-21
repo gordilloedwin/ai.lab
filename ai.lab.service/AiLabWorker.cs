@@ -14,31 +14,39 @@ public class AiLabWorker
     private Queue<string> folderQueue = new Queue<string>();
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
+    {        
         logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+        var delay = (optionsMonitor?.CurrentValue?.WorkerDelaySeconds ?? 300) * 1000;
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            if (!(optionsMonitor?.CurrentValue?.IsRagIngestionEnabled ?? false))
+            {
+                logger.LogInformation("RAG ingestion is disabled. Worker is idle.");
+                await Task.Delay(delay, stoppingToken);
+                continue;
+            }
+
             if (folderQueue.Count == 0)
             {
                 logger.LogInformation("Folder queue is empty, checking for new repositories.");
 
-                if (string.IsNullOrWhiteSpace(optionsMonitor.CurrentValue?.RepositoriesPath ?? string.Empty))
+                if (string.IsNullOrWhiteSpace(optionsMonitor?.CurrentValue?.RepositoriesPath ?? string.Empty))
                 {
                     logger.LogWarning("RepositoriesPath is not configured. Worker is idle.");
-                    await Task.Delay(10000, stoppingToken);
+                    await Task.Delay(delay, stoppingToken);
                     continue;
                 }
 
-                var folders = Directory.GetDirectories(optionsMonitor.CurrentValue!.RepositoriesPath);
+                var folders = Directory.GetDirectories(optionsMonitor?.CurrentValue!.RepositoriesPath ?? string.Empty);
                 if (folders.Length == 0)
                 {
-                    logger.LogInformation("No repositories found in {path}.", optionsMonitor.CurrentValue.RepositoriesPath);
-                    await Task.Delay(10000, stoppingToken);
+                    logger.LogInformation("No repositories found in {path}.", optionsMonitor?.CurrentValue.RepositoriesPath);
+                    await Task.Delay(delay, stoppingToken);
                     continue;
                 }
 
-                logger.LogInformation("Found {count} repositories in {path}.", folders.Length, optionsMonitor.CurrentValue.RepositoriesPath);
+                logger.LogInformation("Found {count} repositories in {path}.", folders.Length, optionsMonitor?.CurrentValue.RepositoriesPath);
 
                 foreach (var folder in folders)
                 {
@@ -77,11 +85,11 @@ public class AiLabWorker
                     logger.LogWarning("Folder does not exist: {folder}", currentFolder);
                 }
 
-                await Task.Delay(5000, stoppingToken);
+                await Task.Delay(delay, stoppingToken);
                 logger.LogInformation("Finished processing folder: {folder}", currentFolder);
             }
 
-            await Task.Delay(100000, stoppingToken);
+            await Task.Delay(delay, stoppingToken);
         }
     }
 }

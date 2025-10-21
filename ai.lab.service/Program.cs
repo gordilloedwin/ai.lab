@@ -33,9 +33,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 });
 
-builder.Services.AddHttpClient(OllamaClientManager.HttpClientName)
+builder.Services.AddHttpClient(OllamaClientManager.HttpClientName, client => client.Timeout = TimeSpan.FromMinutes(15))
     .AddPolicyHandler(Policy.WrapAsync(OllamaClientManager.GetRetryPolicy(), OllamaClientManager.GetCircuitBreakerPolicy()));
-builder.Services.AddHttpClient(QdrantClientManager.HttpClientName)
+builder.Services.AddHttpClient(QdrantClientManager.HttpClientName, client => client.Timeout = TimeSpan.FromMinutes(15))
     .AddPolicyHandler(Policy.WrapAsync(QdrantClientManager.GetRetryPolicy(), QdrantClientManager.GetCircuitBreakerPolicy()));
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
@@ -127,13 +127,13 @@ builder.Services.TryAddScoped<IAIService, AIService>();
 builder.Services.TryAddScoped<IAuthService, AuthService>();
 builder.Services.TryAddScoped<IDatabaseService, DatabaseService>();
 builder.Services.TryAddScoped<IChatService, ChatService>();
-builder.Services.TryAddScoped<IOllamaClient, OllamaClientManager>();
-builder.Services.TryAddScoped<IQdrantClient, QdrantClientManager>();
+builder.Services.TryAddTransient<IOllamaClient, OllamaClientManager>();
+builder.Services.TryAddTransient<IQdrantClient, QdrantClientManager>();
 builder.Services.TryAddScoped<IContextSessionManager, ContextSessionManager>();
 builder.Services.TryAddScoped<JwtAuthStateProvider>();
 builder.Services.TryAddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthStateProvider>());
-builder.Services.TryAddScoped<IChunkExtractor, ChunkExtractor>();
-builder.Services.TryAddScoped<IEmbeddingManager, EmbeddingManager>();
+builder.Services.TryAddTransient<IChunkExtractor, ChunkExtractor>();
+builder.Services.TryAddTransient<IEmbeddingManager, EmbeddingManager>();
 builder.Services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
 builder.Services.AddAuthorizationCore();
 builder.Services.AddHostedService<AiLabWorker>();

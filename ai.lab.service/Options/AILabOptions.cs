@@ -17,4 +17,10 @@ public class AILabOptions
     public string QdrantUrl { get; set; } = "http://localhost:6333";
 
     public string RepositoriesPath { get; set; } = string.Empty;
+
+    public bool IsRagIngestionEnabled { get; set; } = false;
+
+    public string EmbeddingsModel { get; set; } = string.Empty;
+
+    public int WorkerDelaySeconds { get; set; } = 300;
 }

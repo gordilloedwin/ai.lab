@@ -6,6 +6,8 @@ namespace ai.lab.ragfeed.ChunkGenerators;
 
 public class CssChunkExtractor : IFileChunkGenerator
 {
+    public string Filetype => "Cascading Style Sheets CSS";
+
     public List<string> GenerateChunks(string filepath) => ExtractCssChunks(filepath);
 
     public List<string> ExtractCssChunks(string filePath)

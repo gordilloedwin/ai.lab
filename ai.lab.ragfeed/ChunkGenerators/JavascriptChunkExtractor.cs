@@ -6,6 +6,8 @@ namespace ai.lab.ragfeed.ChunkGenerators;
 
 public class JavascriptChunkExtractor : IFileChunkGenerator
 {
+    public string Filetype => "Script Javascript";
+
     public List<string> GenerateChunks(string filepath) => ExtractJsChunks(filepath);
 
     public List<string> ExtractJsChunks(string filePath)

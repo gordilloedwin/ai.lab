@@ -44,6 +44,8 @@ public class CppChunkExtractor : IFileChunkGenerator
         public int BraceDepth { get; set; }
     }
 
+    public string Filetype => "code C++";
+
     public List<string> GenerateChunks(string filepath) => ExtractCppChunks(filepath);
 
     public List<string> ExtractCppChunks(string filePath)
