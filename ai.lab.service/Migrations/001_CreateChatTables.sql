@@ -40,7 +40,9 @@ CREATE TABLE IF NOT EXISTS chat_chunk_embeddings (
   `file_name` varchar(255) DEFAULT NULL,
   `tags` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`tags`)),
   `embedding` vector(4096) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY uq_chunk_id (chunk_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 -- =====================================================

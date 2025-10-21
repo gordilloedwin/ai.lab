@@ -47,7 +47,7 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
         try
         {
             const string sql = @"
-            INSERT INTO chat_chunk_embeddings 
+            INSERT INTO chat_chunk_embeddings
             (
                 model,
                 chunk_id,
@@ -55,8 +55,7 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                 file_name,
                 tags,
                 embedding
-            )
-            VALUES
+            ) VALUES 
             (
                 @Model,
                 @ChunkId,
@@ -64,8 +63,14 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                 @FileName,
                 @Tags,
                 @Embedding
-            );
-            SELECT LAST_INSERT_ID();";
+            )
+            ON DUPLICATE KEY UPDATE
+                model = VALUES(model),
+                chunk_text = VALUES(chunk_text),
+                file_name = VALUES(file_name),
+                tags = VALUES(tags),
+                embedding = VALUES(embedding),
+                updated_at = CURRENT_TIMESTAMP;";
 
             SqlMapper.AddTypeHandler(new VectorHandler());
             var connectionString = options.CurrentValue.MariaDbConnectionString;
