@@ -8,8 +8,7 @@ namespace ai.lab.service;
 public class AiLabWorker
 (
     ILogger<AiLabWorker> logger,
-    IChunkExtractor chunkExtractor,
-    IEmbeddingManager embeddingManager,
+    IServiceScopeFactory serviceScopeFactory,
     IOptionsMonitor<AILabOptions> optionsMonitor) : BackgroundService
 {
     private Queue<string> folderQueue = new Queue<string>();
@@ -53,6 +52,11 @@ public class AiLabWorker
                 
                 if (Directory.Exists(currentFolder))
                 {
+                    // Create a scope to resolve scoped services
+                    using var scope = serviceScopeFactory.CreateScope();
+                    var chunkExtractor = scope.ServiceProvider.GetRequiredService<IChunkExtractor>();
+                    var embeddingManager = scope.ServiceProvider.GetRequiredService<IEmbeddingManager>();
+                    
                     foreach (var file in Directory.GetFiles(currentFolder, "*.*", SearchOption.AllDirectories))
                     {
                         try
