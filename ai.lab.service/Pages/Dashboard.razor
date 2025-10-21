@@ -194,9 +194,37 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Ensure auth state is loaded first
+        var state = await AuthProvider.GetAuthenticationStateAsync();
+        if (!state.User.Identity?.IsAuthenticated ?? true)
+        {
+            // If not authenticated, redirect to login
+            Nav.NavigateTo("/", forceLoad: true);
+            return;
+        }
+        
         await LoadUserAsync();
         await LoadRoomsAsync();
         await LoadModelsAsync();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Ensure authentication state is fully loaded after first render
+            var state = await AuthProvider.GetAuthenticationStateAsync();
+            if (!state.User.Identity?.IsAuthenticated ?? true)
+            {
+                Nav.NavigateTo("/", forceLoad: true);
+            }
+            else if (string.IsNullOrWhiteSpace(UserEmail))
+            {
+                // Retry loading user if it failed initially
+                await LoadUserAsync();
+                StateHasChanged();
+            }
+        }
     }
 
     private async Task LoadUserAsync()

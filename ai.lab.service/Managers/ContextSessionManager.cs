@@ -27,10 +27,10 @@ public class ContextSessionManager(IMemoryCache cache, IDatabaseService database
             var user = await databaseService.GetUserByEmailAsync(email, cancellationToken);
             List<UserChatContext> contextToStore;
 
-            if (user?.ContextJson is not null)
+            if (!string.IsNullOrWhiteSpace(user?.ContextJson ?? string.Empty))
             {
-                var dbAiContext = System.Text.Json.JsonSerializer.Deserialize<List<UserChatContext>>(user.ContextJson);
-                
+                var dbAiContext = System.Text.Json.JsonSerializer.Deserialize<List<UserChatContext>>(user?.ContextJson ?? string.Empty);
+
                 if (dbAiContext is not null && dbAiContext.Any())
                 {
                     var merged = dbAiContext.Where(c => c.Model != model).ToList();
@@ -82,9 +82,9 @@ public class ContextSessionManager(IMemoryCache cache, IDatabaseService database
         }
 
         var user = await databaseService.GetUserByEmailAsync(email, cancellationToken);
-        if (user?.ContextJson is not null)
+        if (!string.IsNullOrWhiteSpace(user?.ContextJson ?? string.Empty))
         {
-            var dbAiContext = System.Text.Json.JsonSerializer.Deserialize<List<UserChatContext>>(user.ContextJson);
+            var dbAiContext = System.Text.Json.JsonSerializer.Deserialize<List<UserChatContext>>(user?.ContextJson ?? string.Empty);
             if (dbAiContext is not null)
             {
                 var modelContext = dbAiContext.FirstOrDefault(c => c.Model == model);

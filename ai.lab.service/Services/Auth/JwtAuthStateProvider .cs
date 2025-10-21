@@ -113,11 +113,27 @@ public class JwtAuthStateProvider : AuthenticationStateProvider
             _attemptedRestore = true;
             try
             {
-                var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
-                if (!string.IsNullOrWhiteSpace(token))
+                // Check if JavaScript interop is available (not during pre-rendering)
+                if (_jsRuntime is IJSInProcessRuntime)
                 {
-                    SetToken(token);
+                    // Synchronous JS runtime available, try to get token
+                    var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
+                    if (!string.IsNullOrWhiteSpace(token))
+                    {
+                        SetToken(token);
+                    }
                 }
+                else
+                {
+                    // During pre-rendering or async JS runtime, delay token restoration
+                    // This will be called again after the circuit is established
+                    _logger.LogDebug("JS runtime not available yet (pre-rendering), deferring authentication");
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Expected during pre-rendering when JS interop isn't available
+                _logger.LogDebug(ex, "JS interop not available during pre-rendering");
             }
             catch (Exception ex)
             {
