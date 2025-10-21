@@ -35,6 +35,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ai.lab.ragfeed\ai.lab.ragfeed.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="wwwroot\app.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

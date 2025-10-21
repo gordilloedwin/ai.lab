@@ -1,7 +1,28 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "X:\\Github\\gordilloedwin\\ai.lab\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\filechunkgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|solutionrelative:ai.lab.ragfeed\\filechunkgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\output\\chunkembedding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|solutionrelative:ai.lab.ragfeed\\output\\chunkembedding.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\chunkgenerators\\roslynchunkextractor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|solutionrelative:ai.lab.ragfeed\\chunkgenerators\\roslynchunkextractor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\chunkgenerators\\postgreschunkextractor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|solutionrelative:ai.lab.ragfeed\\chunkgenerators\\postgreschunkextractor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\chunkgenerators\\textchunkgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|solutionrelative:ai.lab.ragfeed\\chunkgenerators\\textchunkgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,7 +30,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 19,
           "Children": [
             {
               "$type": "Bookmark",
@@ -70,6 +91,71 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "TextChunkGenerator.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\ChunkGenerators\\TextChunkGenerator.cs",
+              "RelativeDocumentMoniker": "ai.lab.ragfeed\\ChunkGenerators\\TextChunkGenerator.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\ChunkGenerators\\TextChunkGenerator.cs",
+              "RelativeToolTip": "ai.lab.ragfeed\\ChunkGenerators\\TextChunkGenerator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-21T03:29:31.251Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "PostgresChunkExtractor.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\ChunkGenerators\\PostgresChunkExtractor.cs",
+              "RelativeDocumentMoniker": "ai.lab.ragfeed\\ChunkGenerators\\PostgresChunkExtractor.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\ChunkGenerators\\PostgresChunkExtractor.cs",
+              "RelativeToolTip": "ai.lab.ragfeed\\ChunkGenerators\\PostgresChunkExtractor.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAADwvykAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-21T03:18:28.241Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "RoslynChunkExtractor.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\ChunkGenerators\\RoslynChunkExtractor.cs",
+              "RelativeDocumentMoniker": "ai.lab.ragfeed\\ChunkGenerators\\RoslynChunkExtractor.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\ChunkGenerators\\RoslynChunkExtractor.cs",
+              "RelativeToolTip": "ai.lab.ragfeed\\ChunkGenerators\\RoslynChunkExtractor.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACwAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-21T02:55:18.223Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ChunkEmbedding.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\Output\\ChunkEmbedding.cs",
+              "RelativeDocumentMoniker": "ai.lab.ragfeed\\Output\\ChunkEmbedding.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\Output\\ChunkEmbedding.cs",
+              "RelativeToolTip": "ai.lab.ragfeed\\Output\\ChunkEmbedding.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-21T02:53:37.617Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "FileChunkGenerator.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\FileChunkGenerator.cs",
+              "RelativeDocumentMoniker": "ai.lab.ragfeed\\FileChunkGenerator.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\FileChunkGenerator.cs",
+              "RelativeToolTip": "ai.lab.ragfeed\\FileChunkGenerator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACIAAABEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-21T02:48:38.462Z",
+              "EditorCaption": ""
             }
           ]
         }
