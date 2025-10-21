@@ -2,7 +2,7 @@
 
 namespace ai.lab.ragfeed.ChunkGenerators;
 
-public class NotSupportedFile : IFileChunkGenerator
+public class NotSupportedFileChunkGenerator : IFileChunkGenerator
 {
     public List<string> GenerateChunks(string filepath) => new List<string>();
 }

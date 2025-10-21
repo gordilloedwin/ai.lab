@@ -8,6 +8,7 @@ namespace ai.lab.service;
 public class AiLabWorker
 (
     ILogger<AiLabWorker> logger,
+    IChunkExtractor chunkExtractor,
     IEmbeddingManager embeddingManager,
     IOptionsMonitor<AILabOptions> optionsMonitor) : BackgroundService
 {
@@ -56,8 +57,10 @@ public class AiLabWorker
                     {
                         try
                         {
-                            var embeddings = new FileChunkGenerator().GenerateChunks(file);
-                            await embeddingManager.SaveEmbeddingsAsync(embeddings, stoppingToken);
+                            if (chunkExtractor.GenerateFileChunks(file, out var chunkEmbeddings))
+                            {
+                                await embeddingManager.SaveEmbeddingsAsync(chunkEmbeddings, stoppingToken);
+                            }
                         }
                         catch (Exception ex)
                         {

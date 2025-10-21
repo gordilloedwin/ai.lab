@@ -3,16 +3,20 @@
   "WorkspaceRootPath": "X:\\Github\\gordilloedwin\\ai.lab\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\chunkgenerators\\notsupportedfile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|solutionrelative:ai.lab.ragfeed\\chunkgenerators\\notsupportedfile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\chunkgenerators\\roslynchunkextractor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|solutionrelative:ai.lab.ragfeed\\chunkgenerators\\roslynchunkextractor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\managers\\embeddingmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\managers\\embeddingmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\chunkgenerators\\textchunkextractor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C356B9FC-6F34-4145-8215-98BAE9C1FB67}|ai.lab.ragfeed\\ai.lab.ragfeed.csproj|solutionrelative:ai.lab.ragfeed\\chunkgenerators\\textchunkextractor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\ailabworker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\ailabworker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|x:\\github\\gordilloedwin\\ai.lab\\ai.lab.service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{9BE7F517-F6D9-35DA-BE3E-E4C66CAEA1BE}|ai.lab.service\\ai.lab.service.csproj|solutionrelative:ai.lab.service\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -22,47 +26,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 17,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "NotSupportedFile.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\ChunkGenerators\\NotSupportedFile.cs",
-              "RelativeDocumentMoniker": "ai.lab.ragfeed\\ChunkGenerators\\NotSupportedFile.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\ChunkGenerators\\NotSupportedFile.cs",
-              "RelativeToolTip": "ai.lab.ragfeed\\ChunkGenerators\\NotSupportedFile.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAABOAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-21T07:29:38.449Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "TextChunkExtractor.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\ChunkGenerators\\TextChunkExtractor.cs",
-              "RelativeDocumentMoniker": "ai.lab.ragfeed\\ChunkGenerators\\TextChunkExtractor.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\ChunkGenerators\\TextChunkExtractor.cs",
-              "RelativeToolTip": "ai.lab.ragfeed\\ChunkGenerators\\TextChunkExtractor.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAABNAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-21T07:26:03.66Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "RoslynChunkExtractor.cs",
-              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\ChunkGenerators\\RoslynChunkExtractor.cs",
-              "RelativeDocumentMoniker": "ai.lab.ragfeed\\ChunkGenerators\\RoslynChunkExtractor.cs",
-              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.ragfeed\\ChunkGenerators\\RoslynChunkExtractor.cs",
-              "RelativeToolTip": "ai.lab.ragfeed\\ChunkGenerators\\RoslynChunkExtractor.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAByAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-21T07:25:15.514Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
@@ -122,6 +87,58 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "EmbeddingManager.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\EmbeddingManager.cs",
+              "RelativeDocumentMoniker": "ai.lab.service\\Managers\\EmbeddingManager.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Managers\\EmbeddingManager.cs",
+              "RelativeToolTip": "ai.lab.service\\Managers\\EmbeddingManager.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-21T07:58:35.046Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\appsettings.json",
+              "RelativeDocumentMoniker": "ai.lab.service\\appsettings.json",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\appsettings.json",
+              "RelativeToolTip": "ai.lab.service\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACIAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-10-21T07:52:19.675Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Program.cs",
+              "RelativeDocumentMoniker": "ai.lab.service\\Program.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\Program.cs",
+              "RelativeToolTip": "ai.lab.service\\Program.cs",
+              "ViewState": "AgIAAHAAAAAAAAAAAADwvy8BAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-21T07:52:13.689Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AiLabWorker.cs",
+              "DocumentMoniker": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\AiLabWorker.cs",
+              "RelativeDocumentMoniker": "ai.lab.service\\AiLabWorker.cs",
+              "ToolTip": "X:\\Github\\gordilloedwin\\ai.lab\\ai.lab.service\\AiLabWorker.cs",
+              "RelativeToolTip": "ai.lab.service\\AiLabWorker.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-21T07:51:06.123Z",
+              "EditorCaption": ""
             }
           ]
         }
