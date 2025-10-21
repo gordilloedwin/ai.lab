@@ -33,9 +33,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 });
 
-builder.Services.AddHttpClient(OllamaClientManager.HttpClientName, client => client.Timeout = TimeSpan.FromMinutes(15))
+builder.Services.AddHttpClient(OllamaClientManager.ClientName, client => client.Timeout = TimeSpan.FromMinutes(15))
     .AddPolicyHandler(Policy.WrapAsync(OllamaClientManager.GetRetryPolicy(), OllamaClientManager.GetCircuitBreakerPolicy()));
-builder.Services.AddHttpClient(QdrantClientManager.HttpClientName, client => client.Timeout = TimeSpan.FromMinutes(15))
+builder.Services.AddHttpClient(QdrantClientManager.ClientName, client => client.Timeout = TimeSpan.FromMinutes(15))
     .AddPolicyHandler(Policy.WrapAsync(QdrantClientManager.GetRetryPolicy(), QdrantClientManager.GetCircuitBreakerPolicy()));
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));

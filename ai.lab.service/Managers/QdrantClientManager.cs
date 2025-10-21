@@ -15,7 +15,9 @@ public class QdrantClientManager
     ILogger<QdrantClientManager> logger
 ) : AILabBaseClient(httpClientFactory), IQdrantClient
 {
-    public static new string HttpClientName => "QdrantClient";
+    public static string ClientName => "QdrantClient";
+    
+    protected override string HttpClientName => ClientName;
 
     public async Task UploadChunkAsync(string chunkId, float[] vector, string fileName, List<string> tags, string model, CancellationToken cancellationToken)
     {

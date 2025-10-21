@@ -17,7 +17,9 @@ public class OllamaClientManager
     ILogger<OllamaClientManager> logger
 ) : AILabBaseClient(httpClientFactory), IOllamaClient
 {
-    public static new string HttpClientName => "OllamaClient";
+    public static string ClientName => "OllamaClient";
+    
+    protected override string HttpClientName => ClientName;
 
     public async Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default)
     {
