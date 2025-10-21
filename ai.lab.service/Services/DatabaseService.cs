@@ -106,6 +106,41 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
         }
     }
 
+    public async Task<List<MariaDbChunkEmbedding>> GetRelevantChunksAsync(string model, float[] embedding, int topK, CancellationToken cancellationToken)
+    {
+        try
+        {
+            const string sql = @"
+            SELECT 
+                id AS Id,
+                model AS Model,
+                chunk_id AS ChunkId,
+                chunk_text AS ChunkText,
+                file_name AS FileName,
+                tags AS Tags,
+                embedding AS Embedding,
+                created_at AS CreatedAt,
+                updated_at AS UpdatedAt,
+                (1 - (DOT_PRODUCT(embedding, @Embedding) / (VECTOR_NORM(embedding) * VECTOR_NORM(@Embedding)))) AS distance
+            FROM chat_chunk_embeddings
+            WHERE model = @Model
+            ORDER BY distance ASC
+            LIMIT @TopK;";
+
+            SqlMapper.AddTypeHandler(new VectorHandler());
+            var connectionString = options.CurrentValue.MariaDbConnectionString;
+            using var connection = new MySqlConnection(connectionString);
+            connection.OpenAsync(cancellationToken).Wait(cancellationToken);
+            var chunks = await connection.QueryAsync<MariaDbChunkEmbedding>(sql, new { Model = model, Embedding = embedding, TopK = topK });
+            return chunks.ToList();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to retrieve relevant chunks from the database.");
+            throw;
+        }
+    }
+
     public async Task<User?> GetUserByEmailAsync(string email, CancellationToken cancellationToken)
     {
         try

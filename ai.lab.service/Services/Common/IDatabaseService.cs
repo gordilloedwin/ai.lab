@@ -31,6 +31,15 @@ public interface IDatabaseService
     Task<bool> DeleteOldChunksAsync(string filePath, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Asynchronously retrieves the most relevant data chunks based on the provided embedding vector.
+    /// </summary>
+    /// <param name="embedding">The embedding vector to use for retrieving relevant chunks. Cannot be null.</param>
+    /// <param name="topK">The maximum number of relevant chunks to retrieve.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a list of the most relevant data chunks.</returns>
+    Task<List<MariaDbChunkEmbedding>> GetRelevantChunksAsync(string model, float[] embedding, int topK, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Asynchronously retrieves a user by their email address.
     /// </summary>
     /// <param name="email">The email address of the user to retrieve. Cannot be null or empty.</param>

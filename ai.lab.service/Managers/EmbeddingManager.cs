@@ -17,9 +17,9 @@ public class EmbeddingManager
     ILogger<EmbeddingManager> logger
 ) : IEmbeddingManager
 {
-    public string GenerateChunkId(string filePath, string chunkText)
+    public string GenerateChunkId(string model, string filePath, string chunkText)
     {
-        string input = $"{filePath}:{chunkText}";
+        string input = $"{model}:{filePath}:{chunkText}";
         using (SHA256 sha256 = SHA256.Create())
         {
             byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));

@@ -7,10 +7,11 @@ public interface IEmbeddingManager
     /// <summary>
     /// Generates a unique identifier for a specific chunk of text within a file.
     /// </summary>
+    /// <param name="model">The name or identifier of the model associated with the chunk. Must not be null or empty.</param>
     /// <param name="filePath">The path to the file containing the chunk. Must not be null or empty.</param>
     /// <param name="chunkText">The text content of the chunk for which to generate an identifier. Must not be null.</param>
     /// <returns>A string representing the unique identifier for the specified chunk of text.</returns>
-    string GenerateChunkId(string filePath, string chunkText);
+    string GenerateChunkId(string model, string filePath, string chunkText);
 
     /// <summary>
     /// Deletes old data chunks associated with the specified file from the MariaDB database asynchronously.
