@@ -92,9 +92,34 @@ public sealed class AIService
     {
         try
         {
-            var embeddings = await embeddingManager.SearchChunksInQdrantAsync(model, prompt, options.CurrentValue.MaxRagChunksPerPrompt, cancellationToken);
-            var qdrantContextWindow = new QdrantContextBuilder(embeddings).BuildContextWindow();
-            string finalPrompt = $"Use the following context to answer the question.\n\nContext:\n{qdrantContextWindow}\n\nQuestion:\n{prompt}\n\nAnswer:";
+            string finalPrompt = string.Empty;
+
+            if (options?.CurrentValue?.UseQdrantForRag ?? false)
+            {
+                var embeddings = await embeddingManager.SearchChunksInQdrantAsync(model, prompt, options.CurrentValue?.MaxRagChunksPerPrompt ?? 5, cancellationToken);
+                var qdrantContextWindow = new QdrantContextBuilder(embeddings).BuildContextWindow();
+                finalPrompt = $"Use the following context to answer the question.\n\nContext:\n{qdrantContextWindow}\n\nQuestion:\n{prompt}\n\nAnswer:";
+            }
+            else
+            {
+                var mariaDbEmbeddings = await embeddingManager.GetRelevantEmbeddingsFromMariaDbAsync(model, prompt, options?.CurrentValue?.MaxRagChunksPerPrompt ?? 5, cancellationToken);
+                var mariaDbContextWindow = new MariaDbContextBuilder(mariaDbEmbeddings).BuildContextWindow();
+                finalPrompt = $"Use the following context to answer the question.\n\nContext:\n{mariaDbContextWindow}\n\nQuestion:\n{prompt}\n\nAnswer:";                
+            }
+
+            if (string.IsNullOrWhiteSpace(finalPrompt))
+            {
+                logger.LogWarning("RAG prompt generation failed. Model: {Model}, Prompt length: {PromptLength}", model, prompt?.Length ?? 0);
+                return new AiGenerateResponse
+                {
+                    Model = model,
+                    Timestamp = DateTimeOffset.Now,
+                    Success = false,
+                    Response = "Could not generate RAG prompt due to missing context.",
+                    Context = []
+                };
+            }
+            
             return await GenerateResponseFromApiAsync(model, finalPrompt, email, cancellationToken);
         }
         catch (HttpRequestException ex)

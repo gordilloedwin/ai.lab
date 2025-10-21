@@ -55,6 +55,28 @@ public class EmbeddingManager
         }
     }
 
+    public async Task<List<MariaDbChunkEmbedding>> GetRelevantEmbeddingsFromMariaDbAsync(string model, string prompt, int topK = 5, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var embeddingResult = await ollamaClient.GenerateEmbeddingResponseAsync(model, prompt, cancellationToken);
+            var queryVector = embeddingResult?.embedding;
+
+            if (queryVector == null || queryVector.Length == 0)
+            {
+                logger.LogError("Failed to get embedding for prompt");
+                return new List<MariaDbChunkEmbedding>();
+            }
+
+            return await databaseService.GetRelevantChunksAsync(model, queryVector, topK, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error retrieving relevant embeddings from MariaDB for prompt");
+            throw;
+        }
+    }
+
     public async Task SaveChunkAsync(string model, string chunkId, string chunkText, string filePath, List<string> tags, CancellationToken cancellationToken = default)
     {
         try
