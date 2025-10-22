@@ -87,10 +87,11 @@
                         }
                         else if (AvailableModels?.Count > 0)
                         {
-                            <select class="select" @onchange="OnModelChanged">
+                            <select class="select" @bind="NewRoomAiModel">
+                                <option value="">-- No AI (optional) --</option>
                                 @foreach (var model in AvailableModels)
                                 {
-                                    <option value="@model" selected="@(model == NewRoomAiModel)">@model</option>
+                                    <option value="@model">@model</option>
                                 }
                             </select>
                         }
@@ -104,34 +105,10 @@
                     <label class="form-label">Max Participants (2-30)</label>
                     <input class="input" type="number" @bind="NewRoomMaxParticipants" min="2" max="30" />
                 </div>
-                <div class="form-actions" style="display:flex; gap:var(--space-3);">
+                <div class="form-actions" style="display:flex; gap:var(--space-3); margin-top:var(--space-5);">
                     <button class="btn btn-success" @onclick="CreateRoomAsync" disabled="@IsSubmittingRoom">@(IsSubmittingRoom ? "Creating..." : "Submit")</button>
                     <button class="btn btn-secondary" @onclick="ToggleCreateRoom" disabled="@IsSubmittingRoom">Cancel</button>
                 </div>
-                    if (!IsAdmin || string.IsNullOrWhiteSpace(UserEmail)) return;
-                    if (DeletingRoomIds.Contains(room.Id)) return;
-                    try
-                    {
-                        DeletingRoomIds.Add(room.Id);
-                        var success = await ChatService.DeleteChatRoomAsync(room.Id, UserEmail!, CancellationToken.None);
-                        if (!success)
-                        {
-                            RoomsError = "Failed to delete room (not authorized or already inactive).";
-                        }
-                        else
-                        {
-                            await LoadRoomsAsync();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        RoomsError = $"Delete failed: {ex.Message}";
-                    }
-                    finally
-                    {
-                        DeletingRoomIds.Remove(room.Id);
-                        StateHasChanged();
-                    }
             </div>
         </div>
     }
@@ -218,9 +195,37 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Ensure auth state is loaded first
+        var state = await AuthProvider.GetAuthenticationStateAsync();
+        if (!state.User.Identity?.IsAuthenticated ?? true)
+        {
+            // If not authenticated, redirect to login
+            Nav.NavigateTo("/", forceLoad: true);
+            return;
+        }
+        
         await LoadUserAsync();
         await LoadRoomsAsync();
         await LoadModelsAsync();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Ensure authentication state is fully loaded after first render
+            var state = await AuthProvider.GetAuthenticationStateAsync();
+            if (!state.User.Identity?.IsAuthenticated ?? true)
+            {
+                Nav.NavigateTo("/", forceLoad: true);
+            }
+            else if (string.IsNullOrWhiteSpace(UserEmail))
+            {
+                // Retry loading user if it failed initially
+                await LoadUserAsync();
+                StateHasChanged();
+            }
+        }
     }
 
     private async Task LoadUserAsync()
@@ -299,7 +304,9 @@
         try
         {
             IsSubmittingRoom = true;
-            var created = await ChatService.CreateChatRoomAsync(UserEmail!, NewRoomTitle, NewRoomAiModel, NewRoomMaxParticipants);
+            // Convert empty string to null for optional AI model
+            var aiModel = string.IsNullOrWhiteSpace(NewRoomAiModel) ? null : NewRoomAiModel;
+            var created = await ChatService.CreateChatRoomAsync(UserEmail!, NewRoomTitle, aiModel, NewRoomMaxParticipants);
             // Refresh list
             await LoadRoomsAsync();
             ShowCreateRoom = false;
@@ -333,49 +340,15 @@
         }
     }
 
-    private void OnModelChanged(ChangeEventArgs e)
-    {
-        var value = e.Value?.ToString();
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            NewRoomAiModel = null;
-        }
-        else
-        {
-            NewRoomAiModel = value;
-        }
-    }
+
 
     private async Task HandleEnterRoomAsync(ChatRoomResponse room)
     {
         if (string.IsNullOrWhiteSpace(UserEmail)) return;
-        // If not in room, attempt join first
-        if (!room.IsUserInRoom && !room.IsFull && room.IsActive)
-        {
-            if (JoiningRoomIds.Contains(room.Id)) return;
-            try
-            {
-                JoiningRoomIds.Add(room.Id);
-                var success = await ChatService.JoinChatRoomAsync(room.Id, UserEmail!, $"ui-{Guid.NewGuid()}");
-                if (!success)
-                {
-                    RoomsError = "Failed to join room (might be full or inactive).";
-                    return;
-                }
-                // Refresh state so IsUserInRoom updates
-                await LoadRoomsAsync();
-            }
-            catch (Exception ex)
-            {
-                RoomsError = $"Join failed: {ex.Message}";
-                return;
-            }
-            finally
-            {
-                JoiningRoomIds.Remove(room.Id);
-            }
-        }
-        // Navigate to chat page
+        
+        // Don't pre-join here - let the Chat page handle joining via SignalR
+        // This prevents duplicate participants with different connection IDs
+        // Just navigate directly to the chat page
         Nav.NavigateTo($"/chat/{room.Id}");
     }
 

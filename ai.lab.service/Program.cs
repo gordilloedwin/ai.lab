@@ -1,3 +1,4 @@
+using ai.lab.ragfeed;
 using ai.lab.service;
 using ai.lab.service.HealthCheck;
 using ai.lab.service.Managers;
@@ -9,16 +10,15 @@ using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Polly;
-using System.Net;
-using System.Text;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Polly;
+using System.Net;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var aiLabOtelMeter = new OtelMetrics("AI.Lab.Service");
@@ -32,9 +32,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 });
 
-builder.Services.AddHttpClient(OllamaClientManager.HttpClientName)
+builder.Services.AddHttpClient(OllamaClientManager.ClientName, client => client.Timeout = TimeSpan.FromMinutes(15))
     .AddPolicyHandler(Policy.WrapAsync(OllamaClientManager.GetRetryPolicy(), OllamaClientManager.GetCircuitBreakerPolicy()));
-builder.Services.AddHttpClient(QdrantClientManager.HttpClientName)
+builder.Services.AddHttpClient(QdrantClientManager.ClientName, client => client.Timeout = TimeSpan.FromMinutes(15))
     .AddPolicyHandler(Policy.WrapAsync(QdrantClientManager.GetRetryPolicy(), QdrantClientManager.GetCircuitBreakerPolicy()));
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
@@ -122,16 +122,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddSignalR();
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton(aiLabOtelMeter);
-builder.Services.TryAddScoped<IAIService, AIService>();
-builder.Services.TryAddScoped<IAuthService, AuthService>();
-builder.Services.TryAddScoped<IDatabaseService, DatabaseService>();
-builder.Services.TryAddScoped<IChatService, ChatService>();
-builder.Services.TryAddScoped<IOllamaClient, OllamaClientManager>();
-builder.Services.TryAddScoped<IQdrantClient, QdrantClientManager>();
-builder.Services.TryAddScoped<IEmbeddingManager, EmbeddingManager>();
-builder.Services.TryAddScoped<IContextSessionManager, ContextSessionManager>();
+builder.Services.AddScoped<IAIService, AIService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IDatabaseService, DatabaseService>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddTransient<IOllamaClient, OllamaClientManager>();
+builder.Services.AddTransient<IQdrantClient, QdrantClientManager>();
+builder.Services.AddScoped<IContextSessionManager, ContextSessionManager>();
 builder.Services.AddScoped<JwtAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthStateProvider>());
+builder.Services.AddTransient<IChunkExtractor, ChunkExtractor>();
+builder.Services.AddTransient<IEmbeddingManager, EmbeddingManager>();
 builder.Services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
 builder.Services.AddAuthorizationCore();
 builder.Services.AddHostedService<AiLabWorker>();

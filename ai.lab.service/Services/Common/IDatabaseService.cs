@@ -16,11 +16,41 @@ public interface IDatabaseService
     /// Asynchronously inserts a chunk embedding into the MariaDB database.
     /// </summary>
     /// <param name="chunk">The chunk embedding to insert. Cannot be null.</param>
-    /// <param name="connectionString">The connection string used to connect to the MariaDB database. Cannot be null or empty.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the identifier of the newly inserted
     /// chunk.</returns>
-    Task<long> InsertChunkAsync(MariaDbChunkEmbedding chunk, string connectionString, CancellationToken cancellationToken);
+    Task<long> InsertChunkAsync(MariaDbChunkEmbedding chunk, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deletes old data chunks associated with the specified file from the MariaDB database asynchronously.
+    /// </summary>
+    /// <param name="filePath">The full path of the file whose old chunks should be deleted. Cannot be null or empty.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if any old chunks
+    /// were deleted; otherwise, <see langword="false"/>.</returns>
+    Task<bool> DeleteOldChunksAsync(string filePath, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Determines whether the hash for the specified file chunk has already been processed asynchronously.
+    /// </summary>
+    /// <param name="chunkId">The unique identifier of the file chunk to validate.</param>
+    /// <param name="file">The name or path of the file containing the chunk to check.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if the hash for the
+    /// specified chunk has already been processed; otherwise, <see langword="false"/>.</returns>
+    Task<bool> ValidateHashAlreadyProcessedAsync(string chunkId, string file, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Asynchronously retrieves the most relevant data chunks based on the provided embedding vector.
+    /// </summary>
+    /// <param name="model">The model name to filter chunks by.</param>
+    /// <param name="embedding">The embedding vector to use for retrieving relevant chunks. Cannot be null.</param>
+    /// <param name="topK">The maximum number of relevant chunks to retrieve.</param>
+    /// <param name="filterTags">Optional list of tags to filter chunks. Only chunks containing at least one of these tags will be returned.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a list of the most relevant data chunks.</returns>
+    Task<List<MariaDbChunkEmbedding>> GetRelevantChunksAsync
+        (string model, float[] embedding, int topK, List<string>? filterTags = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously retrieves a user by their email address.
@@ -58,7 +88,7 @@ public interface IDatabaseService
     /// </summary>
     /// <param name="userEmail">Email of the user creating the room.</param>
     /// <param name="title">Title of the chat room.</param>
-    /// <param name="aiModel">Optional AI model to use (defaults to deepseek-coder:6.7b).</param>
+    /// <param name="aiModel">Optional AI model to use.</param>
     /// <param name="maxParticipants">Optional max participants (defaults to 30).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The created chat room with statistics.</returns>

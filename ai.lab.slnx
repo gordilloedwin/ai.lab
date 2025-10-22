@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="ai.lab.ragfeed/ai.lab.ragfeed.csproj" Id="c356b9fc-6f34-4145-8215-98bae9c1fb67" />
   <Project Path="ai.lab.service/ai.lab.service.csproj" />
 </Solution>

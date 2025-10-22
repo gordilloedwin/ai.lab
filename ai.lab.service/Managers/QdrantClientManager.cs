@@ -14,14 +14,16 @@ public class QdrantClientManager
     ILogger<QdrantClientManager> logger
 ) : AILabBaseClient(httpClientFactory), IQdrantClient
 {
-    public static new string HttpClientName => "QdrantClient";
+    public static string ClientName => "QdrantClient";
+    
+    protected override string HttpClientName => ClientName;
 
-    public async Task UploadChunkAsync(string chunkId, float[] vector, string fileName, List<string> tags, CancellationToken cancellationToken)
+    public async Task UploadChunkAsync(string chunkId, float[] vector, string fileName, List<string> tags, string model, CancellationToken cancellationToken)
     {
         try
         {
             var qdrantUrl = options.CurrentValue.QdrantUrl;
-            var collectionName = options.CurrentValue.QdrantCollectionName;
+            var collectionName = string.IsNullOrWhiteSpace(model) ? options.CurrentValue.QdrantCollectionName : model;
 
             var payload = new
             {
@@ -56,12 +58,12 @@ public class QdrantClientManager
         }
     }
 
-    public async Task<QdrantSearchResponse> QdrantSearchResponseAsync(float[] vector, int topK, CancellationToken cancellationToken)
+    public async Task<QdrantSearchResponse> QdrantSearchResponseAsync(float[] vector, int topK, string model, CancellationToken cancellationToken)
     {
         try
             {
             var qdrantUrl = options.CurrentValue.QdrantUrl;
-            var collectionName = options.CurrentValue.QdrantCollectionName;
+            var collectionName = string.IsNullOrWhiteSpace(model) ? options.CurrentValue.QdrantCollectionName : model;
 
             var searchRequest = new
             {

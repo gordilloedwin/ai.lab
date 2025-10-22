@@ -3,15 +3,13 @@ using Polly.Extensions.Http;
 
 namespace ai.lab.service.Managers.Common;
 
-public abstract class AILabBaseClient(IHttpClientFactory httpClientFactory) : IDisposable
+public abstract class AILabBaseClient(IHttpClientFactory httpClientFactory)
 {
-    private bool disposedValue;
+    private HttpClient? _httpClient;
 
-    private HttpClient? _httpClient;    
+    protected abstract string HttpClientName { get; }
 
-    public static string? HttpClientName { get; }
-
-    public HttpClient HttpClient => _httpClient ??= httpClientFactory.CreateClient(HttpClientName ?? string.Empty);
+    public HttpClient HttpClient => _httpClient ??= httpClientFactory.CreateClient(HttpClientName);
 
     public static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy() => HttpPolicyExtensions
         .HandleTransientHttpError().OrInner<System.TimeoutException>()
@@ -38,32 +36,4 @@ public abstract class AILabBaseClient(IHttpClientFactory httpClientFactory) : ID
                     Console.WriteLine("Circuit half-open. Testing...");
                 }
             );
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!disposedValue)
-        {
-            if (disposing)
-            {
-                if (_httpClient != null)
-                {
-                    ((IDisposable)_httpClient).Dispose();
-                }
-            }
-
-            _httpClient = null;
-            disposedValue = true;
-        }
-    }
-
-    ~AILabBaseClient()
-    {
-        Dispose(disposing: false);
-    }
-
-    public void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
 }

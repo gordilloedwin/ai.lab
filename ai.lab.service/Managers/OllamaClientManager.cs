@@ -3,6 +3,7 @@ using ai.lab.service.Model.Embeddings;
 using ai.lab.service.Models.Ollama;
 using ai.lab.service.Options;
 using ai.lab.service.Services.Common;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
@@ -10,24 +11,37 @@ namespace ai.lab.service.Managers;
 
 public class OllamaClientManager
 (
+    IMemoryCache memoryCache,
     IHttpClientFactory httpClientFactory,
     IOptionsMonitor<AILabOptions> options,
     ILogger<OllamaClientManager> logger
 ) : AILabBaseClient(httpClientFactory), IOllamaClient
 {
-    public static new string HttpClientName => "OllamaClient";
+    public static string ClientName => "OllamaClient";
+    
+    protected override string HttpClientName => ClientName;
 
     public async Task<List<string>> GetAvailableAiModels(CancellationToken cancellationToken = default)
     {
         try
         {
+            if (memoryCache.TryGetValue("models", out List<string>? cachedModels) && cachedModels != null)
+            {
+                return cachedModels;
+            }
+
             var response = await HttpClient.GetAsync($"{options.CurrentValue.OllamaUrl}/api/tags", cancellationToken);
             response.EnsureSuccessStatusCode();
             var responseString = await response.Content.ReadAsStringAsync();
             var dto = OllamaTagsResponse.FromJson(responseString);
             var modelNames = dto?.Models.Select(m => m.Name).ToList() ?? new List<string>();
 
-            return modelNames;
+            if (modelNames?.Count > 0)
+            {
+                memoryCache.Set("models", modelNames, TimeSpan.FromHours(1));
+            }
+
+            return modelNames ?? [];
         }
         catch (HttpRequestException ex)
         {
@@ -51,7 +65,6 @@ public class OllamaClientManager
         try
         {
             var stream = false;
-            HttpClient.Timeout = TimeSpan.FromMinutes(10);
             var requestBody = new { model, prompt, stream, context = context ?? Array.Empty<int>() };
             var content = new StringContent(JsonSerializer.Serialize(requestBody), System.Text.Encoding.UTF8, new System.Net.Http.Headers.MediaTypeHeaderValue("application/json"));
             var response = await HttpClient.PostAsync($"{options.CurrentValue.OllamaUrl}/api/generate", content, cancellationToken);
@@ -93,7 +106,6 @@ public class OllamaClientManager
                 prompt = chunkText
             };
             
-            HttpClient.Timeout = TimeSpan.FromMinutes(10);
             var ollamaResponse = await HttpClient.PostAsJsonAsync($"{options.CurrentValue.OllamaUrl}/api/embeddings", embeddingRequest, cancellationToken);
             ollamaResponse.EnsureSuccessStatusCode();
             var embeddingResult = await ollamaResponse.Content.ReadFromJsonAsync<EmbeddingResponse>(cancellationToken: cancellationToken);

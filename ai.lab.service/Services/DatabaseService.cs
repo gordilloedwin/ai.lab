@@ -42,30 +42,38 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
         }
     }
 
-    public async Task<long> InsertChunkAsync(MariaDbChunkEmbedding chunk, string connectionString, CancellationToken cancellationToken)
+    public async Task<long> InsertChunkAsync(MariaDbChunkEmbedding chunk, CancellationToken cancellationToken)
     {
         try
         {
             const string sql = @"
-            INSERT INTO chat_chunk_embeddings 
+            INSERT INTO chat_chunk_embeddings
             (
+                model,
                 chunk_id,
                 chunk_text,
                 file_name,
                 tags,
                 embedding
-            )
-            VALUES
+            ) VALUES 
             (
+                @Model,
                 @ChunkId,
                 @ChunkText,
                 @FileName,
-                @Tags,
+                LOWER(@Tags),
                 @Embedding
-            );
-            SELECT LAST_INSERT_ID();";
+            )
+            ON DUPLICATE KEY UPDATE
+                model = VALUES(model),
+                chunk_text = VALUES(chunk_text),
+                file_name = VALUES(file_name),
+                tags = LOWER(@Tags),
+                embedding = VALUES(embedding),
+                updated_at = CURRENT_TIMESTAMP;";
 
             SqlMapper.AddTypeHandler(new VectorHandler());
+            var connectionString = options.CurrentValue.MariaDbConnectionString;
             using var connection = new MySqlConnection(connectionString);
             connection.OpenAsync(cancellationToken).Wait(cancellationToken);
             var id = await connection.ExecuteScalarAsync<long>(sql, chunk);
@@ -74,6 +82,104 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to insert chunk embedding into the database.");
+            throw;
+        }
+    }
+
+    public async Task<bool> DeleteOldChunksAsync(string filePath, CancellationToken cancellationToken)
+    {
+        try
+        {
+            const string sql = @"
+            DELETE FROM chat_chunk_embeddings 
+            WHERE file_name = @FileName;";
+            var connectionString = options.CurrentValue.MariaDbConnectionString;
+            using var connection = new MySqlConnection(connectionString);
+            connection.OpenAsync(cancellationToken).Wait(cancellationToken);
+            var rowsAffected = await connection.ExecuteAsync(sql, new { FileName = filePath });
+            return !string.IsNullOrEmpty(filePath) || rowsAffected > 0;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to delete old chunks from the database for file {FileName}.", filePath);
+            throw;
+        }
+    }
+
+    public async Task<bool> ValidateHashAlreadyProcessedAsync(string chunkId, string file, CancellationToken cancellationToken)
+    {
+        try
+        {
+            const string sql = @"
+            SELECT COUNT(1)
+            FROM chat_chunk_embeddings 
+            WHERE chunk_id = @ChunkId AND file_name = @FileName;";
+            var connectionString = options.CurrentValue.MariaDbConnectionString;
+            using var connection = new MySqlConnection(connectionString);
+            connection.OpenAsync(cancellationToken).Wait(cancellationToken);
+            var count = await connection.ExecuteScalarAsync<long>(sql, new { ChunkId = chunkId, FileName = file });
+            return count > 0;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to validate if chunk hash already processed for file {FileName}.", file);
+            throw;
+        }
+    }
+
+    public async Task<List<MariaDbChunkEmbedding>> GetRelevantChunksAsync
+        (string model, float[] embedding, int topK, List<string>? filterTags = null, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var sql = @"
+            SELECT 
+                id AS Id,
+                model AS Model,
+                chunk_id AS ChunkId,
+                chunk_text AS ChunkText,
+                file_name AS FileName,
+                tags AS Tags,
+                embedding AS Embedding,
+                created_at AS CreatedAt,
+                updated_at AS UpdatedAt,
+                (1 - (DOT_PRODUCT(embedding, @Embedding) / (VECTOR_NORM(embedding) * VECTOR_NORM(@Embedding)))) AS distance
+            FROM chat_chunk_embeddings
+            WHERE model = @Model";
+
+            // Add tag filtering if provided
+            if (filterTags != null && filterTags.Count > 0)
+            {
+                // MariaDB JSON_OVERLAPS checks if tags array contains any of the filter tags
+                sql += " AND JSON_OVERLAPS(tags, @FilterTags)";
+            }
+
+            sql += @"
+            ORDER BY distance ASC
+            LIMIT @TopK;";
+
+            SqlMapper.AddTypeHandler(new VectorHandler());
+            var connectionString = options.CurrentValue.MariaDbConnectionString;
+            using var connection = new MySqlConnection(connectionString);
+            await connection.OpenAsync(cancellationToken);
+
+            var chunks = await connection.QueryAsync<MariaDbChunkEmbedding>(
+                sql,
+                new
+                {
+                    Model = model,
+                    Embedding = embedding,
+                    TopK = topK,
+                    FilterTags = filterTags != null && filterTags.Count > 0
+                        ? System.Text.Json.JsonSerializer.Serialize(filterTags)
+                        : null
+                });
+
+            return chunks.ToList();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to retrieve relevant chunks from the database.");
             throw;
         }
     }
@@ -219,8 +325,8 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                 new
                 {
                     Title = title,
+                    AiModel = string.IsNullOrWhiteSpace(aiModel) ? null : aiModel,
                     CreatedByEmail = userEmail,
-                    AiModel = aiModel ?? "deepseek-coder:6.7b",
                     MaxParticipants = maxParticipants ?? 30
                 },
                 cancellationToken: cancellationToken));
@@ -488,6 +594,7 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
             }
 
             // Check if user already in room (not left)
+            // Include check for same connection ID to avoid creating duplicate entries
             const string checkParticipantSql = @"
                 SELECT id 
                 FROM chat_participants 
@@ -500,9 +607,18 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
 
             if (existingParticipant.HasValue)
             {
-                // User already in room, just update connection
-                await MarkUserAsConnectedAsync(chatRoomId, userEmail, connectionId, cancellationToken);
-                logger.LogInformation("User {UserEmail} reconnected to chat room {RoomId}", userEmail, chatRoomId);
+                // User already in room, update their connection ID and mark as connected
+                const string updateConnectionSql = @"
+                    UPDATE chat_participants 
+                    SET is_currently_connected = TRUE, connection_id = @ConnectionId, last_seen_at = NOW()
+                    WHERE chat_room_id = @ChatRoomId AND user_email = @UserEmail AND left_at IS NULL;";
+                
+                await connection.ExecuteAsync(new CommandDefinition(
+                    updateConnectionSql,
+                    new { ChatRoomId = chatRoomId, UserEmail = userEmail, ConnectionId = connectionId },
+                    cancellationToken: cancellationToken));
+                
+                logger.LogInformation("User {UserEmail} reconnected to chat room {RoomId} with new connection {ConnectionId}", userEmail, chatRoomId, connectionId);
                 return true;
             }
 

@@ -108,7 +108,14 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
                 return BadRequest("Prompt is required");
             }
 
-            model = string.IsNullOrWhiteSpace(model) ? "deepseek-coder:6.7b" : model;
+            var models = await aIService.GetAvailableAiModels(cancellationToken);
+
+            if (!models.Contains(model))
+            {
+                logger.LogWarning("Model {Model} is not available", model);
+                return BadRequest($"Model '{model}' is not available. Use /ai/models to get the list of available models.");
+            }
+
             var userEmail = User.Claims.FirstOrDefault(c => 
                 c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value ?? "unknown";
             var response = await aIService.GenerateResponseFromApiAsync(model, request.Prompt, userEmail, cancellationToken);
@@ -212,7 +219,14 @@ public class AiController(IAIService aIService, ILogger<AiController> logger) : 
                 return BadRequest("Prompt is required");
             }
 
-            model = string.IsNullOrWhiteSpace(model) ? "deepseek-coder:6.7b" : model;
+            var models = await aIService.GetAvailableAiModels(cancellationToken);
+
+            if (!models.Contains(model))
+            {
+                logger.LogWarning("Model {Model} is not available", model);
+                return BadRequest($"Model '{model}' is not available. Use /ai/models to get the list of available models.");
+            }
+
             var userEmail = User.Claims.FirstOrDefault(c =>
                 c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value ?? "unknown";
             var response = await aIService.GenerateResponseFromRagAsync(model, request.Prompt, userEmail, cancellationToken);
