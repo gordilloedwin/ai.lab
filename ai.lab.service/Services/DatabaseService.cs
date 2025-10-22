@@ -282,7 +282,7 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                 new
                 {
                     Title = title,
-                    AiModel = aiModel,
+                    AiModel = string.IsNullOrWhiteSpace(aiModel) ? null : aiModel,
                     CreatedByEmail = userEmail,
                     MaxParticipants = maxParticipants ?? 30
                 },
@@ -551,6 +551,7 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
             }
 
             // Check if user already in room (not left)
+            // Include check for same connection ID to avoid creating duplicate entries
             const string checkParticipantSql = @"
                 SELECT id 
                 FROM chat_participants 
@@ -563,9 +564,18 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
 
             if (existingParticipant.HasValue)
             {
-                // User already in room, just update connection
-                await MarkUserAsConnectedAsync(chatRoomId, userEmail, connectionId, cancellationToken);
-                logger.LogInformation("User {UserEmail} reconnected to chat room {RoomId}", userEmail, chatRoomId);
+                // User already in room, update their connection ID and mark as connected
+                const string updateConnectionSql = @"
+                    UPDATE chat_participants 
+                    SET is_currently_connected = TRUE, connection_id = @ConnectionId, last_seen_at = NOW()
+                    WHERE chat_room_id = @ChatRoomId AND user_email = @UserEmail AND left_at IS NULL;";
+                
+                await connection.ExecuteAsync(new CommandDefinition(
+                    updateConnectionSql,
+                    new { ChatRoomId = chatRoomId, UserEmail = userEmail, ConnectionId = connectionId },
+                    cancellationToken: cancellationToken));
+                
+                logger.LogInformation("User {UserEmail} reconnected to chat room {RoomId} with new connection {ConnectionId}", userEmail, chatRoomId, connectionId);
                 return true;
             }
 
