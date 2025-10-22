@@ -72,7 +72,7 @@ public class EmbeddingManager
                 return new List<MariaDbChunkEmbedding>();
             }
 
-            return await databaseService.GetRelevantChunksAsync(model, queryVector, topK, cancellationToken);
+            return await databaseService.GetRelevantChunksAsync(model, queryVector, topK, filterTags: null, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -155,7 +155,7 @@ public class EmbeddingManager
                     ChunkId = chunkId,
                     ChunkText = chunkText,
                     FileName = filePath,
-                    Tags = string.Join(",", tags),
+                    Tags = System.Text.Json.JsonSerializer.Serialize(tags),
                     Model = model,
                     Embedding = vector
                 };

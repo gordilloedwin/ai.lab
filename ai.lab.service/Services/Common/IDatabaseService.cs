@@ -33,11 +33,13 @@ public interface IDatabaseService
     /// <summary>
     /// Asynchronously retrieves the most relevant data chunks based on the provided embedding vector.
     /// </summary>
+    /// <param name="model">The model name to filter chunks by.</param>
     /// <param name="embedding">The embedding vector to use for retrieving relevant chunks. Cannot be null.</param>
     /// <param name="topK">The maximum number of relevant chunks to retrieve.</param>
+    /// <param name="filterTags">Optional list of tags to filter chunks. Only chunks containing at least one of these tags will be returned.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a list of the most relevant data chunks.</returns>
-    Task<List<MariaDbChunkEmbedding>> GetRelevantChunksAsync(string model, float[] embedding, int topK, CancellationToken cancellationToken);
+    Task<List<MariaDbChunkEmbedding>> GetRelevantChunksAsync(string model, float[] embedding, int topK, List<string>? filterTags = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously retrieves a user by their email address.

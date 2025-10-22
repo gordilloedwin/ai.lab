@@ -106,11 +106,11 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
         }
     }
 
-    public async Task<List<MariaDbChunkEmbedding>> GetRelevantChunksAsync(string model, float[] embedding, int topK, CancellationToken cancellationToken)
+    public async Task<List<MariaDbChunkEmbedding>> GetRelevantChunksAsync(string model, float[] embedding, int topK, List<string>? filterTags = null, CancellationToken cancellationToken = default)
     {
         try
         {
-            const string sql = @"
+            var sql = @"
             SELECT 
                 id AS Id,
                 model AS Model,
@@ -123,15 +123,35 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                 updated_at AS UpdatedAt,
                 (1 - (DOT_PRODUCT(embedding, @Embedding) / (VECTOR_NORM(embedding) * VECTOR_NORM(@Embedding)))) AS distance
             FROM chat_chunk_embeddings
-            WHERE model = @Model
+            WHERE model = @Model";
+
+            // Add tag filtering if provided
+            if (filterTags != null && filterTags.Count > 0)
+            {
+                // MariaDB JSON_OVERLAPS checks if tags array contains any of the filter tags
+                sql += " AND JSON_OVERLAPS(tags, @FilterTags)";
+            }
+
+            sql += @"
             ORDER BY distance ASC
             LIMIT @TopK;";
 
             SqlMapper.AddTypeHandler(new VectorHandler());
             var connectionString = options.CurrentValue.MariaDbConnectionString;
             using var connection = new MySqlConnection(connectionString);
-            connection.OpenAsync(cancellationToken).Wait(cancellationToken);
-            var chunks = await connection.QueryAsync<MariaDbChunkEmbedding>(sql, new { Model = model, Embedding = embedding, TopK = topK });
+            await connection.OpenAsync(cancellationToken);
+            
+            var chunks = await connection.QueryAsync<MariaDbChunkEmbedding>(
+                sql, 
+                new { 
+                    Model = model, 
+                    Embedding = embedding, 
+                    TopK = topK,
+                    FilterTags = filterTags != null && filterTags.Count > 0 
+                        ? System.Text.Json.JsonSerializer.Serialize(filterTags) 
+                        : null
+                });
+            
             return chunks.ToList();
         }
         catch (Exception ex)
