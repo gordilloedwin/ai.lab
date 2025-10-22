@@ -68,7 +68,7 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                 model = VALUES(model),
                 chunk_text = VALUES(chunk_text),
                 file_name = VALUES(file_name),
-                tags = VALUES(lower(tags)),
+                tags = LOWER(@Tags),
                 embedding = VALUES(embedding),
                 updated_at = CURRENT_TIMESTAMP;";
 
