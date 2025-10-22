@@ -1,0 +1,29 @@
+[Unit]
+Description=AI Lab and RAG Ingestion Service
+After=network.target
+
+[Service]
+Type=notify
+# Will set the Current Directory (pwd)
+WorkingDirectory=/path/to/ai.lab/ai.lab.service/publish
+# Path to the dotnet application dll
+ExecStart=/usr/bin/dotnet /path/to/ai.lab/ai.lab.service/publish/ai.lab.service.dll
+# User and Group - Replace with your system user
+User=your-username
+Group=your-username
+# Restart service after 10 seconds if the dotnet service crashes
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+# Set environment variables
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+# Logging
+SyslogIdentifier=ailab-service
+# Security settings
+NoNewPrivileges=true
+# Performance
+#LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
