@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using System.Data;
-using System.Text;
 
 namespace ai.lab.service.Helpers;
 
@@ -14,19 +13,13 @@ public class VectorHandler : SqlMapper.TypeHandler<float[]>
             return;
         }
 
-        // MariaDB VECTOR type expects a string representation: "[val1,val2,val3,...]"
-        // Format as JSON array without spaces
-        var sb = new StringBuilder();
-        sb.Append('[');
-        for (int i = 0; i < value.Length; i++)
-        {
-            if (i > 0) sb.Append(',');
-            sb.Append(value[i].ToString("G", System.Globalization.CultureInfo.InvariantCulture));
-        }
-        sb.Append(']');
+        // MariaDB VECTOR type stores as binary (4 bytes per float32)
+        // Convert float[] to byte array
+        var bytes = new byte[value.Length * sizeof(float)];
+        Buffer.BlockCopy(value, 0, bytes, 0, bytes.Length);
         
-        parameter.Value = sb.ToString();
-        parameter.DbType = DbType.String;
+        parameter.Value = bytes;
+        parameter.DbType = DbType.Binary;
     }
 
     public override float[] Parse(object value)
@@ -34,6 +27,15 @@ public class VectorHandler : SqlMapper.TypeHandler<float[]>
         if (value == null || value is DBNull)
             return Array.Empty<float>();
 
+        // If it's already a byte array, convert back to float[]
+        if (value is byte[] bytes)
+        {
+            var floats = new float[bytes.Length / sizeof(float)];
+            Buffer.BlockCopy(bytes, 0, floats, 0, bytes.Length);
+            return floats;
+        }
+
+        // Fallback: try parsing as string (for legacy data)
         var stringValue = value.ToString();
         if (string.IsNullOrWhiteSpace(stringValue))
             return Array.Empty<float>();
