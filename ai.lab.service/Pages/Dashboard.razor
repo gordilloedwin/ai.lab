@@ -104,7 +104,7 @@
                     <label class="form-label">Max Participants (2-30)</label>
                     <input class="input" type="number" @bind="NewRoomMaxParticipants" min="2" max="30" />
                 </div>
-                <div class="form-actions" style="display:flex; gap:var(--space-3);">
+                <div class="form-actions" style="display:flex; gap:var(--space-3); margin-top:var(--space-5);">
                     <button class="btn btn-success" @onclick="CreateRoomAsync" disabled="@IsSubmittingRoom">@(IsSubmittingRoom ? "Creating..." : "Submit")</button>
                     <button class="btn btn-secondary" @onclick="ToggleCreateRoom" disabled="@IsSubmittingRoom">Cancel</button>
                 </div>
