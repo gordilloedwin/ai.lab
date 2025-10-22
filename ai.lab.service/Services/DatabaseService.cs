@@ -106,7 +106,8 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
         }
     }
 
-    public async Task<List<MariaDbChunkEmbedding>> GetRelevantChunksAsync(string model, float[] embedding, int topK, List<string>? filterTags = null, CancellationToken cancellationToken = default)
+    public async Task<List<MariaDbChunkEmbedding>> GetRelevantChunksAsync
+        (string model, float[] embedding, int topK, List<string>? filterTags = null, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -140,18 +141,19 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
             var connectionString = options.CurrentValue.MariaDbConnectionString;
             using var connection = new MySqlConnection(connectionString);
             await connection.OpenAsync(cancellationToken);
-            
+
             var chunks = await connection.QueryAsync<MariaDbChunkEmbedding>(
-                sql, 
-                new { 
-                    Model = model, 
-                    Embedding = embedding, 
+                sql,
+                new
+                {
+                    Model = model,
+                    Embedding = embedding,
                     TopK = topK,
-                    FilterTags = filterTags != null && filterTags.Count > 0 
-                        ? System.Text.Json.JsonSerializer.Serialize(filterTags) 
+                    FilterTags = filterTags != null && filterTags.Count > 0
+                        ? System.Text.Json.JsonSerializer.Serialize(filterTags)
                         : null
                 });
-            
+
             return chunks.ToList();
         }
         catch (Exception ex)

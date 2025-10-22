@@ -72,7 +72,29 @@ public class EmbeddingManager
                 return new List<MariaDbChunkEmbedding>();
             }
 
-            return await databaseService.GetRelevantChunksAsync(model, queryVector, topK, filterTags: null, cancellationToken);
+            // Extract relevant tags from the user's prompt using the cached semantic tags
+            List<string>? filterTags = null;
+            if (memoryCache.TryGetValue("semantic-tags", out List<string>? availableTags) && availableTags?.Count > 0)
+            {
+                var tagMatcher = new TagMatcher(availableTags);
+                var matchedTags = tagMatcher.MatchTags(prompt);
+                
+                if (matchedTags.Count > 0)
+                {
+                    filterTags = matchedTags;
+                    logger.LogInformation("Extracted {Count} tags from prompt: {Tags}", matchedTags.Count, string.Join(", ", matchedTags));
+                }
+                else
+                {
+                    logger.LogDebug("No matching tags found in prompt, using pure vector similarity search");
+                }
+            }
+            else
+            {
+                logger.LogDebug("Semantic tags not available in cache, using pure vector similarity search");
+            }
+
+            return await databaseService.GetRelevantChunksAsync(model, queryVector, topK, filterTags, cancellationToken);
         }
         catch (Exception ex)
         {
