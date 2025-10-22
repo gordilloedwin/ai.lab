@@ -49,6 +49,13 @@ A production-ready, AI-powered multi-user chat application with **Retrieval-Augm
 - **Unread Indicators**: Badge counters for unread messages
 - **Connection Status**: Visual indicators for user presence
 
+### 📊 Observability & Monitoring
+- **OpenTelemetry Integration**: Comprehensive metrics, traces, and logs
+- **Distributed Tracing**: Track requests across services
+- **Custom Metrics**: Monitor RAG performance, embedding generation, and chat activity
+- **Structured Logging**: Correlated logs with trace IDs
+- **Export Support**: Compatible with Prometheus, Jaeger, and other OTLP backends
+
 ---
 
 ## 🏗️ Architecture
@@ -94,6 +101,9 @@ ai.lab/
 - **MariaDB 11.8+** with VECTOR support: [Download](https://mariadb.org/download/)
 - **Ollama** (for local AI): [Download](https://ollama.ai/) or use external API
 - **Visual Studio 2022** or **VS Code** with C# Dev Kit
+- **Linux**: Any distribution with .NET Core support (Ubuntu, Debian, Fedora, CentOS, etc.) or Windows 10/11
+
+> **Note**: This application is cross-platform and runs seamlessly on Linux distributions of your choice, as long as .NET 9.0 runtime is installed.
 
 ### Installation
 
