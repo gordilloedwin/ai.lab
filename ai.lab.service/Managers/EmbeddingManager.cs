@@ -127,7 +127,8 @@ public class EmbeddingManager
 
             var semanticTags = File.ReadAllText("semantic-tags.txt");
             var fileLines = semanticTags.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            memoryCache.Set("semantic-tags", tags?.Where(t => !t.StartsWith("#"))?.Distinct() ?? [], TimeSpan.FromHours(1));
+            memoryCache.Set("semantic-tags", fileLines?.Where(t => !t.StartsWith("#"))?.Distinct() ?? [], TimeSpan.FromHours(1));
+            tags = fileLines?.Where(t => !t.StartsWith("#"))?.Distinct().ToList() ?? new List<string>();
         }
 
         var tagMatcher = new TagMatcher(tags ?? []);
