@@ -60,7 +60,6 @@ public class AiLabWorker
                 
                 if (Directory.Exists(currentFolder))
                 {
-                    // Create a scope to resolve scoped services
                     using var scope = serviceScopeFactory.CreateScope();
                     var chunkExtractor = scope.ServiceProvider.GetRequiredService<IChunkExtractor>();
                     var embeddingManager = scope.ServiceProvider.GetRequiredService<IEmbeddingManager>();

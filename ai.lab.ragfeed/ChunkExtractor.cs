@@ -40,15 +40,24 @@ public class ChunkExtractor(ILogger<ChunkExtractor> logger) : IChunkExtractor
                 _ => new NotSupportedFileChunkGenerator()
             };
 
+            if (chunkGenerator is NotSupportedFileChunkGenerator)
+            {                 
+                logger.LogInformation("File type not supported for chunk extraction: {filePath}", filePath);
+                return false;
+            }
+
             foreach (var chunk in chunkGenerator.GenerateChunks(filePath))
             {
+                var tags = ExtractFolders(filePath) ?? [];
+                tags.AddRange(new List<string> { Path.GetFileNameWithoutExtension(filePath), extension, chunkGenerator.Filetype });
+
                 var chunkEmbedding = new ChunkEmbedding
                 {
-                    ChunkId = Guid.NewGuid().ToString(),
+                    Tags = tags,
                     ChunkText = chunk,
-                    FileName = Path.GetFileName(filePath),
-                    Tags = new List<string> { Path.GetFileNameWithoutExtension(filePath), extension, chunkGenerator.Filetype },
-                    Model = "default-model"
+                    FileName = filePath,                    
+                    Model = "default-model",
+                    ChunkId = "default-chunk-X",
                 };
 
                 chunkEmbeddings.Add(chunkEmbedding);
@@ -61,5 +70,26 @@ public class ChunkExtractor(ILogger<ChunkExtractor> logger) : IChunkExtractor
             logger.LogError(ex, "Error extracting chunks from file: {filePath}", filePath);
             return false;
         }
+    }
+
+    private List<string> ExtractFolders(string fullPath)
+    {
+        var folders = new List<string>();
+        string normalizedPath = fullPath.Replace('\\', '/');
+
+        if (normalizedPath.Length > 1 && normalizedPath[1] == ':')
+        {
+            normalizedPath = normalizedPath.Substring(2);
+        }
+
+        string? directory = Path.GetDirectoryName(normalizedPath);
+        if (string.IsNullOrEmpty(directory))
+        {
+            return folders;
+        }
+
+        var parts = directory.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        folders.AddRange(parts);
+        return folders;
     }
 }

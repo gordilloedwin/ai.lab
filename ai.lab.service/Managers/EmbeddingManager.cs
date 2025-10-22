@@ -111,10 +111,11 @@ public class EmbeddingManager
             return;
         }
 
-        if (!memoryCache.TryGetValue("models", out List<string>? models) || models == null)
+        if (!memoryCache.TryGetValue("embedding-models", out List<string>? models) || models == null)
         {
             models = await ollamaClient.GetAvailableAiModels(cancellationToken);
-            memoryCache.Set("models", models, TimeSpan.FromHours(1));
+            models = models.Where(m => m.ToLowerInvariant().Contains(optionsMonitor.CurrentValue.EmbeddingsModel)).ToList();
+            memoryCache.Set("embedding-models", models, TimeSpan.FromHours(1));
         }
 
         if (!memoryCache.TryGetValue("semantic-tags", out List<string>? tags) || tags == null)
@@ -129,25 +130,21 @@ public class EmbeddingManager
             memoryCache.Set("semantic-tags", tags?.Where(t => !t.StartsWith("#"))?.Distinct() ?? [], TimeSpan.FromHours(1));
         }
 
-        var filePath = chunkEmbeddings.First().FileName;
-        await DeleteOldChunksFromMariaDb(filePath, cancellationToken);
         var tagMatcher = new TagMatcher(tags ?? []);
-
-        foreach (var chunk in chunkEmbeddings)
+        var filePath = chunkEmbeddings.First().FileName;
+        if (optionsMonitor.CurrentValue.ForceUpdateEmbeddings)
         {
-            if (models?.Count > 0)
+            await DeleteOldChunksFromMariaDb(filePath, cancellationToken);
+        }                
+
+        foreach (var model in models)
+        {
+            foreach (var chunk in chunkEmbeddings)
             {
-                foreach (var model in models.Where(m => m.ToLowerInvariant().Contains(optionsMonitor.CurrentValue.EmbeddingsModel)))
-                {
-                    chunk.Model = model;
-                    chunk.Tags.AddRange(tagMatcher.MatchTags(chunk.ChunkText + " " + filePath));
-                    chunk.ChunkId = GenerateChunkId(chunk.Model, chunk.FileName, chunk.ChunkText);
-                    await SaveChunkAsync(chunk.Model, chunk.ChunkId, chunk.ChunkText, chunk.FileName, chunk.Tags, cancellationToken);
-                }                
-            }
-            else
-            {
-                logger.LogWarning("Model {Model} not available. Skipping chunk {ChunkId}", chunk?.Model ?? "no-model", chunk?.ChunkId ?? "no-chunk-id");
+                chunk.Model = model;
+                chunk.Tags.AddRange(tagMatcher.MatchTags(chunk.ChunkText + " " + filePath));
+                chunk.ChunkId = GenerateChunkId(chunk.Model, chunk.FileName, chunk.ChunkText);
+                await SaveChunkAsync(chunk.Model, chunk.ChunkId, chunk.ChunkText, chunk.FileName, chunk.Tags, cancellationToken);
             }
         }
     }
@@ -156,6 +153,12 @@ public class EmbeddingManager
     {
         try
         {
+            if (await databaseService.ValidateHashAlreadyProcessedAsync(chunkId, filePath, cancellationToken))
+            {
+                logger.LogInformation("Chunk {ChunkId} already processed, skipping upload", chunkId);
+                return;
+            }
+
             var embeddingResult = await ollamaClient.GenerateEmbeddingResponseAsync(model, chunkText, cancellationToken);
             var vector = embeddingResult?.embedding;
 

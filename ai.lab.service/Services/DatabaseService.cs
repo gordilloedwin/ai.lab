@@ -106,6 +106,27 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
         }
     }
 
+    public async Task<bool> ValidateHashAlreadyProcessedAsync(string chunkId, string file, CancellationToken cancellationToken)
+    {
+        try
+        {
+            const string sql = @"
+            SELECT COUNT(1)
+            FROM chat_chunk_embeddings 
+            WHERE chunk_id = @ChunkId AND file_name = @FileName;";
+            var connectionString = options.CurrentValue.MariaDbConnectionString;
+            using var connection = new MySqlConnection(connectionString);
+            connection.OpenAsync(cancellationToken).Wait(cancellationToken);
+            var count = await connection.ExecuteScalarAsync<long>(sql, new { ChunkId = chunkId, FileName = file });
+            return count > 0;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to validate if chunk hash already processed for file {FileName}.", file);
+            throw;
+        }
+    }
+
     public async Task<List<MariaDbChunkEmbedding>> GetRelevantChunksAsync
         (string model, float[] embedding, int topK, List<string>? filterTags = null, CancellationToken cancellationToken = default)
     {

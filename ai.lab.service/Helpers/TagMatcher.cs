@@ -16,9 +16,9 @@ public class TagMatcher(IEnumerable<string> tags)
 
         foreach (var word in words)
         {
-            if (_tags.Contains(word))
+            if (_tags.Contains(word.ToLowerInvariant()))
             {
-                matched.Add(word);
+                matched.Add(word.ToLowerInvariant());
             }
         }
 

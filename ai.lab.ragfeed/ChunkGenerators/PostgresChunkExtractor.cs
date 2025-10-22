@@ -6,7 +6,7 @@ namespace ai.lab.ragfeed.ChunkGenerators;
 
 public class PostgresChunkExtractor : IFileChunkGenerator
 {
-    public string Filetype => "pgsql postgresql pg";
+    public string Filetype => "pgsql postgresql pg database postgres";
 
     public List<string> GenerateChunks(string filepath) => ExtractSqlChunks(filepath);
 

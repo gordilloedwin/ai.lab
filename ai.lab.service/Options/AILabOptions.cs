@@ -23,4 +23,6 @@ public class AILabOptions
     public string EmbeddingsModel { get; set; } = string.Empty;
 
     public int WorkerDelaySeconds { get; set; } = 300;
+
+    public bool ForceUpdateEmbeddings { get; set; } = false;
 }

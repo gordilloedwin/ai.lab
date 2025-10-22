@@ -31,6 +31,16 @@ public interface IDatabaseService
     Task<bool> DeleteOldChunksAsync(string filePath, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Determines whether the hash for the specified file chunk has already been processed asynchronously.
+    /// </summary>
+    /// <param name="chunkId">The unique identifier of the file chunk to validate.</param>
+    /// <param name="file">The name or path of the file containing the chunk to check.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if the hash for the
+    /// specified chunk has already been processed; otherwise, <see langword="false"/>.</returns>
+    Task<bool> ValidateHashAlreadyProcessedAsync(string chunkId, string file, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Asynchronously retrieves the most relevant data chunks based on the provided embedding vector.
     /// </summary>
     /// <param name="model">The model name to filter chunks by.</param>
@@ -39,7 +49,8 @@ public interface IDatabaseService
     /// <param name="filterTags">Optional list of tags to filter chunks. Only chunks containing at least one of these tags will be returned.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a list of the most relevant data chunks.</returns>
-    Task<List<MariaDbChunkEmbedding>> GetRelevantChunksAsync(string model, float[] embedding, int topK, List<string>? filterTags = null, CancellationToken cancellationToken = default);
+    Task<List<MariaDbChunkEmbedding>> GetRelevantChunksAsync
+        (string model, float[] embedding, int topK, List<string>? filterTags = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously retrieves a user by their email address.
