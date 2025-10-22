@@ -62,14 +62,14 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                 @ChunkText,
                 @FileName,
                 @Tags,
-                VECTOR_FROM_TEXT(@Embedding)
+                @Embedding
             )
             ON DUPLICATE KEY UPDATE
                 model = VALUES(model),
                 chunk_text = VALUES(chunk_text),
                 file_name = VALUES(file_name),
                 tags = VALUES(tags),
-                embedding = VECTOR_FROM_TEXT(@Embedding),
+                embedding = VALUES(embedding),
                 updated_at = CURRENT_TIMESTAMP;";
 
             SqlMapper.AddTypeHandler(new VectorHandler());
@@ -121,7 +121,7 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                 embedding AS Embedding,
                 created_at AS CreatedAt,
                 updated_at AS UpdatedAt,
-                (1 - (DOT_PRODUCT(embedding, VECTOR_FROM_TEXT(@Embedding)) / (VECTOR_NORM(embedding) * VECTOR_NORM(VECTOR_FROM_TEXT(@Embedding))))) AS distance
+                (1 - (DOT_PRODUCT(embedding, @Embedding) / (VECTOR_NORM(embedding) * VECTOR_NORM(@Embedding)))) AS distance
             FROM chat_chunk_embeddings
             WHERE model = @Model
             ORDER BY distance ASC
