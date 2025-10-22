@@ -13,6 +13,55 @@ public class AiLabWorker
 {
     private Queue<string> folderQueue = new Queue<string>();
 
+    // Directories and patterns to exclude from RAG ingestion
+    private static readonly string[] ExcludedDirectories = 
+    [
+        "bin", "obj", ".git", ".vs", ".vscode", "node_modules", 
+        "packages", ".idea", "dist", "build", "out", "target"
+    ];
+
+    private static readonly string[] ExcludedPatterns = 
+    [
+        "test", "tests", "unittest", "unittests", "__tests__", 
+        ".test.", ".spec.", "test.", "spec."
+    ];
+
+    /// <summary>
+    /// Determines if a file should be processed based on exclusion rules.
+    /// Filters out build artifacts, hidden folders, test files, and generated code.
+    /// </summary>
+    private static bool ShouldProcessFile(string filePath)
+    {
+        var pathParts = filePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var fileName = Path.GetFileName(filePath);
+
+        // Exclude files in specific directories (case-insensitive)
+        foreach (var excludedDir in ExcludedDirectories)
+        {
+            if (pathParts.Any(part => part.Equals(excludedDir, StringComparison.OrdinalIgnoreCase)))
+            {
+                return false;
+            }
+        }
+
+        // Exclude hidden files and folders (starting with .)
+        if (pathParts.Any(part => part.StartsWith('.') && part.Length > 1))
+        {
+            return false;
+        }
+
+        // Exclude test-related files and folders (case-insensitive)
+        foreach (var pattern in ExcludedPatterns)
+        {
+            if (filePath.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {        
         logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
@@ -64,7 +113,13 @@ public class AiLabWorker
                     var chunkExtractor = scope.ServiceProvider.GetRequiredService<IChunkExtractor>();
                     var embeddingManager = scope.ServiceProvider.GetRequiredService<IEmbeddingManager>();
                     
-                    foreach (var file in Directory.GetFiles(currentFolder, "*.*", SearchOption.AllDirectories))
+                    var allFiles = Directory.GetFiles(currentFolder, "*.*", SearchOption.AllDirectories);
+                    var files = allFiles.Where(ShouldProcessFile).ToArray();
+                    
+                    logger.LogInformation("Found {Total} files, processing {Filtered} after filtering (excluded {Excluded})", 
+                        allFiles.Length, files.Length, allFiles.Length - files.Length);
+
+                    foreach (var file in files)
                     {
                         try
                         {

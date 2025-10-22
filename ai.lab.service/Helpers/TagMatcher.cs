@@ -20,7 +20,7 @@ public class TagMatcher(IEnumerable<string> tags)
                 matched.Add(word.ToLowerInvariant());
             }
 
-            var boundTags = tags.Where(c => word.Contains(c, StringComparison.OrdinalIgnoreCase));
+            var boundTags = _tags.Where(c => word.Contains(c, StringComparison.OrdinalIgnoreCase));
             foreach (var tag in boundTags)
             {
                 matched.Add(tag.ToLowerInvariant());

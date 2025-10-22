@@ -48,8 +48,9 @@ public class ChunkExtractor(ILogger<ChunkExtractor> logger) : IChunkExtractor
 
             foreach (var chunk in chunkGenerator.GenerateChunks(filePath))
             {
-                var tags = ExtractFolders(filePath) ?? [];
-                tags.AddRange(new List<string> { Path.GetFileNameWithoutExtension(filePath), extension, chunkGenerator.Filetype });
+                var tags = ExtractFolders(filePath.ToLowerInvariant()) ?? [];
+                tags.AddRange(new List<string> 
+                    { Path.GetFileNameWithoutExtension(filePath.ToLowerInvariant()), extension, chunkGenerator.Filetype.ToLowerInvariant() });
 
                 var chunkEmbedding = new ChunkEmbedding
                 {

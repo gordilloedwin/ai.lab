@@ -61,14 +61,14 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                 @ChunkId,
                 @ChunkText,
                 @FileName,
-                @Tags,
+                LOWER(@Tags),
                 @Embedding
             )
             ON DUPLICATE KEY UPDATE
                 model = VALUES(model),
                 chunk_text = VALUES(chunk_text),
                 file_name = VALUES(file_name),
-                tags = VALUES(tags),
+                tags = VALUES(lower(tags)),
                 embedding = VALUES(embedding),
                 updated_at = CURRENT_TIMESTAMP;";
 

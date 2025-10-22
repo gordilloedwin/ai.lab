@@ -143,8 +143,8 @@ public class EmbeddingManager
             foreach (var chunk in chunkEmbeddings)
             {
                 chunk.Model = model;
-                chunk.Tags.AddRange(tagMatcher.MatchTags(chunk.ChunkText + " " + filePath));
                 chunk.ChunkId = GenerateChunkId(chunk.Model, chunk.FileName, chunk.ChunkText);
+                chunk.Tags.AddRange(tagMatcher.MatchTags(chunk.ChunkText.ToLowerInvariant() + " " + filePath.ToLowerInvariant()));                
                 await SaveChunkAsync(chunk.Model, chunk.ChunkId, chunk.ChunkText, chunk.FileName, chunk.Tags, cancellationToken);
             }
         }
