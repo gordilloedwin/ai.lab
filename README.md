@@ -356,6 +356,33 @@ Code blocks render on single line during streaming
 ```
 **Solution**: The `AIService` now buffers content until ``` pairs are closed.
 
+### 6. Blazor Pages Not Loading Under systemd
+```
+Blazor layout/pages return 404 or blank screen when running as a systemd service
+```
+**Cause**: Required persistent key directory for data-protection / auth cookies not writable by service user.
+**Fix**: Create and chown a dedicated keys directory BEFORE starting the service.
+
+Run these once (replace ailabuser:ailabgroup with your service user/group):
+```bash
+sudo mkdir -p /var/lib/ailab-keys
+sudo chown -R ailabuser:ailabgroup /var/lib/ailab-keys
+```
+Then ensure your service user has read/write permissions and (optionally) configure ASP.NET DataProtection to use this path if you add custom configuration.
+
+## 🛠️ Deployment (systemd)
+
+To run the service via systemd (after publishing with `dotnet publish -c Release`):
+```bash
+sudo cp ai.lab.service/ailab.service /etc/systemd/system/ailab.service
+sudo systemctl daemon-reload
+sudo systemctl enable ailab.service
+sudo systemctl start ailab.service
+sudo systemctl status ailab.service
+```
+
+Make sure you performed the key directory setup above; otherwise Blazor pages may fail to render when hosted headless.
+
 ### Debug Mode
 
 Enable detailed logging in `appsettings.Development.json`:
