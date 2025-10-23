@@ -9,6 +9,7 @@ using ai.lab.service.Services.Auth;
 using ai.lab.service.Services.Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -31,6 +32,12 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Add(IPAddress.Parse("127.0.0.1"));
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 });
+
+builder.Services.AddDataProtection()
+    // Persist DataProtection keys to a stable directory so auth cookies / antiforgery work under systemd
+    .PersistKeysToFileSystem(new DirectoryInfo("/var/lib/ailab-keys"))
+    // ApplicationName should be constant across deployments sharing the keys
+    .SetApplicationName("ai.lab.service");
 
 builder.Services.AddHttpClient(OllamaClientManager.ClientName, client => client.Timeout = TimeSpan.FromMinutes(15))
     .AddPolicyHandler(Policy.WrapAsync(OllamaClientManager.GetRetryPolicy(), OllamaClientManager.GetCircuitBreakerPolicy()));

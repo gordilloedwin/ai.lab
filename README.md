@@ -383,6 +383,19 @@ sudo systemctl status ailab.service
 
 Make sure you performed the key directory setup above; otherwise Blazor pages may fail to render when hosted headless.
 
+### DataProtection Configuration (systemd)
+Add this to `Program.cs` (already present) to ensure cookies & antiforgery work when running as a service:
+```csharp
+builder.Services.AddDataProtection()
+	.PersistKeysToFileSystem(new DirectoryInfo("/var/lib/ailab-keys"))
+	.SetApplicationName("ai.lab.service");
+```
+Be sure the directory exists and is writable by the service user:
+```bash
+sudo mkdir -p /var/lib/ailab-keys
+sudo chown -R ailabuser:ailabgroup /var/lib/ailab-keys
+```
+
 ### Debug Mode
 
 Enable detailed logging in `appsettings.Development.json`:
