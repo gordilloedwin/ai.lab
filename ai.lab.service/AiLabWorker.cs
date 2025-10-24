@@ -126,6 +126,7 @@ public class AiLabWorker
                             if (chunkExtractor.GenerateFileChunks(file, out var chunkEmbeddings))
                             {
                                 await embeddingManager.SaveEmbeddingsAsync(chunkEmbeddings, stoppingToken);
+                                await Task.Delay(1000, stoppingToken); // Small delay to avoid overwhelming services
                             }
                         }
                         catch (Exception ex)
@@ -133,13 +134,14 @@ public class AiLabWorker
                             logger.LogError(ex, "Error processing file: {file}", file);
                         }
                     }
+
+                    await Task.Delay(delay, stoppingToken);
                 }
                 else
                 {
                     logger.LogWarning("Folder does not exist: {folder}", currentFolder);
                 }
 
-                await Task.Delay(delay, stoppingToken);
                 logger.LogInformation("Finished processing folder: {folder}", currentFolder);
             }
 
