@@ -142,7 +142,8 @@ public class AiLabWorker
                             var chunkExtractor = scope.ServiceProvider.GetRequiredService<IChunkExtractor>();
                             var embeddingManager = scope.ServiceProvider.GetRequiredService<IEmbeddingManager>();
 
-                            if (chunkExtractor.GenerateFileChunks(file, out var chunkEmbeddings))
+                            if (!stoppingToken.IsCancellationRequested &&
+                                chunkExtractor.GenerateFileChunks(file, out var chunkEmbeddings))
                             {
                                 await embeddingManager.SaveEmbeddingsAsync(chunkEmbeddings, stoppingToken);
                                 await Task.Delay(1000, stoppingToken); // Small delay to avoid overwhelming services
