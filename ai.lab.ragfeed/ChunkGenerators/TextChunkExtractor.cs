@@ -12,7 +12,7 @@ public class TextChunkExtractor : IFileChunkGenerator
 
     public string Filetype => "general information text";
 
-    public List<string> GenerateChunks(string filepath) => GenerateChunks(filepath);
+    public List<string> GenerateChunks(string filepath) => GenerateChunks(filepath, DefaultMaxCharsPerChunk, DefaultOverlapChars);
 
     /// <summary>
     /// Generates semantic chunks from a text file using multiple strategies:

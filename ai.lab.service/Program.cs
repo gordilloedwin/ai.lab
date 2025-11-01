@@ -138,7 +138,7 @@ builder.Services.AddTransient<IQdrantClient, QdrantClientManager>();
 builder.Services.AddScoped<IContextSessionManager, ContextSessionManager>();
 builder.Services.AddScoped<JwtAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthStateProvider>());
-builder.Services.AddTransient<IChunkExtractor, ChunkExtractor>();
+builder.Services.AddSingleton<IChunkExtractor, ChunkExtractor>();
 builder.Services.AddTransient<IEmbeddingManager, EmbeddingManager>();
 builder.Services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
 builder.Services.AddAuthorizationCore();

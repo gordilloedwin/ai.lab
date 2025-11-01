@@ -63,13 +63,13 @@ public class AiLabWorker
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {        
+    {
         logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+        var delay = TimeSpan.FromSeconds(optionsMonitor?.CurrentValue?.WorkerDelaySeconds ?? 30).Milliseconds;
 
         while (!stoppingToken.IsCancellationRequested)
         {
             logger.LogInformation("RAG ingestion started.");
-            var delay = TimeSpan.FromSeconds(optionsMonitor?.CurrentValue?.WorkerDelaySeconds ?? 30).Milliseconds;
 
             if (!(optionsMonitor?.CurrentValue?.IsRagIngestionEnabled ?? false))
             {
@@ -136,7 +136,7 @@ public class AiLabWorker
                             logger.LogError(ex, "Error processing file: {file}", file);
                         }
                     }
-
+                    // Let 'using var scope' handle disposal. No need to set to null or call Dispose().
                     await Task.Delay(delay, stoppingToken);
                 }
                 else

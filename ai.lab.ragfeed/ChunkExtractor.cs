@@ -34,11 +34,44 @@ public class ChunkExtractor(ILogger<ChunkExtractor> logger) : IChunkExtractor
                 ".sql" => new PostgresChunkExtractor(),
                 ".js" => new JavascriptChunkExtractor(),
                 ".ps1" => new PowerShellChunkExtractor(),
-                ".cpp" or ".h" or ".c" or ".hpp" => new CppChunkExtractor(), 
+                ".cpp" or ".h" or ".c" or ".hpp" => new CppChunkExtractor(),
                 ".cs" or ".cshtml" or ".vb" or ".fs" => new RoslynChunkExtractor(),
                 ".md" or ".markdown" or ".json" or ".xml" or ".html" or ".jrxml" or ".txt" or ".config" or ".yml" => new TextChunkExtractor(),
                 _ => new NotSupportedFileChunkGenerator()
             };
+
+            if (filePath.EndsWith(".min.js", StringComparison.OrdinalIgnoreCase) ||
+                filePath.EndsWith(".min.css", StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogInformation("Skipping minified file: {filePath}", filePath);
+                return false;
+            }
+
+            if (filePath.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase) ||
+                filePath.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase) ||
+                filePath.EndsWith(".g.i.cs", StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogInformation("Skipping generated code file: {filePath}", filePath);
+                return false;
+            }
+
+            if (filePath.EndsWith(".test.cs", StringComparison.OrdinalIgnoreCase) ||
+                filePath.EndsWith(".spec.cs", StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogInformation("Skipping test code file: {filePath}", filePath);
+                return false;
+            }
+
+            if (filePath.EndsWith(".d.ts", StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogInformation("Skipping TypeScript definition file: {filePath}", filePath);
+                return false;
+            }
+
+            if (filePath.EndsWith("jenkinsfile", StringComparison.OrdinalIgnoreCase))
+            {
+                chunkGenerator = new TextChunkExtractor();
+            }
 
             if (chunkGenerator is NotSupportedFileChunkGenerator)
             {                 
