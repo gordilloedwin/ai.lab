@@ -65,10 +65,12 @@ public class AiLabWorker
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {        
         logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-        var delay = (optionsMonitor?.CurrentValue?.WorkerDelaySeconds ?? 300) * 1000;
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            logger.LogInformation("RAG ingestion started.");
+            var delay = TimeSpan.FromSeconds(optionsMonitor?.CurrentValue?.WorkerDelaySeconds ?? 30).Milliseconds;
+
             if (!(optionsMonitor?.CurrentValue?.IsRagIngestionEnabled ?? false))
             {
                 logger.LogInformation("RAG ingestion is disabled. Worker is idle.");
