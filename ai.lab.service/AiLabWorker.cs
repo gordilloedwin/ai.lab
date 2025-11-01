@@ -20,10 +20,11 @@ public class AiLabWorker
         "packages", ".idea", "dist", "build", "out", "target"
     ];
 
-    private static readonly string[] ExcludedPatterns = 
+    private static readonly string[] ExcludedPatterns =
     [
-        "test", "tests", "unittest", "unittests", "__tests__", 
-        ".test.", ".spec.", "test.", "spec."
+        "test", "tests", "unittest", "unittests", "__tests__",
+        ".test.", ".spec.", "test.", "spec.", ".dll", ".exe", ".bin", ".class", ".jar", ".pyc", ".pyo", ".o", ".so",
+        ".js", ".ts", ".jsx", ".tsx", ".min.", ".pdb", ".log", ".cache"
     ];
 
     /// <summary>
@@ -107,44 +108,55 @@ public class AiLabWorker
 
             while (!stoppingToken.IsCancellationRequested && folderQueue.TryDequeue(out var currentFolder))
             {
-                logger.LogInformation("Processing folder: {folder}", currentFolder);
-
-                if (Directory.Exists(currentFolder))
+                if (string.IsNullOrWhiteSpace(currentFolder))
                 {
-                    using var scope = serviceScopeFactory.CreateScope();
-                    var chunkExtractor = scope.ServiceProvider.GetRequiredService<IChunkExtractor>();
-                    var embeddingManager = scope.ServiceProvider.GetRequiredService<IEmbeddingManager>();
+                    logger.LogWarning("Current folder is null or empty, skipping.");
+                    continue;
+                }
 
-                    var allFiles = Directory.GetFiles(currentFolder, "*.*", SearchOption.AllDirectories);
-                    var files = allFiles.Where(ShouldProcessFile).ToArray();
+                if (!Directory.Exists(currentFolder))
+                {
+                    logger.LogWarning("Folder does not exist: {folder}", currentFolder);
+                    continue;
+                }
+                
+                logger.LogInformation("RAG Ingestion : Processing folder: {folder}", currentFolder);
+                var allFiles = Directory.GetFiles(currentFolder, "*.*", SearchOption.AllDirectories);
+                var files = allFiles.Where(ShouldProcessFile).ToArray();
+                
+                if (files.Length == 0)
+                {
+                    logger.LogInformation("No files to process in folder: {folder}", currentFolder);
+                    continue;
+                }
 
-                    logger.LogInformation("Found {Total} files, processing {Filtered} after filtering (excluded {Excluded})",
-                        allFiles.Length, files.Length, allFiles.Length - files.Length);
+                logger.LogInformation("Found {Total} files, processing {Filtered} after filtering (excluded {Excluded})",
+                    allFiles.Length, files.Length, allFiles.Length - files.Length);
 
-                    foreach (var file in files)
+                foreach (var file in files)
+                {
+                    try
                     {
-                        try
+                        using (var scope = serviceScopeFactory.CreateScope())
                         {
+                            var chunkExtractor = scope.ServiceProvider.GetRequiredService<IChunkExtractor>();
+                            var embeddingManager = scope.ServiceProvider.GetRequiredService<IEmbeddingManager>();
+
                             if (chunkExtractor.GenerateFileChunks(file, out var chunkEmbeddings))
                             {
                                 await embeddingManager.SaveEmbeddingsAsync(chunkEmbeddings, stoppingToken);
                                 await Task.Delay(1000, stoppingToken); // Small delay to avoid overwhelming services
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            logger.LogError(ex, "Error processing file: {file}", file);
-                        }
                     }
-                    // Let 'using var scope' handle disposal. No need to set to null or call Dispose().
-                    await Task.Delay(delay, stoppingToken);
-                }
-                else
-                {
-                    logger.LogWarning("Folder does not exist: {folder}", currentFolder);
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Error processing file: {file}", file);
+                    }
                 }
 
-                logger.LogInformation("Finished processing folder: {folder}", currentFolder);
+                logger.LogInformation("Completed processing folder: {folder}", currentFolder);
+                await Task.Delay(delay, stoppingToken);
             }
 
             await Task.Delay(delay, stoppingToken);
