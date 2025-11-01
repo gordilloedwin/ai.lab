@@ -105,7 +105,7 @@ public class AiLabWorker
                 }
             }
 
-            if (folderQueue.TryDequeue(out var currentFolder))
+            while (!stoppingToken.IsCancellationRequested && folderQueue.TryDequeue(out var currentFolder))
             {
                 logger.LogInformation("Processing folder: {folder}", currentFolder);
 

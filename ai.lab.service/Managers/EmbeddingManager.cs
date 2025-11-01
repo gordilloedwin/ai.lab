@@ -149,7 +149,7 @@ public class EmbeddingManager
                 chunk.Tags.AddRange(tagMatcher.MatchTags(chunk.ChunkText.ToLowerInvariant() + " " + fileNoMainPath.ToLowerInvariant()));
                 chunk.Tags = chunk.Tags.Where(t => t.Length > 3).Distinct().ToList();
                 await SaveChunkAsync(chunk.Model, chunk.ChunkId, chunk.ChunkText, chunk.FileName, chunk.Tags, cancellationToken);
-                await Task.Delay(10000, cancellationToken); // Small delay to avoid overwhelming services
+                await Task.Delay(3000, cancellationToken); // Small delay to avoid overwhelming services
             }
         }
     }
