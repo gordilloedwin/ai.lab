@@ -106,17 +106,17 @@ public class AiLabWorker
             if (folderQueue.TryDequeue(out var currentFolder))
             {
                 logger.LogInformation("Processing folder: {folder}", currentFolder);
-                
+
                 if (Directory.Exists(currentFolder))
                 {
                     using var scope = serviceScopeFactory.CreateScope();
                     var chunkExtractor = scope.ServiceProvider.GetRequiredService<IChunkExtractor>();
                     var embeddingManager = scope.ServiceProvider.GetRequiredService<IEmbeddingManager>();
-                    
+
                     var allFiles = Directory.GetFiles(currentFolder, "*.*", SearchOption.AllDirectories);
                     var files = allFiles.Where(ShouldProcessFile).ToArray();
-                    
-                    logger.LogInformation("Found {Total} files, processing {Filtered} after filtering (excluded {Excluded})", 
+
+                    logger.LogInformation("Found {Total} files, processing {Filtered} after filtering (excluded {Excluded})",
                         allFiles.Length, files.Length, allFiles.Length - files.Length);
 
                     foreach (var file in files)
@@ -147,5 +147,7 @@ public class AiLabWorker
 
             await Task.Delay(delay, stoppingToken);
         }
+
+        logger.LogInformation("Worker stopping at: {time}", DateTimeOffset.Now);
     }
 }

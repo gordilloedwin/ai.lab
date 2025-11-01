@@ -158,7 +158,7 @@
                                 }
                                 else
                                 {
-                                    <button class="btn btn-primary" @onclick="() => HandleEnterRoomAsync(room)" disabled="@JoiningRoomIds.Contains(room.Id)">@(room.IsUserInRoom ? "Open" : (JoiningRoomIds.Contains(room.Id) ? "Joining..." : "Join"))</button>
+                                    <button class="btn btn-primary" @onclick="() => HandleEnterRoom(room)" disabled="@JoiningRoomIds.Contains(room.Id)">@(room.IsUserInRoom ? "Open" : (JoiningRoomIds.Contains(room.Id) ? "Joining..." : "Join"))</button>
                                 }
                                 <button class="btn btn-danger" @onclick="() => HandleDeleteRoomAsync(room)" disabled="@DeletingRoomIds.Contains(room.Id) || !room.IsActive" title="Delete room">@(DeletingRoomIds.Contains(room.Id) ? "Deleting..." : "Delete")</button>
                             </div>
@@ -340,12 +340,9 @@
         }
     }
 
-
-
-    private async Task HandleEnterRoomAsync(ChatRoomResponse room)
+    private void HandleEnterRoom(ChatRoomResponse room)
     {
         if (string.IsNullOrWhiteSpace(UserEmail)) return;
-        
         // Don't pre-join here - let the Chat page handle joining via SignalR
         // This prevents duplicate participants with different connection IDs
         // Just navigate directly to the chat page

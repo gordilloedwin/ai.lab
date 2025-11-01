@@ -58,8 +58,7 @@ public class QdrantClientManager
                 {
                     Id = Guid.NewGuid(),
                     Vectors = new Vectors { Vector = vector },
-                    Payload =  { { "model", $"{model}" }, { "fileName", fileName },
-                        { "tags", string.Join(",", tags ?? Enumerable.Empty<string>()) } }
+                    Payload =  { { "fileName", fileName }, { "tags", string.Join(",", tags ?? Enumerable.Empty<string>()) } }
                 }
             };
 
