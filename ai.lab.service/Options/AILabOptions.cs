@@ -25,4 +25,6 @@ public class AILabOptions
     public int WorkerDelaySeconds { get; set; } = 300;
 
     public bool ForceUpdateEmbeddings { get; set; } = false;
+
+    public int EmbeddingsDimension { get; set; } = 4096;
 }

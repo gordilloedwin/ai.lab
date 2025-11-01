@@ -3,6 +3,9 @@ using ai.lab.service.Model.Embeddings;
 using ai.lab.service.Options;
 using ai.lab.service.Services.Common;
 using Microsoft.Extensions.Options;
+using Qdrant.Client;
+using Qdrant.Client.Grpc;
+using System.Text;
 using System.Text.Json;
 
 namespace ai.lab.service.Managers;
@@ -23,23 +26,45 @@ public class QdrantClientManager
         try
         {
             var qdrantUrl = options.CurrentValue.QdrantUrl;
-            var collectionName = string.IsNullOrWhiteSpace(model) ? options.CurrentValue.QdrantCollectionName : model;
-
-            var payload = new
+            var parts = qdrantUrl.Split(":", StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length != 2)
             {
-                id = chunkId,
-                vector = vector,
-                payload = new
+                throw new InvalidOperationException("Invalid Qdrant URL format.");
+            }
+
+            var collectionName = string.IsNullOrWhiteSpace(model) ? options.CurrentValue.QdrantCollectionName : model;
+            collectionName = collectionName.Replace(":", "_").Replace("-", "_").ToLower();
+            using var client = new QdrantClient(parts[0], int.Parse(parts[1]));
+
+            var exists = await client.CollectionExistsAsync(collectionName);
+            if (!exists)
+            {
+                await client.CreateCollectionAsync
+                (
+                    collectionName,
+                    new VectorParams
+                    {
+                        Size = (ulong)options.CurrentValue.EmbeddingsDimension,
+                        Distance = Distance.Cosine
+                    }
+                );
+
+                logger.LogInformation("Created Qdrant collection {CollectionName}", collectionName);
+            }
+
+            var points = new List<PointStruct>
+            {
+                new PointStruct
                 {
-                    text = chunkId,
-                    fileName = fileName,
-                    tags = tags
+                    Id = Guid.NewGuid(),
+                    Vectors = new Vectors { Vector = vector },
+                    Payload =  { { "model", $"{model}" }, { "fileName", fileName },
+                        { "tags", string.Join(",", tags ?? Enumerable.Empty<string>()) } }
                 }
             };
 
-            var response = await HttpClient.PutAsJsonAsync($"{qdrantUrl}/collections/{collectionName}/points", payload, cancellationToken);
-            response.EnsureSuccessStatusCode();
-            logger.LogInformation("Uploaded chunk {ChunkId} to Qdrant", chunkId);
+            var upsertResult = await client.UpsertAsync(collectionName, points);
+            logger.LogInformation("Uploaded chunk {ChunkId} to Qdrant with Result: {Result}", chunkId, upsertResult);
         }
         catch (HttpRequestException ex)
         {
@@ -61,9 +86,10 @@ public class QdrantClientManager
     public async Task<QdrantSearchResponse> QdrantSearchResponseAsync(float[] vector, int topK, string model, CancellationToken cancellationToken)
     {
         try
-            {
+        {
             var qdrantUrl = options.CurrentValue.QdrantUrl;
             var collectionName = string.IsNullOrWhiteSpace(model) ? options.CurrentValue.QdrantCollectionName : model;
+            collectionName = collectionName.Replace(":", "_").Replace("-", "_").ToLower();
 
             var searchRequest = new
             {
