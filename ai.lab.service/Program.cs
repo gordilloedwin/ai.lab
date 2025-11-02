@@ -40,9 +40,15 @@ builder.Services.AddDataProtection()
     .SetApplicationName("ai.lab.service");
 
 builder.Services.AddHttpClient(OllamaClientManager.ClientName, client => client.Timeout = TimeSpan.FromMinutes(15))
-    .AddPolicyHandler(Policy.WrapAsync(OllamaClientManager.GetRetryPolicy()));
+    .AddPolicyHandler(Polly.Policy.WrapAsync(
+        ai.lab.service.Managers.Common.AILabBaseClient.GetRetryPolicy(),
+        ai.lab.service.Managers.Common.AILabBaseClient.GetCircuitBreakerPolicy()
+    ));
 builder.Services.AddHttpClient(QdrantClientManager.ClientName, client => client.Timeout = TimeSpan.FromMinutes(15))
-    .AddPolicyHandler(Policy.WrapAsync(QdrantClientManager.GetRetryPolicy()));
+    .AddPolicyHandler(Polly.Policy.WrapAsync(
+        ai.lab.service.Managers.Common.AILabBaseClient.GetRetryPolicy(),
+        ai.lab.service.Managers.Common.AILabBaseClient.GetCircuitBreakerPolicy()
+    ));
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 builder.Services.Configure<AILabOptions>(builder.Configuration.GetSection("AILabOptions"));
