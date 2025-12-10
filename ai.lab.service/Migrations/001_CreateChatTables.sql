@@ -57,7 +57,6 @@ CREATE TABLE IF NOT EXISTS chat_rooms (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT TRUE,
-    
     INDEX idx_created_by (created_by_email),
     INDEX idx_created_at (created_at),
     INDEX idx_active (is_active)
@@ -75,12 +74,10 @@ CREATE TABLE IF NOT EXISTS chat_participants (
     is_currently_connected BOOLEAN DEFAULT FALSE,
     connection_id VARCHAR(255) NULL COMMENT 'SignalR connection ID for real-time presence',
     last_seen_at DATETIME NULL,
-    
     INDEX idx_chat_room (chat_room_id),
     INDEX idx_user_email (user_email),
     INDEX idx_active_participants (chat_room_id, is_currently_connected),
     INDEX idx_connection_id (connection_id),
-    
     CONSTRAINT fk_chat_participants_room 
         FOREIGN KEY (chat_room_id) 
         REFERENCES chat_rooms(id) 
@@ -97,12 +94,10 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     sender_type ENUM('user', 'ai') NOT NULL,
     content TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    
     INDEX idx_chat_room (chat_room_id),
     INDEX idx_created_at (created_at),
     INDEX idx_sender (sender_email),
     INDEX idx_room_time (chat_room_id, created_at),
-    
     CONSTRAINT fk_chat_messages_room 
         FOREIGN KEY (chat_room_id) 
         REFERENCES chat_rooms(id) 
@@ -118,15 +113,12 @@ CREATE TABLE IF NOT EXISTS chat_read_receipts (
     user_email VARCHAR(255) NOT NULL,
     last_read_message_id BIGINT NOT NULL,
     read_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
     UNIQUE KEY unique_user_room (chat_room_id, user_email),
     INDEX idx_user_unread (user_email, chat_room_id),
-    
     CONSTRAINT fk_chat_read_receipts_room 
         FOREIGN KEY (chat_room_id) 
         REFERENCES chat_rooms(id) 
         ON DELETE CASCADE,
-    
     CONSTRAINT fk_chat_read_receipts_message 
         FOREIGN KEY (last_read_message_id) 
         REFERENCES chat_messages(id) 

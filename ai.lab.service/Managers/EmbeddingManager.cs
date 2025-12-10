@@ -192,7 +192,6 @@ public class EmbeddingManager
                 await databaseService.InsertChunkAsync(chunks, cancellationToken);
             }
 
-            logger.LogInformation("Uploaded chunk {ChunkId} successfully", chunkId);
             await Task.Delay(3000, cancellationToken); // Small delay to avoid overwhelming services
         }
         catch (Exception ex)

@@ -135,6 +135,8 @@ public class AiLabWorker
 
                 foreach (var file in files)
                 {
+                    logger.LogInformation("RAG Ingestion : Processing file: {file}", file);
+
                     try
                     {
                         using (var scope = serviceScopeFactory.CreateScope())
