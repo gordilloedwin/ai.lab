@@ -29,4 +29,6 @@ public class AILabOptions
     public int EmbeddingsDimension { get; set; } = 4096;
 
     public int QdrantUploadBatchSize { get; set; } = 250;
+
+    public int QdrantUploadInterBatchDelayMs { get; set; } = 0;
 }

@@ -172,6 +172,7 @@ public class EmbeddingManager
         int uploadedCount = 0;
         var expectedDimension = optionsMonitor.CurrentValue.EmbeddingsDimension;
         var batchSize = Math.Max(1, optionsMonitor.CurrentValue.QdrantUploadBatchSize);
+        var interBatchDelayMs = Math.Max(0, optionsMonitor.CurrentValue.QdrantUploadInterBatchDelayMs);
 
         foreach (var modelGroup in fileChunks.GroupBy(c => c.Model))
         {
@@ -215,14 +216,21 @@ public class EmbeddingManager
                 var currentBatch = uploads.Skip(i).Take(batchSize).ToList();
                 await qdrantClient.UploadChunksAsync(model, currentBatch, cancellationToken);
                 uploadedCount += currentBatch.Count;
+
+                var hasMoreBatches = i + batchSize < uploads.Count;
+                if (hasMoreBatches && interBatchDelayMs > 0)
+                {
+                    await Task.Delay(interBatchDelayMs, cancellationToken);
+                }
             }
 
             logger.LogInformation(
-                "Synced {Count} chunks to Qdrant for file {FilePath}, model {Model}, using batch size {BatchSize}",
+                "Synced {Count} chunks to Qdrant for file {FilePath}, model {Model}, using batch size {BatchSize}, inter-batch delay {DelayMs}ms",
                 uploads.Count,
                 filePath,
                 model,
-                batchSize);
+                batchSize,
+                interBatchDelayMs);
         }
 
         logger.LogInformation("Synced {Count} chunks from MariaDB to Qdrant for file {FilePath}", uploadedCount, filePath);
