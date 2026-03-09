@@ -172,7 +172,9 @@ public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAISer
 
 			var room = await chatService.GetChatRoomByIdAsync(roomId, email);
 			var modelToUse = room?.AiModel ?? "llama3:latest";
-			var aiResponse = await aIService.GenerateResponseFromApiAsync(modelToUse!, prompt, email);
+			var aiResponse = useRag ?
+			 await aIService.GenerateResponseFromRagAsync(modelToUse!, prompt, email) :
+			 await aIService.GenerateResponseFromApiAsync(modelToUse!, prompt, email);
 			var aiMessage = await chatService.AddAiMessageAsync(roomId, aiResponse.Response ?? "[[AI-Unavailable]]");
 			await Clients.Group(RoomGroup(roomId)).SendAsync("ReceiveMessage", aiMessage);
 		}

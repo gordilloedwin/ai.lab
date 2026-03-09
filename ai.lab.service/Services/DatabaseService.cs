@@ -141,7 +141,6 @@ public class DatabaseService(IOptionsMonitor<DatabaseOptions> options, ILogger<D
                 file_name AS FileName,
                 tags AS Tags,
                 embedding AS Embedding,
-                created_at AS CreatedAt,
                 updated_at AS UpdatedAt,
                 (1 - (DOT_PRODUCT(embedding, @Embedding) / (VECTOR_NORM(embedding) * VECTOR_NORM(@Embedding)))) AS distance
             FROM chat_chunk_embeddings

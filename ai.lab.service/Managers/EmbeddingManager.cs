@@ -172,6 +172,15 @@ public class EmbeddingManager
                 return;
             }
 
+            // Validate vector dimension (MariaDB VECTOR column is defined as vector(4096))
+            const int expectedDimension = 4096;
+            if (vector.Length != expectedDimension)
+            {
+                logger.LogError("Embedding dimension mismatch for chunk {ChunkId}. Expected {Expected} but got {Actual}", 
+                    chunkId, expectedDimension, vector.Length);
+                return;
+            }
+
             if (optionsMonitor?.CurrentValue?.SaveChunksToQadrant ?? false)
             {
                 await qdrantClient.UploadChunkAsync(chunkId, vector, filePath, tags, model, cancellationToken);

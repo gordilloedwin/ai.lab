@@ -5,12 +5,33 @@ namespace ai.lab.service.Helpers;
 
 public class VectorHandler : SqlMapper.TypeHandler<float[]>
 {
+    private const int EXPECTED_DIMENSION = 4096;
+
     public override void SetValue(IDbDataParameter parameter, float[]? value)
     {
         if (value == null || value.Length == 0)
         {
             parameter.Value = DBNull.Value;
             return;
+        }
+
+        // Validate vector dimension
+        if (value.Length != EXPECTED_DIMENSION)
+        {
+            throw new InvalidOperationException(
+                $"Vector dimension mismatch. Expected {EXPECTED_DIMENSION} dimensions, but got {value.Length}. " +
+                $"Ensure the embedding model generates vectors of the correct dimension.");
+        }
+
+        // Validate for NaN or Infinity values
+        for (int i = 0; i < value.Length; i++)
+        {
+            if (float.IsNaN(value[i]) || float.IsInfinity(value[i]))
+            {
+                throw new InvalidOperationException(
+                    $"Invalid vector value at index {i}: {value[i]}. " +
+                    $"Vector contains NaN or Infinity values. Please check the embedding generation.");
+            }
         }
 
         // MariaDB VECTOR type stores as binary (4 bytes per float32)

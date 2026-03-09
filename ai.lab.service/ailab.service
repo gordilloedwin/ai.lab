@@ -3,18 +3,18 @@ Description=AI Lab and RAG Ingestion Service
 After=network.target
 
 [Service]
-Type=notify
+Type=simple
 TimeoutStartSec=300
 
 # Will set the Current Directory (pwd)
-WorkingDirectory=/path/to/ai.lab/ai.lab.service/publish
+WorkingDirectory=/home/edwin/ai.lab/ai.lab.service/bin/Release/net9.0/publish
 
 # Path to the dotnet application dll
-ExecStart=/usr/bin/dotnet /path/to/ai.lab/ai.lab.service/publish/ai.lab.service.dll
+ExecStart=/usr/bin/dotnet /home/edwin/ai.lab/ai.lab.service/bin/Release/net9.0/publish/ai.lab.service.dll
 
 # User and Group - Replace with your system user
-User=your-username
-Group=your-username
+User=edwin
+Group=edwin
 
 # Restart service after 10 seconds if the dotnet service crashes
 Restart=on-failure

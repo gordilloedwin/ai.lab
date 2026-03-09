@@ -66,7 +66,7 @@ public class AiLabWorker
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-        var delay = TimeSpan.FromSeconds(optionsMonitor?.CurrentValue?.WorkerDelaySeconds ?? 30).Milliseconds;
+        var delay = (optionsMonitor?.CurrentValue?.WorkerDelaySeconds ?? 30) * 1000;
 
         while (!stoppingToken.IsCancellationRequested)
         {
