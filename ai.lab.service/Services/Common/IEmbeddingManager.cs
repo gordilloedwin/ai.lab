@@ -65,4 +65,12 @@ public interface IEmbeddingManager
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a list of relevant embeddings.</returns>
     Task<List<MariaDbChunkEmbedding>> GetRelevantEmbeddingsFromMariaDbAsync(string model, string prompt, int topK = 5, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Synchronizes all stored chunks for a file from MariaDB to Qdrant using batched uploads.
+    /// </summary>
+    /// <param name="filePath">The file path used during chunk persistence.</param>
+    /// <param name="cancellationToken">A cancellation token for the operation.</param>
+    /// <returns>The number of chunks uploaded to Qdrant.</returns>
+    Task<int> SyncFileChunksToQdrantFromMariaDbAsync(string filePath, CancellationToken cancellationToken = default);
 }

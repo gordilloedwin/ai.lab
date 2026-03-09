@@ -17,6 +17,15 @@ public interface IQdrantClient
     Task UploadChunkAsync(string chunkId, float[] vector, string fileName, List<string> tags, string model, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Asynchronously uploads a batch of chunks to Qdrant in one operation.
+    /// </summary>
+    /// <param name="model">The model identifier used to resolve the collection.</param>
+    /// <param name="chunks">The chunks to upload.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous upload operation.</returns>
+    Task UploadChunksAsync(string model, List<QdrantChunkUpload> chunks, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Performs an asynchronous vector similarity search using the specified model and returns the top matching
     /// results.
     /// </summary>

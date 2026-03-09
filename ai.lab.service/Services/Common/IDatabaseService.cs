@@ -53,6 +53,14 @@ public interface IDatabaseService
         (string model, float[] embedding, int topK, List<string>? filterTags = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves all chunks for a specific file, including vectors, to support bulk reindex/sync workflows.
+    /// </summary>
+    /// <param name="filePath">The full file path used as the chunk source.</param>
+    /// <param name="cancellationToken">A cancellation token for the operation.</param>
+    /// <returns>A list of chunks for the file.</returns>
+    Task<List<MariaDbChunkEmbedding>> GetChunksByFileAsync(string filePath, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Asynchronously retrieves a user by their email address.
     /// </summary>
     /// <param name="email">The email address of the user to retrieve. Cannot be null or empty.</param>

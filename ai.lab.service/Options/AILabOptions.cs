@@ -27,4 +27,6 @@ public class AILabOptions
     public bool ForceUpdateEmbeddings { get; set; } = false;
 
     public int EmbeddingsDimension { get; set; } = 4096;
+
+    public int QdrantUploadBatchSize { get; set; } = 250;
 }

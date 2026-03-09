@@ -8,6 +8,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace ai.lab.service.Managers;
 
@@ -153,6 +154,103 @@ public class EmbeddingManager
         }
     }
 
+    public async Task<int> SyncFileChunksToQdrantFromMariaDbAsync(string filePath, CancellationToken cancellationToken = default)
+    {
+        if (!(optionsMonitor?.CurrentValue?.SaveChunksToQadrant ?? false))
+        {
+            logger.LogDebug("Qdrant sync disabled. Skipping file {FilePath}", filePath);
+            return 0;
+        }
+
+        var fileChunks = await databaseService.GetChunksByFileAsync(filePath, cancellationToken);
+        if (fileChunks.Count == 0)
+        {
+            logger.LogInformation("No MariaDB chunks found for file {FilePath}. Skipping Qdrant sync.", filePath);
+            return 0;
+        }
+
+        int uploadedCount = 0;
+        var expectedDimension = optionsMonitor.CurrentValue.EmbeddingsDimension;
+        var batchSize = Math.Max(1, optionsMonitor.CurrentValue.QdrantUploadBatchSize);
+
+        foreach (var modelGroup in fileChunks.GroupBy(c => c.Model))
+        {
+            var model = modelGroup.Key;
+            if (string.IsNullOrWhiteSpace(model))
+            {
+                continue;
+            }
+
+            var uploads = new List<QdrantChunkUpload>();
+
+            foreach (var chunk in modelGroup)
+            {
+                if (chunk.Embedding == null || chunk.Embedding.Length != expectedDimension)
+                {
+                    logger.LogWarning(
+                        "Skipping chunk {ChunkId} due to embedding dimension mismatch. Expected {Expected}, got {Actual}",
+                        chunk.ChunkId,
+                        expectedDimension,
+                        chunk.Embedding?.Length ?? 0);
+                    continue;
+                }
+
+                uploads.Add(new QdrantChunkUpload
+                {
+                    ChunkId = string.IsNullOrWhiteSpace(chunk.ChunkId) ? GenerateChunkId(model, filePath, chunk.ChunkText ?? string.Empty) : chunk.ChunkId,
+                    Vector = chunk.Embedding,
+                    FileName = chunk.FileName ?? filePath,
+                    Content = chunk.ChunkText ?? string.Empty,
+                    Tags = ParseTags(chunk.Tags)
+                });
+            }
+
+            if (uploads.Count == 0)
+            {
+                continue;
+            }
+
+            for (int i = 0; i < uploads.Count; i += batchSize)
+            {
+                var currentBatch = uploads.Skip(i).Take(batchSize).ToList();
+                await qdrantClient.UploadChunksAsync(model, currentBatch, cancellationToken);
+                uploadedCount += currentBatch.Count;
+            }
+
+            logger.LogInformation(
+                "Synced {Count} chunks to Qdrant for file {FilePath}, model {Model}, using batch size {BatchSize}",
+                uploads.Count,
+                filePath,
+                model,
+                batchSize);
+        }
+
+        logger.LogInformation("Synced {Count} chunks from MariaDB to Qdrant for file {FilePath}", uploadedCount, filePath);
+        return uploadedCount;
+    }
+
+    private static List<string> ParseTags(string? tagsJson)
+    {
+        if (string.IsNullOrWhiteSpace(tagsJson))
+        {
+            return [];
+        }
+
+        try
+        {
+            var tags = JsonSerializer.Deserialize<List<string>>(tagsJson);
+            return tags?.Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList() ?? [];
+        }
+        catch
+        {
+            return tagsJson
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Distinct()
+                .ToList();
+        }
+    }
+
     public async Task SaveChunkAsync(string model, string chunkId, string chunkText, string filePath, List<string> tags, CancellationToken cancellationToken = default)
     {
         try
@@ -179,11 +277,6 @@ public class EmbeddingManager
                 logger.LogError("Embedding dimension mismatch for chunk {ChunkId}. Expected {Expected} but got {Actual}", 
                     chunkId, expectedDimension, vector.Length);
                 return;
-            }
-
-            if (optionsMonitor?.CurrentValue?.SaveChunksToQadrant ?? false)
-            {
-                await qdrantClient.UploadChunkAsync(chunkId, vector, filePath, tags, model, cancellationToken);
             }
 
             if (optionsMonitor?.CurrentValue?.SaveChunksToMariaDb ?? false)

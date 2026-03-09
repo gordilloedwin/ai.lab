@@ -148,6 +148,13 @@ public class AiLabWorker
                                 chunkExtractor.GenerateFileChunks(file, out var chunkEmbeddings))
                             {
                                 await embeddingManager.SaveEmbeddingsAsync(chunkEmbeddings, stoppingToken);
+
+                                if (optionsMonitor?.CurrentValue?.SaveChunksToQadrant ?? false)
+                                {
+                                    var syncedChunks = await embeddingManager.SyncFileChunksToQdrantFromMariaDbAsync(file, stoppingToken);
+                                    logger.LogInformation("RAG Ingestion : Synced {Count} chunks to Qdrant for file: {file}", syncedChunks, file);
+                                }
+
                                 await Task.Delay(1000, stoppingToken); // Small delay to avoid overwhelming services
                             }
                         }
