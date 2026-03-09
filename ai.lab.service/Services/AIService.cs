@@ -83,6 +83,12 @@ public sealed class AIService
         {
             logger.LogError(ex, "Unexpected error occurred while calling Ollama API. Model: {Model}, Prompt length: {PromptLength}", 
                 model, prompt?.Length ?? 0);
+
+            if (ex is InvalidOperationException)
+            {
+                throw;
+            }
+
             throw new InvalidOperationException($"Unexpected error calling Ollama service: {ex.Message}", ex);
         }
     }
@@ -132,6 +138,12 @@ public sealed class AIService
         {
             logger.LogError(ex, "Unexpected error occurred while calling Ollama or Qdrant service for RAG. Model: {Model}, Prompt length: {PromptLength}", 
                 model, prompt?.Length ?? 0);
+
+            if (ex is InvalidOperationException)
+            {
+                throw;
+            }
+
             throw new InvalidOperationException($"Unexpected error calling Ollama service: {ex.Message}", ex);
         }
     }

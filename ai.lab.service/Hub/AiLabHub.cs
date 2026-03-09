@@ -9,6 +9,8 @@ namespace ai.lab.service;
 [Authorize]
 public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAIService aIService) : Hub
 {
+	private const string AiFailureMessage = "Something went wrong while generating the AI response. Please try again.";
+
     private string? GetUserEmail() => Context.User?.FindFirst(ClaimTypes.Email)?.Value
 		?? Context.User?.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email)?.Value
 		?? Context.User?.FindFirst("email")?.Value;
@@ -181,6 +183,16 @@ public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAISer
 		catch (Exception ex)
 		{
 			logger.LogError(ex, "Failed AskAi for {Email} room {RoomId}", email, roomId);
+
+			try
+			{
+				var fallback = await chatService.AddAiMessageAsync(roomId, AiFailureMessage);
+				await Clients.Group(RoomGroup(roomId)).SendAsync("ReceiveMessage", fallback);
+			}
+			catch (Exception fallbackEx)
+			{
+				logger.LogError(fallbackEx, "Failed to send fallback AI error message for room {RoomId}", roomId);
+			}
 		}
 		finally
 		{
@@ -241,7 +253,17 @@ public class AiLabHub(ILogger<AiLabHub> logger, IChatService chatService, IAISer
 		catch (Exception ex)
 		{
 			logger.LogError(ex, "Failed AskAiStream for {Email} room {RoomId}", email, roomId);
-			await Clients.Group(RoomGroup(roomId)).SendAsync("AiTypingError", roomId, streamId, "AI stream failed.");
+
+			try
+			{
+				await Clients.Group(RoomGroup(roomId)).SendAsync("AiTypingError", roomId, streamId, "AI stream failed.");
+				var fallback = await chatService.AddAiMessageAsync(roomId, AiFailureMessage);
+				await Clients.Group(RoomGroup(roomId)).SendAsync("ReceiveMessage", fallback);
+			}
+			catch (Exception fallbackEx)
+			{
+				logger.LogError(fallbackEx, "Failed to send stream fallback AI error message for room {RoomId}", roomId);
+			}
 		}
 		finally
 		{

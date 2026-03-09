@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 using System.Text;
-using System.Text.Json;
 
 namespace ai.lab.service.Managers;
 
@@ -27,16 +26,37 @@ public class QdrantClientManager
         return collectionName.Replace(":", "_").Replace("-", "_").ToLowerInvariant();
     }
 
-    private async Task<QdrantClient> GetOrCreateClientWithCollectionAsync(string collectionName, CancellationToken cancellationToken)
+    private static (string Host, int Port) ParseQdrantEndpoint(string endpoint)
     {
-        var qdrantUrl = options.CurrentValue.QdrantUrl;
-        var parts = qdrantUrl.Split(":", StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length != 2)
+        if (string.IsNullOrWhiteSpace(endpoint))
         {
-            throw new InvalidOperationException("Invalid Qdrant URL format.");
+            throw new InvalidOperationException("QdrantUrl is not configured.");
         }
 
-        var client = new QdrantClient(parts[0], int.Parse(parts[1]));
+        var normalized = endpoint.Trim();
+
+        if (!normalized.Contains("://", StringComparison.Ordinal))
+        {
+            normalized = $"http://{normalized}";
+        }
+
+        if (!Uri.TryCreate(normalized, UriKind.Absolute, out var uri))
+        {
+            throw new InvalidOperationException($"Invalid Qdrant URL format: {endpoint}");
+        }
+
+        if (string.IsNullOrWhiteSpace(uri.Host) || uri.Port <= 0)
+        {
+            throw new InvalidOperationException($"Invalid Qdrant URL format: {endpoint}");
+        }
+
+        return (uri.Host, uri.Port);
+    }
+
+    private async Task<QdrantClient> GetOrCreateClientWithCollectionAsync(string collectionName, CancellationToken cancellationToken)
+    {
+        var (host, port) = ParseQdrantEndpoint(options.CurrentValue.QdrantUrl);
+        var client = new QdrantClient(host, port);
         var exists = await client.CollectionExistsAsync(collectionName, cancellationToken: cancellationToken);
         if (!exists)
         {
@@ -139,35 +159,39 @@ public class QdrantClientManager
     {
         try
         {
-            var qdrantUrl = options.CurrentValue.QdrantUrl;
-            var collectionName = string.IsNullOrWhiteSpace(model) ? options.CurrentValue.QdrantCollectionName : model;
-            collectionName = collectionName.Replace(":", "_").Replace("-", "_").ToLower();
+            var collectionName = GetCollectionName(model);
+            using var client = await GetOrCreateClientWithCollectionAsync(collectionName, cancellationToken);
 
-            var searchRequest = new
+            var searchResults = await client.SearchAsync(
+                collectionName,
+                vector,
+                limit: (ulong)Math.Max(1, topK),
+                payloadSelector: true,
+                cancellationToken: cancellationToken);
+
+            var response = new QdrantSearchResponse
             {
-                vector = vector,
-                top = topK,
-                with_payload = true
+                result = searchResults
+                    .Select(r => new SearchResult
+                    {
+                        payload = r.Payload.ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => (object)(kvp.Value.StringValue ?? kvp.Value.ToString()))
+                    })
+                    .ToList()
             };
 
-            var responseTask = await HttpClient.PostAsJsonAsync($"{qdrantUrl}/collections/{collectionName}/points/search", searchRequest, cancellationToken);
-            var searchResults = await responseTask.Content.ReadFromJsonAsync<QdrantSearchResponse>(cancellationToken: cancellationToken);
-            return searchResults ?? new QdrantSearchResponse();
+            return response;
         }
         catch (HttpRequestException ex)
         {
             logger.LogError(ex, "HTTP error searching Qdrant: {Message}", ex.Message);
-            throw new InvalidOperationException($"Failed to connect to Ollama service: {ex.Message}", ex);
+            throw new InvalidOperationException($"Failed to connect to Qdrant service: {ex.Message}", ex);
         }
         catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException || ex.CancellationToken.IsCancellationRequested)
         {
             logger.LogError(ex, "Timeout searching Qdrant: {Message}", ex.Message);
-            throw new TimeoutException("Ollama API request timed out", ex);
-        }
-        catch (JsonException ex)
-        {
-            logger.LogError(ex.Message);
-            throw new InvalidOperationException($"Invalid JSON response from Qdrant service: {ex.Message}", ex);
+            throw new TimeoutException("Qdrant API request timed out", ex);
         }
         catch (Exception ex)
         {

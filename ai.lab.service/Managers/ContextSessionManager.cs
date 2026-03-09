@@ -10,15 +10,38 @@ public class ContextSessionManager(IMemoryCache cache, IDatabaseService database
     private readonly int maxTokens = 2048;
     private readonly TimeSpan _sessionTimeout = TimeSpan.FromMinutes(60);
 
+    private List<UserChatContext> NormalizeContexts(List<UserChatContext>? contexts)
+    {
+        if (contexts is null || contexts.Count == 0)
+        {
+            return [];
+        }
+
+        return contexts
+            .Where(c => c is not null && !string.IsNullOrWhiteSpace(c.Model))
+            .GroupBy(c => c.Model, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.Last())
+            .Select(c => new UserChatContext
+            {
+                Model = c.Model,
+                AiContext = (c.AiContext ?? []).TrimmedToMaxTokens(maxTokens)
+            })
+            .ToList();
+    }
+
     public async Task StoreContextAsync(string email, string model, List<int> context, CancellationToken cancellationToken)
     {
         if (cache.TryGetValue(email, out List<UserChatContext>? existing) && (existing?.Any(m => m.Model == model) ?? false))
         {
-            var updated = existing.Where(c => c.Model != model).ToList();
-            var newEntries = context.Select(id =>
-                new UserChatContext { Model = model, AiContext = context.TrimmedToMaxTokens(maxTokens) }).ToList();
+            var updated = NormalizeContexts(existing);
+            updated = updated.Where(c => !string.Equals(c.Model, model, StringComparison.OrdinalIgnoreCase)).ToList();
+            updated.Add(new UserChatContext
+            {
+                Model = model,
+                AiContext = context.TrimmedToMaxTokens(maxTokens)
+            });
 
-            updated.AddRange(newEntries);
+            updated = NormalizeContexts(updated);
             cache.Set(email, updated, _sessionTimeout);
             await databaseService.UpdateUserLastSeenAsync(email, DateTime.UtcNow, updated, cancellationToken);
         }
@@ -33,13 +56,17 @@ public class ContextSessionManager(IMemoryCache cache, IDatabaseService database
 
                 if (dbAiContext is not null && dbAiContext.Any())
                 {
-                    var merged = dbAiContext.Where(c => c.Model != model).ToList();
+                    var merged = NormalizeContexts(dbAiContext)
+                        .Where(c => !string.Equals(c.Model, model, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+
                     merged.Add(new UserChatContext
                     {
                         Model = model,
                         AiContext = context.TrimmedToMaxTokens(maxTokens)
                     });
-                    contextToStore = merged;
+
+                    contextToStore = NormalizeContexts(merged);
                 }
                 else
                 {
