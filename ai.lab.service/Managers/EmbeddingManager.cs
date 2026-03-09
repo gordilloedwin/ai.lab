@@ -60,50 +60,6 @@ public class EmbeddingManager
         }
     }
 
-    public async Task<List<MariaDbChunkEmbedding>> GetRelevantEmbeddingsFromMariaDbAsync(string model, string prompt, int topK = 5, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var embeddingResult = await ollamaClient.GenerateEmbeddingResponseAsync(model, prompt, cancellationToken);
-            var queryVector = embeddingResult?.embedding;
-
-            if (queryVector == null || queryVector.Length == 0)
-            {
-                logger.LogError("Failed to get embedding for prompt");
-                return new List<MariaDbChunkEmbedding>();
-            }
-
-            // Extract relevant tags from the user's prompt using the cached semantic tags
-            List<string>? filterTags = null;
-            if (memoryCache.TryGetValue("semantic-tags", out List<string>? availableTags) && availableTags?.Count > 0)
-            {
-                var tagMatcher = new TagMatcher(availableTags);
-                var matchedTags = tagMatcher.MatchTags(prompt);
-                
-                if (matchedTags.Count > 0)
-                {
-                    filterTags = matchedTags;
-                    logger.LogInformation("Extracted {Count} tags from prompt: {Tags}", matchedTags.Count, string.Join(", ", matchedTags));
-                }
-                else
-                {
-                    logger.LogDebug("No matching tags found in prompt, using pure vector similarity search");
-                }
-            }
-            else
-            {
-                logger.LogDebug("Semantic tags not available in cache, using pure vector similarity search");
-            }
-
-            return await databaseService.GetRelevantChunksAsync(model, queryVector, topK, filterTags, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error retrieving relevant embeddings from MariaDB for prompt");
-            throw;
-        }
-    }
-
     public async Task SaveEmbeddingsAsync(List<ChunkEmbedding> chunkEmbeddings, CancellationToken cancellationToken = default)
     {
         if (!chunkEmbeddings.Any())

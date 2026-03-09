@@ -1,5 +1,4 @@
 ﻿using ai.lab.ragfeed.Output;
-using ai.lab.service.Model.Database;
 using ai.lab.service.Model.Embeddings;
 
 namespace ai.lab.service.Services.Common;
@@ -55,16 +54,6 @@ public interface IEmbeddingManager
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the save operation.</param>
     /// <returns>A task that represents the asynchronous save operation.</returns>
     Task SaveEmbeddingsAsync(List<ChunkEmbedding> chunkEmbeddings, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves relevant embeddings from the MariaDB database based on the provided model and prompt.
-    /// </summary>
-    /// <param name="model">The name or identifier of the model to use for the search. Cannot be null or empty.</param>
-    /// <param name="prompt">The input prompt or query to search for relevant embeddings. Cannot be null or empty.</param>
-    /// <param name="topK">The maximum number of top matching embeddings to return. Must be greater than zero. The default is 5.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains a list of relevant embeddings.</returns>
-    Task<List<MariaDbChunkEmbedding>> GetRelevantEmbeddingsFromMariaDbAsync(string model, string prompt, int topK = 5, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Synchronizes all stored chunks for a file from MariaDB to Qdrant using batched uploads.

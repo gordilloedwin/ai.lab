@@ -92,20 +92,14 @@ public sealed class AIService
     {
         try
         {
-            string finalPrompt = string.Empty;
+            var embeddings = await embeddingManager.SearchChunksInQdrantAsync(
+                model,
+                prompt,
+                options.CurrentValue?.MaxRagChunksPerPrompt ?? 5,
+                cancellationToken);
 
-            if (options?.CurrentValue?.UseQdrantForRag ?? false)
-            {
-                var embeddings = await embeddingManager.SearchChunksInQdrantAsync(model, prompt, options.CurrentValue?.MaxRagChunksPerPrompt ?? 5, cancellationToken);
-                var qdrantContextWindow = new QdrantContextBuilder(embeddings).BuildContextWindow();
-                finalPrompt = $"Use the following context to answer the question.\n\nContext:\n{qdrantContextWindow}\n\nQuestion:\n{prompt}\n\nAnswer:";
-            }
-            else
-            {
-                var mariaDbEmbeddings = await embeddingManager.GetRelevantEmbeddingsFromMariaDbAsync(model, prompt, options?.CurrentValue?.MaxRagChunksPerPrompt ?? 5, cancellationToken);
-                var mariaDbContextWindow = new MariaDbContextBuilder(mariaDbEmbeddings).BuildContextWindow();
-                finalPrompt = $"Use the following context to answer the question.\n\nContext:\n{mariaDbContextWindow}\n\nQuestion:\n{prompt}\n\nAnswer:";                
-            }
+            var qdrantContextWindow = new QdrantContextBuilder(embeddings).BuildContextWindow();
+            var finalPrompt = $"Use the following context to answer the question.\n\nContext:\n{qdrantContextWindow}\n\nQuestion:\n{prompt}\n\nAnswer:";
 
             if (string.IsNullOrWhiteSpace(finalPrompt))
             {
